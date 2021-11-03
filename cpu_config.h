@@ -4,7 +4,6 @@
 #include <map>
 #include <vector>
 
-
 // stores the configuration of the CPU
 struct CPUConfig {
 	// integer adder
@@ -26,6 +25,9 @@ struct CPUConfig {
 	// registers
 	std::vector<int> r_registers;
 	std::vector<float> f_registers;
+
+	std::map<std::string, int> r_register_map;
+	std::map<std::string, float> f_register_map;
 
 };
 
@@ -68,7 +70,7 @@ void PrintCPUConfig(const CPUConfig& config)
 	std::cout << config.fu_load_store[2];
 	std::cout << std::endl;
 
-	std::cout << "Rob entries: " << config.rob_entries << std::endl;
+	std::cout << "ROB entries: " << config.rob_entries << std::endl;
 	std::cout << "CDB buffer entires: " << config.cdb_buffer_entries << std::endl;
 
 	std::cout << "Number r registers: " << config.num_r_registers;
@@ -82,6 +84,20 @@ void PrintCPUConfig(const CPUConfig& config)
 	for (const auto& value : config.f_registers)
 	{
 		std::cout << "\n \t" << value;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Inital r register states:";
+	for (const auto& elem : config.r_register_map)
+	{
+		std::cout << "\n \t" <<  elem.first << " " << elem.second;
+	}
+	std::cout << std::endl;
+
+	std::cout << "Inital f register states:";
+	for (const auto& elem : config.f_register_map)
+	{
+		std::cout << "\n \t" << elem.first << " " << elem.second;
 	}
 	std::cout << std::endl;
 }

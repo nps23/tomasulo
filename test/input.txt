@@ -31,4 +31,8 @@ number_program_lines
 10
 program
 
+r1 10
+r2 20
 
+f1 1.2
+f2 2.4
