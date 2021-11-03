@@ -5,11 +5,8 @@
 
 
 
-
-
 int main()
 {
-	std::cout << "Hello world! " << std::endl;
 	CPUConfig config = ParseInput(input_file);
 	PrintCPUConfig(config);
 }
