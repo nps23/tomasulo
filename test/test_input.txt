@@ -1,5 +1,0 @@
-fu,rs,cycles_ex,cycles_mem,count
-ingeter_add,2,1,0,1
-fp_add,3,3,0,1
-fp_mult,2,20,0,1
-load_store,3,2,4,1
