@@ -14,15 +14,11 @@ struct CPUConfig {
 	std::vector<int> fu_fp_adder;
 	std::vector<int> fu_fp_mult;
 	std::vector<int> fu_load_store;
-
-	
 	
 	// additional configuration options
 	int rob_entries;
 	int cdb_buffer_entries; // will this change?
 
-	
-	
 	// number of registers
 	int num_r_registers;
 	int num_f_registers;

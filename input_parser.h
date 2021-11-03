@@ -90,8 +90,10 @@ CPUConfig ParseInput(std::string& input_file)
 		}
 
 		else if (line == "program")
+			// program structure
 			continue;
-		// clear the eof flag
+		
+		// clear the eof flag (if we need)
 		// another function that lets you start at beginning of file, seekG
 
 	}
