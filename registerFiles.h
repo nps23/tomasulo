@@ -9,5 +9,5 @@ class intReg {
 class fpReg {
 	public:
 		double fpRegFile[32];
-		regFile() {}
+		fpReg() {}
 };

@@ -1,7 +1,8 @@
 // Main file for controlling the tomasulo algorithm project for ECE2162
 // David Herr and Nathan Stodick
 #include "registerFiles.h"
-int main() {
+
+int logic() {
 
 	// At the beginning of the simulation, file IO will be done first
 

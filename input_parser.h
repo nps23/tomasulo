@@ -77,7 +77,6 @@ CPUConfig ParseInput(std::string& input_file)
 
 		else if (line == "num_f_registers")
 		{
-			std::cout << line << std::endl;
 			int number_registers;
 			infile >> number_registers;
 			config.num_f_registers = number_registers;
@@ -89,13 +88,24 @@ CPUConfig ParseInput(std::string& input_file)
 			}
 		}
 
+		else if (line[0] == 'r')
+		{
+			int value;
+			infile >> value;
+			config.r_register_map[line] = value;
+		}
+
+		else if (line[0] == 'f')
+		{
+			float value;
+			infile >> value;
+			config.f_register_map[line] = value;
+		}
+
+
 		else if (line == "program")
 			// program structure
 			continue;
-		
-		// clear the eof flag (if we need)
-		// another function that lets you start at beginning of file, seekG
-
 	}
 
 	return config;	
