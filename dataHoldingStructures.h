@@ -1,20 +1,33 @@
 #include <queue>
 #include <string>
+#include "cpu_config.h"
 
 using namespace std;
 
 class intReg {
 	public:
+		// TODO decide if we want to just change this to be a map anyways
 		int intRegFile[32];
-		intReg() {
+		intReg(const CPUConfig& config) {
 			intRegFile[0] = 0;
+			for (const auto& value : config.r_register_map)
+			{
+				int index = (int)value.first[1];
+				intRegFile[index] = value.second;
+			}
 		}
 };
 
 class fpReg {
 	public:
 		double fpRegFile[32];
-		fpReg() {}
+		fpReg(const CPUConfig& config) {
+			for (const auto& value : config.f_register_map)
+			{
+				int index = (int)value.first[1];
+				fpRegFile[index] = value.second;
+			}
+		}
 };
 
 class cpuMemory {
@@ -73,7 +86,9 @@ class ROB {
 		int nextInsertedInst;
 		int maxEntries;
 		
-		ROB(int numEntries){
+		ROB(const CPUConfig& config){
+			int numEntries = config.rob_entries;
+			
 			instType = new int[numEntries];
 			destValue = new string[numEntries];
 			valueField = new double[numEntries];

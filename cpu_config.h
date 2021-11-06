@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include "program.h"
 
 // stores the configuration of the CPU
 struct CPUConfig {
@@ -28,6 +29,8 @@ struct CPUConfig {
 
 	std::map<std::string, int> r_register_map;
 	std::map<std::string, float> f_register_map;
+
+	Program program;
 
 };
 
@@ -100,4 +103,5 @@ void PrintCPUConfig(const CPUConfig& config)
 		std::cout << "\n \t" << elem.first << " " << elem.second;
 	}
 	std::cout << std::endl;
+
 }

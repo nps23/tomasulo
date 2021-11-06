@@ -103,9 +103,120 @@ CPUConfig ParseInput(std::string& input_file)
 		}
 
 
-		else if (line == "program")
-			// program structure
-			continue;
+		// better ways to parse this for sure, but I'd rather not create another new map
+		else if (line == "program") {
+			int num_prog_lines;
+			infile >> num_prog_lines;
+			for (int i = 0; i < num_prog_lines; i++) {
+				Instruction inst;
+				std::string opcode;
+				infile >> opcode;
+				
+				if (opcode == "nop")
+				{
+					inst.op_code = Instruction::OpCode::nop;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "ld_fa") {
+					inst.op_code = Instruction::OpCode::ld_fa;
+					std::string dest, op1;
+					infile >> dest >> op1;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "sd_fa") {
+					inst.op_code = Instruction::OpCode::sd_fa;
+					std::string dest, op1;
+					infile >> dest >> op1;
+					inst.dest = dest;
+					inst.operands[1] = op1;
+					config.program.codes.push(inst);
+				}
+
+				// rest of the instruction
+				else if (opcode == "beq") {
+					inst.op_code = Instruction::OpCode::beq;
+					std::string op1, op2, dest;
+					infile >> op1 >> op2 >> dest;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+				else if (opcode == "bne") {
+					inst.op_code = Instruction::OpCode::bne;
+					std::string op1, op2, dest;
+					infile >> op1 >> op2 >> dest;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "add") {
+					inst.op_code = Instruction::OpCode::add;
+					std::string dest, op1, op2;
+					infile >> dest >> op1 >> op2;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "add_d") {
+					inst.op_code = Instruction::OpCode::add_d;
+					std::string dest, op1, op2;
+					infile >> dest >> op1 >> op2;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "add_i") {
+					inst.op_code = Instruction::OpCode::add_i;
+					std::string dest, op1, op2;
+					infile >> dest >> op1 >> op2;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "sub") {
+					inst.op_code = Instruction::OpCode::sub;
+					std::string dest, op1, op2;
+					infile >> dest >> op1 >> op2;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "sub_d") {
+					inst.op_code = Instruction::OpCode::sub_d;
+					std::string dest, op1, op2;
+					infile >> dest >> op1 >> op2;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+
+				else if (opcode == "mult_d") {
+					inst.op_code = Instruction::OpCode::mult_d;
+					std::string dest, op1, op2;
+					infile >> dest >> op1 >> op2;
+					inst.dest = dest;
+					inst.operands[0] = op1;
+					inst.operands[1] = op2;
+					config.program.codes.push(inst);
+				}
+			}
+		}
 	}
 
 	return config;	
