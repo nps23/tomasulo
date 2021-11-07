@@ -23,8 +23,3 @@ struct Instruction {
 	std::string operands[2];
 	std::string dest;
 };
-
-
-struct Program {
-	std::queue<Instruction> codes;
-};
