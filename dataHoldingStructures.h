@@ -35,9 +35,12 @@ class cpuMemory {
 	public:
 		double mainMemory[64];
 		cpuMemory(const CPUConfig& config) {
-			for(unsigned int i; i < config.memory.size(); i++){
-				// NEEDS FIXED!
-				//mainMemory[config.memory.address[i]] = config.memory.value[i];
+			if (!config.memory.empty())
+			{
+				for (const auto& address : config.memory)
+				{
+					mainMemory[address.first] = address.second;
+				}
 			}
 		}
 		void inputMem(double input, int address) {
