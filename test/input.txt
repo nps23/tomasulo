@@ -27,12 +27,21 @@ num_f_registers
 
 10
 
-number_program_lines
-10
-program
+
 
 r1 10
 r2 20
 
 f1 1.2
 f2 2.4
+
+program 4
+nop
+add_d f1 f2 f3
+ld_fa f4 8(r1)
+bne r2 r3 -3
+
+memory 3
+4 1
+8 2
+12 3.4
