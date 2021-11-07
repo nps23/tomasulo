@@ -8,8 +8,11 @@
 #include "input_parser.h"
 #include "dataHoldingStructures.h"
 #include "CDB.h"
+#include "program.h"
 
 using namespace std;
+
+void programFSM(Instruction& instr);
 
 int main()
 {
@@ -27,7 +30,8 @@ int main()
 	fpReg fpRegFile(config);
 	cpuMemory mainMem(config);
 	ROB rob(config);
-
+	instructionBuffer instBuff();
+	
 	int numCycles = 0;
 
 	// Now enter the loop
@@ -38,7 +42,13 @@ int main()
 	// DONE: RAT, Store Queue, Memory, RS For the RS's, we must use a mapping.
 	// CHANGE ARF's to use a mapping instead now, Instruction Buffer, ROB,
 	while (true) {
-
+		
+		if(instBuff.currentInst < ){
+			
+		}
+		for(int i = 0; i < currentInst; i++){
+			programFSM(instBuff.inst);
+		}
 		// This loop will handle the cycling for the simulation
 		// For loops, we will need to implement a static instruction buffer to use for reference to loop back to previous lines of code. 
 		// The loop will go through all of the neccessary steps to update things accordingly. 
@@ -78,4 +88,53 @@ int main()
 		numCycles++;
 	}
 	return 0;
+}
+
+void programFSM(Instruction& instr){
+	switch(instr.state){
+		case issue:
+			switch(instr.op_code){
+				case nop:
+					if(rob.checkFull() == false){
+						rob.insert(instr.op_code(nop, "NULL", 0));
+						instr.state = ex;
+						// INSERT INTO TIMING DIAGRAM
+					}
+				default:
+			}
+			break;
+		case ex:
+			switch(instr.op_code){
+				case nop:
+					instr.state = wb;
+					// INSERT INTO TIMING DIAGRAM
+				default:
+			}
+			break;
+		case mem:
+			switch(instr.op_code){
+				default:
+			}
+			break;
+		case wb:
+			switch(instr.op_code){
+				case nop:
+					instr.state = commit;
+					// INSERT INTO TIMING DIAGRAM
+				default:
+			}
+			break;
+		case commit:
+			switch(instr.op_code){
+				case nop:
+					rob.commit();
+					instr.state = null;
+					// INSERT INTO TIMING DIAGRAM
+				default:
+			}
+			break;
+		// Handles Null case
+		default:
+			// If the instruction state is null, ignore the instruction.
+	}
 }

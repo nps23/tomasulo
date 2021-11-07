@@ -9,7 +9,7 @@ class CDBEntry {
 		int programLine;
 		string destination;
 		bool operator<(const CDBEntry& rightOp) const {
-			return value < rightOp.value;
+			return programLine < rightOp.programLine;
 		}
 };
 

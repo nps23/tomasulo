@@ -1,6 +1,7 @@
 #include <queue>
 #include <string>
 #include "cpu_config.h"
+#include "program.h"
 
 using namespace std;
 
@@ -66,10 +67,7 @@ class RAT {
 
 class instructionBuffer {
 	public:
-		int instOpcode[100];
-		string op1[100];
-		string op2[100];
-		string result[100];
+		Instruction inst;
 		int curInst;
 		instructionBuffer(){
 			curInst = 0;
