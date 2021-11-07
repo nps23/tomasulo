@@ -14,19 +14,21 @@ using namespace std;
 
 int main()
 {
+	// At the beginning of the simulation, file IO will be done first
+
 	CPUConfig config = ParseInput(input_file);
 	PrintCPUConfig(config);
 	
-	// At the beginning of the simulation, file IO will be done first
 
-	/*INSERT FILE IO CALLS HERE*/
 
 	// Next, using the information read in with the file IO, configure the simulation
 
-	/*INSERT CODE TO CONFIGURE AND INITILIZE HERE*/
-	intReg intRegFile();
-	fpReg fpRegFile();
-	cpuMemory mainMem();
+	/*INSERT CODE TO CONFIGURE AND INITILIZE HERE*/ 
+	intReg intRegFile(config);
+	fpReg fpRegFile(config);
+	cpuMemory mainMem(config);
+	ROB rob(config);
+
 	int numCycles = 0;
 
 	// Now enter the loop

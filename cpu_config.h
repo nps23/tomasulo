@@ -3,6 +3,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <deque>
 #include "program.h"
 
 // stores the configuration of the CPU
@@ -30,7 +31,8 @@ struct CPUConfig {
 	std::map<std::string, int> r_register_map;
 	std::map<std::string, float> f_register_map;
 
-	std::queue<Instruction> program;
+	std::deque<Instruction> program;
+	std::map<int, int> memory;
 
 };
 
@@ -103,4 +105,54 @@ void PrintCPUConfig(const CPUConfig& config)
 		std::cout << "\n \t" << elem.first << " " << elem.second;
 	}
 	std::cout << std::endl;
+
+	std::cout << "Program:" << std::endl;
+	for (const auto& instruction : config.program)
+	{
+		switch (instruction.op_code)
+		{
+		case 0:
+			std::cout << "NOP" << std::endl;
+			break;
+		case 1:
+			std::cout << "ld_fa" << std::endl;
+			break;
+		case 2:
+			std::cout << "sd_fa" << std::endl;
+			break;
+		case 3:
+			std::cout << "beq" << std::endl;
+			break;
+		case 4:
+			std::cout << "bne" << std::endl;
+			break;
+		case 5:
+			std::cout << "add" << std::endl;
+			break;
+		case 6:
+			std::cout << "add_d" << std::endl;
+			break;
+		case 7:
+			std::cout << "add_i" << std::endl;
+			break;
+		case 8:
+			std::cout << "sub" << std::endl;
+			break;
+		case 10:
+			std::cout << "sub_d" << std::endl;
+			break;
+		case 11:
+			std::cout << "mult_d" << std::endl;
+			break;
+		default:
+			std::cout << "Bad instruction. Something went wrong" << std::endl;
+			break;
+		}
+	}
+
+	std::cout << "Memory" << std::endl;
+	for (const auto& address : config.memory)
+	{
+		std::cout << "Address " << address.first << ": " << address.second << std::endl;
+	}
 }

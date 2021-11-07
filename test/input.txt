@@ -40,3 +40,8 @@ nop
 add_d f1 f2 f3
 ld_fa f4 8(r1)
 bne r2 r3 -3
+
+memory 3
+4 1
+8 2
+12 3.4

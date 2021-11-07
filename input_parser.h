@@ -115,7 +115,7 @@ CPUConfig ParseInput(std::string& input_file)
 				if (opcode == "nop")
 				{
 					inst.op_code = Instruction::OpCode::nop;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "ld_fa") {
@@ -124,7 +124,7 @@ CPUConfig ParseInput(std::string& input_file)
 					infile >> dest >> op1;
 					inst.dest = dest;
 					inst.operands[0] = op1;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sd_fa") {
@@ -133,7 +133,7 @@ CPUConfig ParseInput(std::string& input_file)
 					infile >> dest >> op1;
 					inst.dest = dest;
 					inst.operands[1] = op1;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				// rest of the instruction
@@ -144,7 +144,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 				else if (opcode == "bne") {
 					inst.op_code = Instruction::OpCode::bne;
@@ -153,7 +153,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add") {
@@ -163,7 +163,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add_d") {
@@ -173,7 +173,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add_i") {
@@ -183,7 +183,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sub") {
@@ -193,7 +193,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sub_d") {
@@ -203,7 +203,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 
 				else if (opcode == "mult_d") {
@@ -213,11 +213,21 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.operands[0] = op1;
 					inst.operands[1] = op2;
-					config.program.push(inst);
+					config.program.push_back(inst);
 				}
 			}
 		}
-	}
 
+		else if (line == "memory") {
+			int num_cpu_lines;
+			infile >> num_cpu_lines;
+			for (int i = 0; i < num_cpu_lines; i++)
+			{
+				int address, value;
+				infile >> address >> value;
+				config.memory[address] = value;
+			}
+		}
+	}
 	return config;	
 }
