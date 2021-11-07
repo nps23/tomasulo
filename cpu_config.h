@@ -20,16 +20,12 @@ struct CPUConfig {
 	int rob_entries;
 	int cdb_buffer_entries; 
 
-	// number of registers
-	int num_r_registers;
-	int num_f_registers;
-
 	// registers
 	std::vector<int> r_registers;
 	std::vector<float> f_registers;
 
-	std::map<std::string, int> r_register_map;
-	std::map<std::string, float> f_register_map;
+	std::map<int, int> r_register_map;
+	std::map<int, float> f_register_map;
 
 	std::deque<Instruction> program;
 	std::map<int, int> memory;
@@ -78,19 +74,6 @@ void PrintCPUConfig(const CPUConfig& config)
 	std::cout << "ROB entries: " << config.rob_entries << std::endl;
 	std::cout << "CDB buffer entires: " << config.cdb_buffer_entries << std::endl;
 
-	std::cout << "Number r registers: " << config.num_r_registers;
-	for (const auto& value : config.r_registers)
-	{
-		std::cout << "\n \t" << value;
-	}
-	std::cout << std::endl;
-
-	std::cout << "Number f registers: " << config.num_f_registers;
-	for (const auto& value : config.f_registers)
-	{
-		std::cout << "\n \t" << value;
-	}
-	std::cout << std::endl;
 
 	std::cout << "Inital r register states:";
 	for (const auto& elem : config.r_register_map)
