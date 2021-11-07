@@ -7,10 +7,9 @@
 #include "cpu_config.h"
 #include "input_parser.h"
 #include "dataHoldingStructures.h"
+#include "CDB.h"
 
 using namespace std;
-
-
 
 int main()
 {
@@ -36,8 +35,7 @@ int main()
 	// The loop will run until a break condition is met
 	
 	// TO DO: CDB: Queue class with arbitrate function that can reorder based on program line every cycle. 
-	//  RS For the RS's, we must use a mapping.
-	// DONE: RAT, Store Queue, Memory,  
+	// DONE: RAT, Store Queue, Memory, RS For the RS's, we must use a mapping.
 	// CHANGE ARF's to use a mapping instead now, Instruction Buffer, ROB,
 	while (true) {
 
