@@ -18,7 +18,7 @@ struct CPUConfig {
 	
 	// additional configuration options
 	int rob_entries;
-	int cdb_buffer_entries; // will this change?
+	int cdb_buffer_entries; 
 
 	// number of registers
 	int num_r_registers;
