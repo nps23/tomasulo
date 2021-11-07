@@ -1,6 +1,7 @@
 #include <queue>
 #include <string>
 #include "cpu_config.h"
+#include "program.h"
 
 using namespace std;
 
@@ -66,10 +67,7 @@ class RAT {
 
 class instructionBuffer {
 	public:
-		int instOpcode[100];
-		string op1[100];
-		string op2[100];
-		string result[100];
+		Instruction inst;
 		int curInst;
 		instructionBuffer(){
 			curInst = 0;
@@ -135,6 +133,64 @@ class ROB {
 			for(int i = 0; i < maxEntries; i++){
 				if(instType[i] == -1){
 					isFull = false;
+					break;
+				}
+			}
+			return isFull;
+		}
+};
+
+class RS {
+	public:
+		int* opCode;
+		string* robIndex;
+		double* vj;
+		double* vk;
+		string* qj;
+		string* qk;
+		bool* busy;
+		int maxRS;
+		RS(int rsSize){
+			opCode = new int[rsSize];
+			robIndex = new string[rsSize];
+			vj = new double[rsSize];
+			vk = new double[rsSize];
+			qj = new string[rsSize];
+			qk = new string[rsSize];
+			busy = new bool[rsSize];
+			maxRS = rsSize; 
+			for(int i = 0; i < rsSize; i++){
+				opCode[i] = -1;
+				robIndex[i] = "NULL";
+				vj[i] = 0.0;
+				vk[i] = 0.0;
+				qj[i] = "NULL";
+				qk[i] = "NULL";
+				busy[i] = false;
+			}
+		}
+		void insertOp(int opCodeInput, double vjInput, double vkInput, string qjInput, string qkInput){
+			int rsIndex;
+			// Find an open spot in the RS
+			for(int i = 0; i < maxRS; i++){
+				if(busy[i] == true){
+					rsIndex = i;
+					break;
+				}
+			}
+			opCode[rsIndex] = opCodeInput;
+			vj[rsIndex] = vjInput;
+			vk[rsIndex] = vkInput;
+			qj[rsIndex] = qjInput;
+			qk[rsIndex] = qkInput;
+			busy[rsIndex] = true;
+		}
+		bool checkFull(){
+			bool isFull = true;
+			for(int i = 0; i < maxRS; i++){
+				if(busy[i] == false){
+					isFull = false;
+					break;
 				}
 			}
 			return isFull;

@@ -3,9 +3,7 @@
 #include <queue>
 #include <string>
 
-
-struct Instruction {
-	enum OpCode {
+enum OpCode {
 		nop = 0,
 		ld_fa,
 		sd_fa,
@@ -17,17 +15,24 @@ struct Instruction {
 		sub,
 		sub_d,
 		mult_d
-	} op_code;
+	};
 	
-	// we will at most have three operands
-	std::string operands[2];
-	std::string dest;
-	enum State {
+enum State {
 		null = 0,
 		issue,
 		ex,
 		mem, 
 		wb,
 		commit
-	} state;
+	};
+	
+struct Instruction {
+	OpCode op_code;
+	State state; 
+	
+	// we will at most have three operands
+	std::string operands[2];
+	std::string dest;
+	int pipelineTimer;
+	
 };
