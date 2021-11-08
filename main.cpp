@@ -11,14 +11,14 @@
 #include "program.h"
 
 using namespace std;
+CPUConfig config = ParseInput(input_file);
+ROB rob(config);
 
 void programFSM(Instruction& instr);
 
 int main()
 {
 	// At the beginning of the simulation, file IO will be done first
-
-	CPUConfig config = ParseInput(input_file);
 	PrintCPUConfig(config);
 	
 
@@ -29,9 +29,8 @@ int main()
 	intReg intRegFile(config);
 	fpReg fpRegFile(config);
 	cpuMemory mainMem(config);
-	ROB rob(config);
-	instructionBuffer instBuff();
-	
+	instructionBuffer instBuff;
+	timingDiagram output(config.program.size());
 	int numCycles = 0;
 
 	// Now enter the loop
@@ -43,11 +42,11 @@ int main()
 	// CHANGE ARF's to use a mapping instead now, Instruction Buffer, ROB,
 	while (true) {
 		
-		if(instBuff.currentInst < ){
+		/*if(instBuff.currentInst < ){
 			
-		}
-		for(int i = 0; i < currentInst; i++){
-			programFSM(instBuff.inst);
+		}*/
+		for(int i = 0; i < instBuff.curInst; i++){
+			programFSM(instBuff.inst[i]);
 		}
 		// This loop will handle the cycling for the simulation
 		// For loops, we will need to implement a static instruction buffer to use for reference to loop back to previous lines of code. 
@@ -96,11 +95,12 @@ void programFSM(Instruction& instr){
 			switch(instr.op_code){
 				case nop:
 					if(rob.checkFull() == false){
-						rob.insert(instr.op_code(nop, "NULL", 0));
+						rob.insert(nop, "NULL", 0);
 						instr.state = ex;
 						// INSERT INTO TIMING DIAGRAM
 					}
 				default:
+				break;
 			}
 			break;
 		case ex:
@@ -109,11 +109,13 @@ void programFSM(Instruction& instr){
 					instr.state = wb;
 					// INSERT INTO TIMING DIAGRAM
 				default:
+				break;
 			}
 			break;
 		case mem:
 			switch(instr.op_code){
 				default:
+				break;
 			}
 			break;
 		case wb:
@@ -122,6 +124,7 @@ void programFSM(Instruction& instr){
 					instr.state = commit;
 					// INSERT INTO TIMING DIAGRAM
 				default:
+				break;
 			}
 			break;
 		case commit:
@@ -131,10 +134,12 @@ void programFSM(Instruction& instr){
 					instr.state = null;
 					// INSERT INTO TIMING DIAGRAM
 				default:
+				break;
 			}
 			break;
 		// Handles Null case
 		default:
 			// If the instruction state is null, ignore the instruction.
+		break;
 	}
 }

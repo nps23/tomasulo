@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include "cpu_config.h"
+#include "program.h"
 
 std::string input_file = "test/input.txt";
 
@@ -114,12 +115,12 @@ CPUConfig ParseInput(std::string& input_file)
 				
 				if (opcode == "nop")
 				{
-					inst.op_code = Instruction::OpCode::nop;
+					inst.op_code = nop;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "ld_fa") {
-					inst.op_code = Instruction::OpCode::ld_fa;
+					inst.op_code = ld_fa;
 					std::string dest, op1;
 					infile >> dest >> op1;
 					inst.dest = dest;
@@ -128,7 +129,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "sd_fa") {
-					inst.op_code = Instruction::OpCode::sd_fa;
+					inst.op_code = sd_fa;
 					std::string dest, op1;
 					infile >> dest >> op1;
 					inst.dest = dest;
@@ -138,7 +139,7 @@ CPUConfig ParseInput(std::string& input_file)
 
 				// rest of the instruction
 				else if (opcode == "beq") {
-					inst.op_code = Instruction::OpCode::beq;
+					inst.op_code = beq;
 					std::string op1, op2, dest;
 					infile >> op1 >> op2 >> dest;
 					inst.dest = dest;
@@ -147,7 +148,7 @@ CPUConfig ParseInput(std::string& input_file)
 					config.program.push_back(inst);
 				}
 				else if (opcode == "bne") {
-					inst.op_code = Instruction::OpCode::bne;
+					inst.op_code = bne;
 					std::string op1, op2, dest;
 					infile >> op1 >> op2 >> dest;
 					inst.dest = dest;
@@ -157,7 +158,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "add") {
-					inst.op_code = Instruction::OpCode::add;
+					inst.op_code = add;
 					std::string dest, op1, op2;
 					infile >> dest >> op1 >> op2;
 					inst.dest = dest;
@@ -167,7 +168,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "add_d") {
-					inst.op_code = Instruction::OpCode::add_d;
+					inst.op_code = add_d;
 					std::string dest, op1, op2;
 					infile >> dest >> op1 >> op2;
 					inst.dest = dest;
@@ -177,7 +178,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "add_i") {
-					inst.op_code = Instruction::OpCode::add_i;
+					inst.op_code = add_i;
 					std::string dest, op1, op2;
 					infile >> dest >> op1 >> op2;
 					inst.dest = dest;
@@ -187,7 +188,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "sub") {
-					inst.op_code = Instruction::OpCode::sub;
+					inst.op_code = sub;
 					std::string dest, op1, op2;
 					infile >> dest >> op1 >> op2;
 					inst.dest = dest;
@@ -197,7 +198,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "sub_d") {
-					inst.op_code = Instruction::OpCode::sub_d;
+					inst.op_code = sub_d;
 					std::string dest, op1, op2;
 					infile >> dest >> op1 >> op2;
 					inst.dest = dest;
@@ -207,7 +208,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "mult_d") {
-					inst.op_code = Instruction::OpCode::mult_d;
+					inst.op_code = mult_d;
 					std::string dest, op1, op2;
 					infile >> dest >> op1 >> op2;
 					inst.dest = dest;
