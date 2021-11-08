@@ -29,8 +29,7 @@ int main()
 	cpuMemory mainMem(config);
 	ROB rob(config);
 	instructionBuffer instBuff;
-	
-	instructionBuffer instBuff;
+
 	timingDiagram output(config.program.size());
 	int numCycles = 0;
 
