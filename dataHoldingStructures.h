@@ -34,7 +34,12 @@ class fpReg {
 class cpuMemory {
 	public:
 		double mainMemory[64];
-		cpuMemory() {}
+		cpuMemory(const CPUConfig& config) {
+			for(unsigned int i; i < config.memory.size(); i++){
+				// NEEDS FIXED!
+				//mainMemory[config.memory.address[i]] = config.memory.value[i];
+			}
+		}
 		void inputMem(double input, int address) {
 			mainMemory[address] = input;
 		}
@@ -67,10 +72,20 @@ class RAT {
 
 class instructionBuffer {
 	public:
-		Instruction inst;
+		vector<Instruction> inst;
 		int curInst;
 		instructionBuffer(){
 			curInst = 0;
+		}
+		vector<Instruction> operator=(const instructionBuffer& rhs){
+			// First reset the buffer
+			vector<Instruction> instNew;
+			
+			// Fill the buffer with the right hand operand
+			for(unsigned int i = 0; i < rhs.inst.size(); i++){
+				instNew.push_back(rhs.inst[i]);
+			}
+			return instNew;
 		}
 };
 
@@ -194,5 +209,13 @@ class RS {
 				}
 			}
 			return isFull;
+		}
+};
+
+class timingDiagram {
+	public:
+		int (*tDiag)[6];
+		timingDiagram(int m){
+			tDiag = new int[m][6];
 		}
 };

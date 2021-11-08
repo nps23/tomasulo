@@ -138,10 +138,10 @@ void PrintCPUConfig(const CPUConfig& config)
 		case 8:
 			std::cout << "sub" << std::endl;
 			break;
-		case 10:
+		case 9:
 			std::cout << "sub_d" << std::endl;
 			break;
-		case 11:
+		case 10:
 			std::cout << "mult_d" << std::endl;
 			break;
 		default:
