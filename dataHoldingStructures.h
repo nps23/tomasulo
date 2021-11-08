@@ -13,8 +13,7 @@ class intReg {
 			intRegFile[0] = 0;
 			for (const auto& value : config.r_register_map)
 			{
-				int index = (int)value.first[1];
-				intRegFile[index] = value.second;
+				intRegFile[value.first] = value.second;
 			}
 		}
 };
@@ -25,8 +24,7 @@ class fpReg {
 		fpReg(const CPUConfig& config) {
 			for (const auto& value : config.f_register_map)
 			{
-				int index = (int)value.first[1];
-				fpRegFile[index] = value.second;
+				fpRegFile[value.first] = value.second;
 			}
 		}
 };
@@ -35,9 +33,12 @@ class cpuMemory {
 	public:
 		double mainMemory[64];
 		cpuMemory(const CPUConfig& config) {
-			for(unsigned int i; i < config.memory.size(); i++){
-				// NEEDS FIXED!
-				//mainMemory[config.memory.address[i]] = config.memory.value[i];
+			if (!config.memory.empty())
+			{
+				for (const auto& address : config.memory)
+				{
+					mainMemory[address.first] = address.second;
+				}
 			}
 		}
 		void inputMem(double input, int address) {
