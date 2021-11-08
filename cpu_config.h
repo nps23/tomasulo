@@ -132,6 +132,7 @@ void PrintCPUConfig(const CPUConfig& config)
 			break;
 		}
 	}
+	std::cout << std::endl;
 
 	std::cout << "Memory" << std::endl;
 	for (const auto& address : config.memory)
