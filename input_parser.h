@@ -214,6 +214,12 @@ CPUConfig ParseInput(std::string& input_file)
 				config.memory[address] = value;
 			}
 		}
+
+		else 
+		{
+			// local FU buffers requesting the central data bus
+			continue;
+		}
 	}
 	return config;	
 }

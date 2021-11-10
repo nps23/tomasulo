@@ -3,7 +3,6 @@
 #include <iostream>
 #include <map>
 #include <vector>
-#include <deque>
 #include "program.h"
 
 // stores the configuration of the CPU
@@ -27,7 +26,7 @@ struct CPUConfig {
 	std::map<int, int> r_register_map;
 	std::map<int, float> f_register_map;
 
-	std::deque<Instruction> program;
+	std::vector<Instruction> program;
 	std::map<int, int> memory;
 
 };

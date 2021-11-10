@@ -1,3 +1,5 @@
+#pragma once
+
 #include <queue>
 #include <string>
 #include "cpu_config.h"
@@ -7,7 +9,6 @@ using namespace std;
 
 class intReg {
 	public:
-		// TODO decide if we want to just change this to be a map anyways
 		int intRegFile[32];
 		intReg(const CPUConfig& config) {
 			intRegFile[0] = 0;
@@ -87,6 +88,17 @@ class instructionBuffer {
 				instNew.push_back(rhs.inst[i]);
 			}
 			return instNew;
+		}
+
+		instructionBuffer(const CPUConfig& config)
+		{
+			curInst = 0;
+			inst = config.program;
+		}
+
+		bool empty()
+		{
+			return inst.empty();
 		}
 };
 
