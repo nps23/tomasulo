@@ -57,14 +57,27 @@ int Simulate()
 			case add:
 				break;
 			case add_d:
+				if (!fpRS.isFull())
+				{
+					// issue instruction, update state.
+				}
 				break;
 			case add_i:
 				break;
 			case sub:
 				break;
 			case sub_d:
+				if (!fpRS.isFull())
+				{
+					// issue instruction, update state
+				}
 				break;
 			case mult_d:
+				if (!fpRS.isFull())
+				{
+					// parse issue instruction, update the state
+
+				}
 				break;
 			}
 			
