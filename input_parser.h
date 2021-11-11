@@ -104,101 +104,132 @@ CPUConfig ParseInput(std::string& input_file)
 					config.program.push_back(inst);
 				}
 
-				else if (opcode == "ld_fa") {
-					inst.op_code = ld_fa;
-					std::string dest, op1;
-					infile >> dest >> op1;
-					inst.dest = dest;
-					inst.operands[0] = op1;
+				else if (opcode == "ld") {
+					inst.op_code = ld;
+					char regId, paran;
+					int dest, operand;
+					infile >> regId >> dest >> paran >> regId >> operand >> paran;
+					if (regId == 'r')
+					{
+						inst.dest = dest;
+						inst.r_ls_register_operand = operand;
+					}
+
+					if (regId == 'f')
+					{
+
+						inst.dest = dest;
+						inst.f_ls_register_operand = operand;
+					}
 					config.program.push_back(inst);
 				}
 
-				else if (opcode == "sd_fa") {
-					inst.op_code = sd_fa;
-					std::string dest, op1;
-					infile >> dest >> op1;
-					inst.dest = dest;
-					inst.operands[1] = op1;
+				else if (opcode == "sd") {
+					inst.op_code = sd;
+					char regId, paran;
+					int dest, operand;
+					infile >> regId >> dest >> paran >> regId >> operand >> paran;
+					if (regId == 'r')
+					{
+						inst.dest = dest;
+						inst.r_ls_register_operand = operand;
+					}
+
+					if (regId == 'f')
+					{
+
+						inst.dest = dest;
+						inst.f_ls_register_operand = operand;
+					}
 					config.program.push_back(inst);
 				}
 
-				// rest of the instruction
 				else if (opcode == "beq") {
 					inst.op_code = beq;
-					std::string op1, op2, dest;
-					infile >> op1 >> op2 >> dest;
-					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					char reg_id;
+					int l_operand, r_operand;
+					int offset;
+					infile >> reg_id >> l_operand >> reg_id >> r_operand;
+					infile >> offset;
+					inst.r_left_operand = l_operand;
 					config.program.push_back(inst);
 				}
+
 				else if (opcode == "bne") {
-					inst.op_code = bne;
-					std::string op1, op2, dest;
-					infile >> op1 >> op2 >> dest;
-					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.op_code = beq;
+					char r;
+					int l_operand, r_operand;
+					int offset;
+					infile >> r >> l_operand >> r >> r_operand;
+					infile >> offset;
+					inst.r_left_operand = l_operand;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add") {
 					inst.op_code = add;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char r;
+					int dest, l_operand, r_operand;
+					infile >> r >> dest >> r >> l_operand >> r >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.r_right_operand = r_operand;
+					inst.r_left_operand = l_operand;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add_d") {
 					inst.op_code = add_d;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char f;
+					int dest, l_operand, r_operand;
+					infile >> f >> dest >> f >> l_operand >> f >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.f_right_operand = r_operand;
+					inst.f_left_operand = l_operand;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add_i") {
 					inst.op_code = add_i;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
-					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					char r;
+					int l_operand, r_operand, immediate;
+					infile >> r >> l_operand >> r >> r_operand >> immediate;
+					inst.r_right_operand = r_operand;
+					inst.r_left_operand = l_operand;
+					inst.immediate = immediate;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sub") {
 					inst.op_code = sub;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char r;
+					int dest, l_operand, r_operand;
+					infile >> r >> dest >> r >> l_operand >> r >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.r_right_operand = r_operand;
+					inst.r_left_operand = l_operand;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sub_d") {
-					inst.op_code = sub_d;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					inst.op_code = sub;
+					char f;
+					int dest, l_operand, r_operand;
+					infile >> f >> dest >> f >> l_operand >> f >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.f_right_operand = r_operand;
+					inst.f_left_operand = l_operand;
 					config.program.push_back(inst);
 				}
 
+				// there is an implicit assumption here that the dest will alwayys be able to hold the result
 				else if (opcode == "mult_d") {
 					inst.op_code = mult_d;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char f;
+					int dest, l_operand, r_operand;
+					infile >> f >> dest >> f >> l_operand >> f >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.f_right_operand = r_operand;
+					inst.f_left_operand = l_operand;
 					config.program.push_back(inst);
 				}
 			}

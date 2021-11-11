@@ -213,7 +213,7 @@ class RS {
 			qk[rsIndex] = qkInput;
 			busy[rsIndex] = true;
 		}
-		bool checkFull(){
+		bool isFull(){
 			bool isFull = true;
 			for(int i = 0; i < maxRS; i++){
 				if(busy[i] == false){

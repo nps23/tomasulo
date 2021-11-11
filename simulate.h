@@ -46,9 +46,9 @@ int Simulate()
 			{
 			case nop:
 				break;
-			case ld_fa:
+			case ld:
 				break;
-			case sd_fa:
+			case sd:
 				break;
 			case beq:
 				break;

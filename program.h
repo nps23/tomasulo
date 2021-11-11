@@ -5,8 +5,8 @@
 
 enum OpCode {
 		nop = 0,
-		ld_fa,
-		sd_fa,
+		ld,
+		sd,
 		beq,
 		bne,
 		add,
@@ -31,8 +31,19 @@ struct Instruction {
 	State state; 
 	
 	// we will at most have three operands
-	std::string operands[2];
-	std::string dest;
-	int pipelineTimer;
+	int r_right_operand;
+	int r_left_operand;
+
+	int f_right_operand;
+	int f_left_operand;
+
+	// populate only for load/store
+	int offset;
+	int immediate;
+	int r_ls_register_operand;
+	int f_ls_register_operand;
+	int dest;
 	
+	int pipelineTimer;
+
 };
