@@ -101,46 +101,34 @@ CPUConfig ParseInput(std::string& input_file)
 				if (opcode == "nop")
 				{
 					inst.op_code = nop;
+					std::cout << "Pushing instruction: " << inst.op_code 
+						<<" into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "ld") {
 					inst.op_code = ld;
-					char regId, paran;
-					int dest, operand;
-					infile >> regId >> dest >> paran >> regId >> operand >> paran;
-					if (regId == 'r')
-					{
-						inst.dest = dest;
-						inst.r_ls_register_operand = operand;
-					}
+					char fpId, rId, paran;
+					int dest, operand, offset;
+					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
 
-					if (regId == 'f')
-					{
-
-						inst.dest = dest;
-						inst.f_ls_register_operand = operand;
-					}
+					inst.dest = dest;
+					inst.f_ls_register_operand = operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sd") {
 					inst.op_code = sd;
-					char regId, paran;
-					int dest, operand;
-					infile >> regId >> dest >> paran >> regId >> operand >> paran;
-					if (regId == 'r')
-					{
-						inst.dest = dest;
-						inst.r_ls_register_operand = operand;
-					}
+					char fpId, rId, paran;
+					int dest, operand, offset;
+					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
 
-					if (regId == 'f')
-					{
-
-						inst.dest = dest;
-						inst.f_ls_register_operand = operand;
-					}
+					inst.dest = dest;
+					inst.f_ls_register_operand = operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
@@ -152,17 +140,21 @@ CPUConfig ParseInput(std::string& input_file)
 					infile >> reg_id >> l_operand >> reg_id >> r_operand;
 					infile >> offset;
 					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "bne") {
-					inst.op_code = beq;
+					inst.op_code = bne;
 					char r;
 					int l_operand, r_operand;
 					int offset;
 					infile >> r >> l_operand >> r >> r_operand;
 					infile >> offset;
 					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
@@ -174,6 +166,8 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.r_right_operand = r_operand;
 					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
@@ -185,6 +179,8 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.f_right_operand = r_operand;
 					inst.f_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
@@ -196,6 +192,8 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.r_right_operand = r_operand;
 					inst.r_left_operand = l_operand;
 					inst.immediate = immediate;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;;
 					config.program.push_back(inst);
 				}
 
@@ -207,6 +205,8 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.r_right_operand = r_operand;
 					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
@@ -218,6 +218,8 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.f_right_operand = r_operand;
 					inst.f_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
@@ -230,6 +232,7 @@ CPUConfig ParseInput(std::string& input_file)
 					inst.dest = dest;
 					inst.f_right_operand = r_operand;
 					inst.f_left_operand = l_operand;
+					std::cout << "Pushing back new instruction onto config" << std::endl;
 					config.program.push_back(inst);
 				}
 			}
