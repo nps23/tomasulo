@@ -1,6 +1,6 @@
 #pragma once
 
-#include <queue>
+#include <deque>
 #include <string>
 #include <map>
 
@@ -40,10 +40,6 @@ class fpReg {
 			for (const auto& value : config.f_register_map)
 			{
 				registers["f" + std::to_string(value.first)] = value.second;
-			}
-			for (const auto& item : registers)
-			{
-				std::cout << item.first << " " << item.second << std::endl;
 			}
 		}
 
@@ -119,7 +115,7 @@ class RAT {
 
 class instructionBuffer {
 	public:
-		vector<Instruction> inst;
+		std::deque<Instruction> inst;
 		int curInst;
 		instructionBuffer(){
 			curInst = 0;
@@ -145,6 +141,11 @@ class instructionBuffer {
 		{
 			return inst.empty();
 		}
+
+		void pop_front()
+		{
+			inst.pop_front();
+		}
 };
 
 class ROB {
@@ -155,10 +156,10 @@ class ROB {
 		bool* readyField;
 		int currentInst;
 		int nextInsertedInst;
-		int maxEntries;
+		int numEntries;
 		
 		ROB(const CPUConfig& config){
-			int numEntries = config.rob_entries;
+			numEntries = config.rob_entries;
 			
 			instType = new int[numEntries];
 			destValue = new string[numEntries];
@@ -166,7 +167,7 @@ class ROB {
 			readyField = new bool[numEntries];
 			currentInst = 0;
 			nextInsertedInst = 0;
-			for(int i = 0; i < maxEntries; i++){
+			for(int i = 0; i < numEntries; i++){
 				instType[i] = -1;
 				destValue[i] = "NULL";
 				valueField[i] = 0.0;
@@ -185,7 +186,7 @@ class ROB {
 				destValue[nextInsertedInst] = dest;
 				valueField[nextInsertedInst] = value;
 				readyField[nextInsertedInst] = false;
-				if((nextInsertedInst + 1) == maxEntries){
+				if((nextInsertedInst + 1) == numEntries){
 					nextInsertedInst = 0;
 				}else{
 					nextInsertedInst++;
@@ -202,7 +203,7 @@ class ROB {
 			}
 		}
 		bool isFull(){
-			for(int i = 0; i < maxEntries; i++){
+			for(int i = 0; i < numEntries; i++){
 				if(instType[i] == -1){
 					return false;
 				}

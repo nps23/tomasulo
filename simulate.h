@@ -38,7 +38,7 @@ int Simulate()
 	// Parse the CPU configuration settings from a text file and load them into a struct
 	CPUConfig config = ParseInput(input_file);
 	
-	//PrintCPUConfig(config);
+	PrintCPUConfig(config);
 
 	// Next, using the information read in with the file IO, configure the simulation
 	intReg intRegFile(config);
@@ -51,7 +51,6 @@ int Simulate()
 	
 	// Instruction buffer considered to have sufficient space to hold everything
 	instructionBuffer instBuff(config);
-	std::cout << instBuff.inst.size();
 
 	timingDiagram output(config.program.size());
 	int numCycles = 0;
@@ -69,6 +68,7 @@ int Simulate()
 		if (!instBuff.empty())
 		{
 			Instruction inst = instBuff.inst[0];
+			std::cout << inst.op_code << std::endl;
 			switch (inst.op_code)
 			{
 			case nop:
@@ -91,6 +91,7 @@ int Simulate()
 					int dest = inst.dest;
 					std::cout << " " << l_operand << " " << r_operand << dest
 						<< std::endl;
+					
 					// expect two operands here
 
 				}
@@ -116,9 +117,7 @@ int Simulate()
 				}
 				break;
 			}
-			
-			// only pop the instruction from the vector if we can issue it 
-			// if (issue succeeded) -> pop off queue
+			instBuff.pop_front();
 		}
 		
 		//if(instBuff.currentInst < ){
