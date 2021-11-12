@@ -24,7 +24,7 @@ struct CPUConfig {
 	std::vector<float> f_registers;
 
 	std::map<int, int> r_register_map;
-	std::map<int, float> f_register_map;
+	std::map<int, double> f_register_map;
 
 	std::vector<Instruction> program;
 	std::map<int, int> memory;

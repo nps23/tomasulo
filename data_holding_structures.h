@@ -2,6 +2,8 @@
 
 #include <queue>
 #include <string>
+#include <map>
+
 #include "cpu_config.h"
 #include "program.h"
 
@@ -9,24 +11,45 @@ using namespace std;
 
 class intReg {
 	public:
-		int intRegFile[32];
+		std::map<std::string, int> registers;
 		intReg(const CPUConfig& config) {
-			intRegFile[0] = 0;
+			for (int i = 0; i < 32; i++)
+			{
+				registers["r" + std::to_string(i)] = 0;
+			}
 			for (const auto& value : config.r_register_map)
 			{
-				intRegFile[value.first] = value.second;
+				registers["r" + std::to_string(value.first)] = value.second;
 			}
+		}
+
+		void update(std::string reg, int value)
+		{
+			registers[reg] = value;
 		}
 };
 
 class fpReg {
 	public:
-		double fpRegFile[32];
+		std::map<std::string, double> registers;
 		fpReg(const CPUConfig& config) {
+			for (int i = 0; i < 32; i++)
+			{
+				registers["f" + std::to_string(i)] = 0;
+			}
 			for (const auto& value : config.f_register_map)
 			{
-				fpRegFile[value.first] = value.second;
+				registers["f" + std::to_string(value.first)] = value.second;
 			}
+			for (const auto& item : registers)
+			{
+				std::cout << item.first << " " << item.second << std::endl;
+			}
+		}
+
+		void update(std::string reg, double value)
+		{
+			registers[reg] = value;
 		}
 };
 
@@ -60,15 +83,37 @@ class RAT {
 	public:
 		string intMapping[32][2];
 		string fpMapping[32][2];
+		std::map<std::string, std::string> r_table;
+		std::map<std::string, std::string> f_table;
+		//TODO choose one of these represenations and go with it
 		RAT(){
 			for(int i = 0; i < 32; i++){
+				r_table["r" + std::to_string(i)] = "r" + std::to_string(i);
 				intMapping[i][0] = "R" + to_string(i);
 				intMapping[i][1] = "R" + to_string(i);
 			}
 			for(int i = 0; i < 32; i++){
+				f_table["f" + std::to_string(i)] = "f" + std::to_string(i);
 				fpMapping[i][0] = "F" + to_string(i);
 				fpMapping[i][1] = "F" + to_string(i);
 			}
+		}
+
+		bool update(std::string entry, std::string value)
+		{
+			if (entry[0] == 'r')
+			{
+				r_table[entry] = value;
+				return true;
+			}
+			else if (entry[0] == 'f')
+			{
+				f_table[entry] = value;
+				return true;
+			}
+			
+			std::cout << "Failed to update the RAT" << std::endl;
+			return false;
 		}
 };
 
@@ -156,15 +201,13 @@ class ROB {
 				currentInst++;
 			}
 		}
-		bool checkFull(){
-			bool isFull = true;
+		bool isFull(){
 			for(int i = 0; i < maxEntries; i++){
 				if(instType[i] == -1){
-					isFull = false;
-					break;
+					return false;
 				}
 			}
-			return isFull;
+			return true;
 		}
 };
 
@@ -197,14 +240,16 @@ class RS {
 				busy[i] = false;
 			}
 		}
-		void insertOp(int opCodeInput, double vjInput, double vkInput, string qjInput, string qkInput){
+		// if we are unable to insert, return false to caller
+		bool insertOp(int opCodeInput, double vjInput, double vkInput, string qjInput, string qkInput){
 			int rsIndex;
 			// Find an open spot in the RS
 			for(int i = 0; i < maxRS; i++){
 				if(busy[i] == true){
 					rsIndex = i;
-					break;
+					return true;
 				}
+				return false;
 			}
 			opCode[rsIndex] = opCodeInput;
 			vj[rsIndex] = vjInput;
@@ -214,14 +259,12 @@ class RS {
 			busy[rsIndex] = true;
 		}
 		bool isFull(){
-			bool isFull = true;
 			for(int i = 0; i < maxRS; i++){
 				if(busy[i] == false){
-					isFull = false;
-					break;
+					return false;
 				}
 			}
-			return isFull;
+			return true;
 		}
 };
 

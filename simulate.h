@@ -8,6 +8,31 @@
 #include "input_parser.h"
 
 
+bool InstructionFetch(const Instruction& instruction)
+{
+	return true;
+	// since we are abstracting this away, the only thing this needs to do is branch prediction
+}
+
+bool InstructionDecode(const Instruction& inst)
+{
+	return true;
+	// just ensure we are branch predicting first
+}
+
+bool Execute(const Instruction& inst)
+{
+	return true;
+	// see specifics for each case
+}
+
+bool WriteBack(const Instruction& inst)
+{
+	return true;
+}
+
+
+
 int Simulate()
 {
 	// Parse the CPU configuration settings from a text file and load them into a struct
@@ -22,6 +47,7 @@ int Simulate()
 	ROB rob(config);
 	RS adderRS(config.fu_integer_adder[0]);
 	RS fpRS(config.fu_fp_mult[0]);
+	RAT rat;
 	
 	// Instruction buffer considered to have sufficient space to hold everything
 	instructionBuffer instBuff(config);
@@ -58,9 +84,19 @@ int Simulate()
 			case add:
 				break;
 			case add_d:
-				if (!fpRS.isFull())
+				if (!fpRS.isFull() && !rob.isFull())
 				{
-					// issue instruction, update state.
+					int l_operand = inst.f_left_operand;
+					int r_operand = inst.f_right_operand;
+					int dest = inst.dest;
+					std::cout << " " << l_operand << " " << r_operand << dest
+						<< std::endl;
+					// expect two operands here
+
+				}
+				else
+				{
+					// stall();
 				}
 				break;
 			case add_i:
@@ -76,7 +112,6 @@ int Simulate()
 			case mult_d:
 				if (!fpRS.isFull())
 				{
-					// parse issue instruction, update the state
 
 				}
 				break;
