@@ -107,14 +107,14 @@ void programFSM(Instruction& instr){
 		case issue:
 			switch(instr.op_code){
 				case nop:
-					if(rob.checkFull() == false){
+					if(!rob.checkFull()){
 						rob.insert(nop, "NULL", -1);
 						instr.state = ex;
 						output.tDiag[instr.programLine][1] = numCycles;
 					}
 					break;
 				case add:
-					if((rob.checkFull() == false) && (intRS.checkFull())){
+					if(!(rob.checkFull()) && (!intRS.checkFull())){
 						rob.insert(add, instr.dest, -1);
 						int valsReady;
 						
@@ -136,7 +136,7 @@ void programFSM(Instruction& instr){
 					}
 					break;
 				case add_i:
-					if((rob.checkFull() == false) && (intRS.checkFull())){
+					if(!rob.checkFull() && !intRS.checkFull()){
 						rob.insert(add_i, instr.dest, -1);
 						//intRS.insertOp(add_i, );
 						instr.state = ex;
@@ -144,7 +144,7 @@ void programFSM(Instruction& instr){
 					}
 					break;
 				case sub:
-					if((rob.checkFull() == false) && (intRS.checkFull())){
+					if (!rob.checkFull() && !intRS.checkFull()){
 						rob.insert(sub, instr.dest, -1);
 						//intRS.insertOp(sub, );
 						instr.state = ex;
@@ -152,7 +152,7 @@ void programFSM(Instruction& instr){
 					}
 					break;
 				default:
-				break;
+					break;
 			}
 			break;
 		case ex:

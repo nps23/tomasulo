@@ -17,22 +17,35 @@ enum OpCode {
 		mult_d
 	};
 	
-enum State {
+enum PipelineState {
 		null = 0,
 		issue,
 		ex,
 		mem, 
 		wb,
-		commit
+		commit,
+		abort
 	};
 	
 struct Instruction {
+	// metadata associatd with the instruction itself
 	OpCode op_code;
-	State state; 
+	
+
+	PipelineState state; 
 	int programLine;
-	// we will at most have three operands
+	
+	// ROB fields
+	int robEntry;
+	int instType;
+	std::string destValue;
+
+	// Load store queue
 	std::string operands[2];
 	std::string dest;
+
+
+	
 	int pipelineTimer;
 	double result;
 };

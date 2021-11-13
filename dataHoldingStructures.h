@@ -94,6 +94,7 @@ class instructionBuffer {
 
 class ROB {
 	public:
+		int entry;
 		int* instType;
 		string* destValue;
 		double* valueField;
@@ -215,6 +216,7 @@ class RS {
 		}
 };
 
+// TODO refactor this to be a vector
 class timingDiagram {
 	public:
 		int (*tDiag)[6];
@@ -222,5 +224,9 @@ class timingDiagram {
 		timingDiagram(int m){
 			tDiag = new int[m][6];
 			numLines = m;
+		}
+		~timingDiagram()
+		{
+			delete tDiag;
 		}
 };
