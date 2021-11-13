@@ -29,10 +29,10 @@ enum State {
 struct Instruction {
 	OpCode op_code;
 	State state; 
-	
+	int programLine;
 	// we will at most have three operands
 	std::string operands[2];
 	std::string dest;
 	int pipelineTimer;
-	
+	double result;
 };
