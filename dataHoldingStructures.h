@@ -1,3 +1,5 @@
+#pragma once
+
 #include <queue>
 #include <string>
 #include "cpu_config.h"
@@ -78,7 +80,7 @@ class instructionBuffer {
 			curInst = 0;
 		}
 		vector<Instruction> operator=(const instructionBuffer& rhs){
-			// First reset the buffer
+			// New buffer to be filled
 			vector<Instruction> instNew;
 			
 			// Fill the buffer with the right hand operand
@@ -184,7 +186,7 @@ class RS {
 				busy[i] = false;
 			}
 		}
-		void insertOp(int opCodeInput, double vjInput, double vkInput, string qjInput, string qkInput){
+		void insertOp(int opCodeInput, double vjInput = 0, double vkInput = 0, string qjInput = "", string qkInput = ""){
 			int rsIndex;
 			// Find an open spot in the RS
 			for(int i = 0; i < maxRS; i++){
@@ -215,7 +217,9 @@ class RS {
 class timingDiagram {
 	public:
 		int (*tDiag)[6];
+		int numLines;
 		timingDiagram(int m){
 			tDiag = new int[m][6];
+			numLines = m;
 		}
 };

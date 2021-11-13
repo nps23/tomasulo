@@ -112,7 +112,7 @@ CPUConfig ParseInput(std::string& input_file)
 				Instruction inst;
 				std::string opcode;
 				infile >> opcode;
-				
+				inst.programLine = i;
 				if (opcode == "nop")
 				{
 					inst.op_code = nop;

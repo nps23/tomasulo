@@ -11,9 +11,18 @@
 #include "program.h"
 
 using namespace std;
+
+// Global Variables
 CPUConfig config = ParseInput(input_file);
 ROB rob(config);
+RS intRS(config.fu_fp_adder[0]);
+RS fpRS(config.fu_fp_mult[0]);
+RAT regAliasTable;
+timingDiagram output(config.program.size());
+CDB dataBus;
+int numCycles = 1;
 
+// Function prototypes
 void programFSM(Instruction& instr);
 
 int main()
@@ -30,9 +39,12 @@ int main()
 	fpReg fpRegFile(config);
 	cpuMemory mainMem(config);
 	instructionBuffer instBuff;
-	timingDiagram output(config.program.size());
-	int numCycles = 0;
-
+	
+	// Set the first column of the output 
+	for(int i = 0; i < output.numLines; i++){
+			output.tDiag[i][0] = i;
+	}
+	
 	// Now enter the loop
 
 	// The loop will run until a break condition is met
@@ -90,15 +102,55 @@ int main()
 }
 
 void programFSM(Instruction& instr){
+	CDBEntry wbEntry;
 	switch(instr.state){
 		case issue:
 			switch(instr.op_code){
 				case nop:
 					if(rob.checkFull() == false){
-						rob.insert(nop, "NULL", 0);
+						rob.insert(nop, "NULL", -1);
 						instr.state = ex;
-						// INSERT INTO TIMING DIAGRAM
+						output.tDiag[instr.programLine][1] = numCycles;
 					}
+					break;
+				case add:
+					if((rob.checkFull() == false) && (intRS.checkFull())){
+						rob.insert(add, instr.dest, -1);
+						int valsReady;
+						
+						/*switch valsReady {
+							case 0:
+								//intRS.insertOp(add, );
+								break;
+							case 1:
+								break;
+							case 2:
+								break;
+							case 3:
+								break;
+							default:
+								break;
+						}*/
+						instr.state = ex;
+						output.tDiag[instr.programLine][1] = numCycles;
+					}
+					break;
+				case add_i:
+					if((rob.checkFull() == false) && (intRS.checkFull())){
+						rob.insert(add_i, instr.dest, -1);
+						//intRS.insertOp(add_i, );
+						instr.state = ex;
+						output.tDiag[instr.programLine][1] = numCycles;
+					}
+					break;
+				case sub:
+					if((rob.checkFull() == false) && (intRS.checkFull())){
+						rob.insert(sub, instr.dest, -1);
+						//intRS.insertOp(sub, );
+						instr.state = ex;
+						output.tDiag[instr.programLine][1] = numCycles;
+					}
+					break;
 				default:
 				break;
 			}
@@ -107,7 +159,20 @@ void programFSM(Instruction& instr){
 			switch(instr.op_code){
 				case nop:
 					instr.state = wb;
-					// INSERT INTO TIMING DIAGRAM
+					output.tDiag[instr.programLine][2] = numCycles;
+					break;
+				case add:
+					instr.state = wb;
+					output.tDiag[instr.programLine][4] = numCycles;
+					break;
+				case add_i:
+					instr.state = wb;
+					output.tDiag[instr.programLine][4] = numCycles;
+					break;
+				case sub:
+					instr.state = wb;
+					output.tDiag[instr.programLine][4] = numCycles;
+					break;
 				default:
 				break;
 			}
@@ -122,7 +187,125 @@ void programFSM(Instruction& instr){
 			switch(instr.op_code){
 				case nop:
 					instr.state = commit;
-					// INSERT INTO TIMING DIAGRAM
+					output.tDiag[instr.programLine][4] = numCycles;
+					break;
+				case add:
+					wbEntry.value = instr.result;
+					wbEntry.programLine = instr.programLine;
+					wbEntry.dest = instr.dest;
+					dataBus.cdbBuffer.emplace(wbEntry);
+					if(dataBus.cdbBuffer.top().programLine == instr.programLine){
+						// Write back to ROB
+						for(int i = 0; i < rob.maxEntries; i++){
+							if(rob.destValue[i] == instr.dest){
+								rob.valueField[i] = instr.result;
+								break;
+							}
+						}
+						// Write back to RS's
+						for(int i = 0; i < intRS.maxRS; i++){
+							if(intRS.qj[i] == instr.dest){
+								intRS.vj[i] = instr.result;
+								break;
+							}
+							if(intRS.qk[i] == instr.dest){
+								intRS.vk[i] = instr.result;
+								break;
+							}
+						}
+						for(int i = 0; i < fpRS.maxRS; i++){
+							if(fpRS.qj[i] == instr.dest){
+								fpRS.vj[i] = instr.result;
+								break;
+							}
+							if(fpRS.qk[i] == instr.dest){
+								fpRS.vk[i] = instr.result;
+								break;
+							}
+						}
+						dataBus.cdbBuffer.pop();
+						instr.state = commit;
+						output.tDiag[instr.programLine][4] = numCycles;
+					}
+					break;
+				case add_i:
+					wbEntry.value = instr.result;
+					wbEntry.programLine = instr.programLine;
+					wbEntry.dest = instr.dest;
+					dataBus.cdbBuffer.emplace(wbEntry);
+					if(dataBus.cdbBuffer.top().programLine == instr.programLine){
+						// Write back to ROB
+						for(int i = 0; i < rob.maxEntries; i++){
+							if(rob.destValue[i] == instr.dest){
+								rob.valueField[i] = instr.result;
+								break;
+							}
+						}
+						// Write back to RS's
+						for(int i = 0; i < intRS.maxRS; i++){
+							if(intRS.qj[i] == instr.dest){
+								intRS.vj[i] = instr.result;
+								break;
+							}
+							if(intRS.qk[i] == instr.dest){
+								intRS.vk[i] = instr.result;
+								break;
+							}
+						}
+						for(int i = 0; i < fpRS.maxRS; i++){
+							if(fpRS.qj[i] == instr.dest){
+								fpRS.vj[i] = instr.result;
+								break;
+							}
+							if(fpRS.qk[i] == instr.dest){
+								fpRS.vk[i] = instr.result;
+								break;
+							}
+						}
+						dataBus.cdbBuffer.pop();
+						instr.state = commit;
+						output.tDiag[instr.programLine][4] = numCycles;
+					}
+					break;
+				case sub:
+					wbEntry.value = instr.result;
+					wbEntry.programLine = instr.programLine;
+					wbEntry.dest = instr.dest;
+					dataBus.cdbBuffer.emplace(wbEntry);
+					if(dataBus.cdbBuffer.top().programLine == instr.programLine){
+						// Write back to ROB
+						for(int i = 0; i < rob.maxEntries; i++){
+							if(rob.destValue[i] == instr.dest){
+								rob.valueField[i] = instr.result;
+								break;
+							}
+						}
+						// Write back to RS's
+						for(int i = 0; i < intRS.maxRS; i++){
+							if(intRS.qj[i] == instr.dest){
+								intRS.vj[i] = instr.result;
+								break;
+							}
+							if(intRS.qk[i] == instr.dest){
+								intRS.vk[i] = instr.result;
+								break;
+							}
+						}
+						for(int i = 0; i < fpRS.maxRS; i++){
+							if(fpRS.qj[i] == instr.dest){
+								fpRS.vj[i] = instr.result;
+								break;
+							}
+							if(fpRS.qk[i] == instr.dest){
+								fpRS.vk[i] = instr.result;
+								break;
+							}
+						}
+						dataBus.cdbBuffer.pop();
+						instr.state = commit;
+						output.tDiag[instr.programLine][4] = numCycles;
+					}
+					break;
 				default:
 				break;
 			}
@@ -132,7 +315,23 @@ void programFSM(Instruction& instr){
 				case nop:
 					rob.commit();
 					instr.state = null;
-					// INSERT INTO TIMING DIAGRAM
+					output.tDiag[instr.programLine][5] = numCycles;
+					break;
+				case add:
+					rob.commit();
+					instr.state = null;
+					output.tDiag[instr.programLine][5] = numCycles;
+					break;
+				case add_i:
+					rob.commit();
+					instr.state = null;
+					output.tDiag[instr.programLine][5] = numCycles;
+					break;
+				case sub:
+					rob.commit();
+					instr.state = null;
+					output.tDiag[instr.programLine][5] = numCycles;
+					break;
 				default:
 				break;
 			}
