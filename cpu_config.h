@@ -98,10 +98,10 @@ void PrintCPUConfig(const CPUConfig& config)
 			std::cout << "NOP" << std::endl;
 			break;
 		case 1:
-			std::cout << "ld_fa" << std::endl;
+			std::cout << "ld" << std::endl;
 			break;
 		case 2:
-			std::cout << "sd_fa" << std::endl;
+			std::cout << "sd" << std::endl;
 			break;
 		case 3:
 			std::cout << "beq" << std::endl;

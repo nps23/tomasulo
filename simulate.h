@@ -1,14 +1,12 @@
 #pragma once
 
-// Nate's version of "main", to avoid merge conflicts.
-
 #include <iostream>
 #include "program.h"
 #include "data_holding_structures.h"
 #include "input_parser.h"
+#include "structures/reorder_buffer.h"
 
-
-bool InstructionFetch(const Instruction& instruction)
+bool InstructionFetch(const Instruction& inst)
 {
 	return true;
 	// since we are abstracting this away, the only thing this needs to do is branch prediction
@@ -38,7 +36,7 @@ int Simulate()
 	// Parse the CPU configuration settings from a text file and load them into a struct
 	CPUConfig config = ParseInput(input_file);
 	
-	PrintCPUConfig(config);
+	//PrintCPUConfig(config);
 
 	// Next, using the information read in with the file IO, configure the simulation
 	intReg intRegFile(config);
@@ -65,6 +63,7 @@ int Simulate()
 	while (true) {
 
 		// lets just start simulating, and see where we run into issues.
+		bool instruction_issued = false;
 		if (!instBuff.empty())
 		{
 			Instruction inst = instBuff.inst[0];
@@ -72,16 +71,22 @@ int Simulate()
 			switch (inst.op_code)
 			{
 			case nop:
+				instruction_issued = true;
 				break;
 			case ld:
+				instruction_issued = true;
 				break;
 			case sd:
+				instruction_issued = true;
 				break;
 			case beq:
+				instruction_issued = true;
 				break;
 			case bne:
+				instruction_issued = true;
 				break;
 			case add:
+				instruction_issued = true;
 				break;
 			case add_d:
 				if (!fpRS.isFull() && !rob.isFull())
@@ -89,11 +94,8 @@ int Simulate()
 					int l_operand = inst.f_left_operand;
 					int r_operand = inst.f_right_operand;
 					int dest = inst.dest;
-					std::cout << " " << l_operand << " " << r_operand << dest
-						<< std::endl;
-					
-					// expect two operands here
 
+					instruction_issued = true;
 				}
 				else
 				{
@@ -101,23 +103,31 @@ int Simulate()
 				}
 				break;
 			case add_i:
+				instruction_issued = true;
 				break;
 			case sub:
+				instruction_issued = true;
 				break;
 			case sub_d:
 				if (!fpRS.isFull())
 				{
 					// issue instruction, update state
 				}
+				instruction_issued = true;
 				break;
 			case mult_d:
 				if (!fpRS.isFull())
 				{
 
 				}
+				instruction_issued = true;
 				break;
 			}
-			instBuff.pop_front();
+
+			if (instruction_issued)
+			{
+				instBuff.pop_front();
+			}
 		}
 		
 		//if(instBuff.currentInst < ){

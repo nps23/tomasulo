@@ -45,5 +45,4 @@ struct Instruction {
 	int dest;
 	
 	int pipelineTimer;
-
 };

@@ -148,12 +148,15 @@ class instructionBuffer {
 		}
 };
 
+// thought for later debugging - if we define a struct like ROB entry, each of these
+// classes can just be a vector of entries, which might make indexing easier
 class ROB {
 	public:
 		int* instType;
 		string* destValue;
 		double* valueField;
 		bool* readyField;
+		string* state;
 		int currentInst;
 		int nextInsertedInst;
 		int numEntries;
@@ -174,7 +177,7 @@ class ROB {
 				readyField[i] = false;
 			}
 		}
-		void insert(int opCode, string dest, double value){
+		int insert(int opCode, string dest, double value){
 			if(nextInsertedInst == 0){
 				instType[0] = opCode;
 				destValue[0] = dest;
@@ -193,6 +196,7 @@ class ROB {
 				}
 			}
 		}
+
 		void commit(){
 			if(readyField[currentInst] == true){
 				instType[currentInst] = -1;
