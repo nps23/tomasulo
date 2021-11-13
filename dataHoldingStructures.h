@@ -102,12 +102,12 @@ class ROB {
 		int maxEntries;
 		
 		ROB(const CPUConfig& config){
-			int numEntries = config.rob_entries;
+			maxEntries = config.rob_entries;
 			
-			instType = new int[numEntries];
-			destValue = new string[numEntries];
-			valueField = new double[numEntries];
-			readyField = new bool[numEntries];
+			instType = new int[maxEntries];
+			destValue = new string[maxEntries];
+			valueField = new double[maxEntries];
+			readyField = new bool[maxEntries];
 			currentInst = 0;
 			nextInsertedInst = 0;
 			for(int i = 0; i < maxEntries; i++){
