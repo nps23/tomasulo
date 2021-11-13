@@ -2,8 +2,8 @@
 
 #include <iostream>
 #include <map>
-#include <vector>
 #include <deque>
+#include <vector>
 #include "program.h"
 
 // stores the configuration of the CPU
@@ -25,7 +25,7 @@ struct CPUConfig {
 	std::vector<float> f_registers;
 
 	std::map<int, int> r_register_map;
-	std::map<int, float> f_register_map;
+	std::map<int, double> f_register_map;
 
 	std::deque<Instruction> program;
 	std::map<int, int> memory;
@@ -98,10 +98,10 @@ void PrintCPUConfig(const CPUConfig& config)
 			std::cout << "NOP" << std::endl;
 			break;
 		case 1:
-			std::cout << "ld_fa" << std::endl;
+			std::cout << "ld" << std::endl;
 			break;
 		case 2:
-			std::cout << "sd_fa" << std::endl;
+			std::cout << "sd" << std::endl;
 			break;
 		case 3:
 			std::cout << "beq" << std::endl;
