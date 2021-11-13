@@ -30,21 +30,20 @@ int main()
 	// At the beginning of the simulation, file IO will be done first
 	PrintCPUConfig(config);
 	
-
-
 	// Next, using the information read in with the file IO, configure the simulation
 
 	/*INSERT CODE TO CONFIGURE AND INITILIZE HERE*/ 
 	intReg intRegFile(config);
 	fpReg fpRegFile(config);
 	cpuMemory mainMem(config);
+	ROB rob(config);
 	instructionBuffer instBuff;
-	
+  
 	// Set the first column of the output 
 	for(int i = 0; i < output.numLines; i++){
 			output.tDiag[i][0] = i;
 	}
-	
+
 	// Now enter the loop
 
 	// The loop will run until a break condition is met
@@ -54,12 +53,13 @@ int main()
 	// CHANGE ARF's to use a mapping instead now, Instruction Buffer, ROB,
 	while (true) {
 		
-		/*if(instBuff.currentInst < ){
-			
-		}*/
-		for(int i = 0; i < instBuff.curInst; i++){
-			programFSM(instBuff.inst[i]);
-		}
+		//if(instBuff.currentInst < ){
+		//	
+		//}
+		//for(int i = 0; i < currentInst; i++){
+		//	programFSM(instBuff.inst);
+		//}
+
 		// This loop will handle the cycling for the simulation
 		// For loops, we will need to implement a static instruction buffer to use for reference to loop back to previous lines of code. 
 		// The loop will go through all of the neccessary steps to update things accordingly. 

@@ -63,44 +63,29 @@ CPUConfig ParseInput(std::string& input_file)
 			config.cdb_buffer_entries = cdb_buffer_entires;
 		}
 
-		else if (line == "num_r_registers")
+		else if (line == "r_registers")
 		{
-			int number_registers;
-			infile >> number_registers;
-			config.num_r_registers = number_registers;
-			for (int i = 0; i < number_registers; i++)
+			int num_lines;
+			infile >> num_lines;
+			for (int i = 0; i < num_lines; i++)
 			{
-				int value;
-				infile >> value;
-				config.r_registers.push_back(value);
+				int address, value;
+				infile >> address >> value;
+				config.r_register_map[address] = value;
 			}
 		}
 
-		else if (line == "num_f_registers")
+		else if (line == "f_registers")
 		{
-			int number_registers;
-			infile >> number_registers;
-			config.num_f_registers = number_registers;
-			for (int i = 0; i < number_registers; i++)
+			int num_lines;
+			infile >> num_lines;
+			for (int i = 0; i < num_lines; i++)
 			{
-				int value;
-				infile >> value;
-				config.f_registers.push_back(value);
+				int address;
+				float value;
+				infile >> address >> value;
+				config.f_register_map[address] = value;
 			}
-		}
-
-		else if (line[0] == 'r')
-		{
-			int value;
-			infile >> value;
-			config.r_register_map[line] = value;
-		}
-
-		else if (line[0] == 'f')
-		{
-			float value;
-			infile >> value;
-			config.f_register_map[line] = value;
 		}
 
 

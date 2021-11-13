@@ -16,24 +16,13 @@ rob_entries
 cdb_buffer_entries
 1
 
-num_r_registers
-2
+r_registers 2
+1 10
+2 20
 
-10
-10
-
-num_f_registers
-1
-
-10
-
-
-
-r1 10
-r2 20
-
-f1 1.2
-f2 2.4
+f_registers 2
+1 1.2
+2 2.4
 
 program 4
 nop
