@@ -63,18 +63,12 @@ public:
 	int ex_end_cycle;
 	int writeback_start_cycle;
 	int writeback_end_cycle;
-
-	// Pipeline steps
-	void Issue(const ReorderBuffer& rob, const ReservationStation& rs);
-	void Ex();
-	void WriteBack();
-	void Mem();
-	void Commit();
 };
 
-void Issue()
+void Issue(Instruction& inst, ReorderBuffer& rob, ReservationStation& rs)
 {
-
+	// switch on op code
+	// if double words:
 }
 
 void Ex()
