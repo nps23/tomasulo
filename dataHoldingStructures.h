@@ -75,8 +75,10 @@ class instructionBuffer {
 	public:
 		vector<Instruction> inst;
 		int curInst;
-		instructionBuffer(){
+		int maxInstructions;
+		instructionBuffer(int maxInsts){
 			curInst = 0;
+			maxInstructions = maxInsts;
 		}
 		vector<Instruction> operator=(const instructionBuffer& rhs){
 			// New buffer to be filled
