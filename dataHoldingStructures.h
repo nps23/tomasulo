@@ -3,7 +3,7 @@
 #include <queue>
 #include <string>
 #include "cpu_config.h"
-#include "program.h"
+#include "instruction.h"
 
 using namespace std;
 
@@ -58,19 +58,17 @@ class storeQueue {
 };
 
 class RAT {
-	public:
-		string intMapping[32][2];
-		string fpMapping[32][2];
-		RAT(){
-			for(int i = 0; i < 32; i++){
-				intMapping[i][0] = "R" + to_string(i);
-				intMapping[i][1] = "R" + to_string(i);
-			}
-			for(int i = 0; i < 32; i++){
-				fpMapping[i][0] = "F" + to_string(i);
-				fpMapping[i][1] = "F" + to_string(i);
-			}
+public:
+	std::map<int, std::string> r_table;
+	std::map<int, std::string> f_table;
+	RAT() {
+		for (int i = 0; i < 32; i++) {
+			r_table[i] = "r" + std::to_string(i);
 		}
+		for (int i = 0; i < 32; i++) {
+			f_table[i] = "f" + std::to_string(i);
+		}
+	}
 };
 
 class instructionBuffer {
@@ -138,6 +136,7 @@ class ROB {
 				}
 			}
 		}
+
 		void commit(){
 			if(readyField[currentInst] == true){
 				instType[currentInst] = -1;
@@ -224,9 +223,5 @@ class timingDiagram {
 		timingDiagram(int m){
 			tDiag = new int[m][6];
 			numLines = m;
-		}
-		~timingDiagram()
-		{
-			delete tDiag;
 		}
 };

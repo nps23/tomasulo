@@ -1,6 +1,6 @@
 #pragma once
 
-#include "structures/reorder_buffer.h"
+#include <string>
 
 enum OpCode {
 	nop = 0,
@@ -31,7 +31,11 @@ public:
 	// metadata associatd with the instruction itself
 	OpCode op_code;
 	PipelineState state;
-	int f_ls_register_operand;
+
+	int r_right_operand;
+	int r_left_operand;
+	int f_right_operand;
+	int f_left_operand;
 
 	double result;
 
@@ -52,8 +56,11 @@ public:
 	bool busy;
 
 	// Load store queue
-	std::string operands[2];
-	std::string dest;
+	int offset;
+	int immediate;
+	int r_ls_register_operand;
+	int f_ls_register_operand;
+	int dest;
 
 	int pipelineTimer;
 
@@ -64,24 +71,3 @@ public:
 	int writeback_start_cycle;
 	int writeback_end_cycle;
 };
-
-void Issue(Instruction& inst, ReorderBuffer& rob, ReservationStation& rs)
-{
-	// switch on op code
-	// if double words:
-}
-
-void Ex()
-{
-
-}
-
-void WriteBack()
-{
-
-}
-
-void Commit()
-{
-
-}

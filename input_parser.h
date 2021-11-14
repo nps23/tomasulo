@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 #include "cpu_config.h"
-#include "program.h"
+#include "instruction.h"
 
 std::string input_file = "test/input.txt";
 
