@@ -53,7 +53,7 @@ public:
 	std::string robIndex;
 	double vj;
 	double vk;
-	int qj;
+	int qj;  // ROB entry which holds the value we are looking for
 	int qk;
 	bool rs_busy;
 
@@ -65,6 +65,7 @@ public:
 
 	int pipelineTimer;
 
+	// Timing diagram values
 	int issue_start_cycle = 0;
 	int issue_end_cycle = 0;
 	int ex_start_cycle = 0;

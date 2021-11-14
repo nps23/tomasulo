@@ -26,8 +26,8 @@ f_registers 2
 
 program 4
 nop
-add_d f1 f2 f3
-ld_fa f4 8(r1)
+add f1 f2 f3
+ld f4 8(r1)
 bne r2 r3 -3
 
 memory 3

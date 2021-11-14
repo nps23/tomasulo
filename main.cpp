@@ -12,6 +12,7 @@
 #include "pipeline.h"
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
+#include "structures/functional_units.h"
 
 using namespace std;
 
@@ -21,17 +22,17 @@ ROB rob(config);
 RAT rat;
 timingDiagram output(config.program.size());
 CDB dataBus;
-
 AddReservationStation addRS(config.fu_fp_adder[0]);
 FPReservationStation fRs(config.fu_fp_mult[0]);
 ReorderBuffer rob2(config.rob_entries);
-
 intReg intRegFile(config);
 fpReg fpRegFile(config);
 cpuMemory mainMem(config);
 instructionBuffer instBuff;
+AddFunctinalUnit addFu;
+FPFunctionalUnit fpFu;
 
-int numCycles = 1;
+int numCycles = 0;
 
 // Function prototypes
 void programFSM(Instruction& instr);
@@ -41,7 +42,6 @@ int main()
 {
 	// At the beginning of the simulation, file IO will be done first
 
-	Ex();
 	PrintCPUConfig(config);
 	
 	// Next, using the information read in with the file IO, configure the simulation
