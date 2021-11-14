@@ -36,6 +36,7 @@ public:
 	int r_left_operand;
 	int f_right_operand;
 	int f_left_operand;
+	int dest;
 
 	double result;
 
@@ -45,29 +46,29 @@ public:
 	int robEntry;
 	int instType;
 	std::string destValue;
+	bool rob_busy;
 
 	// RS fields
 	int rsEntry;
 	std::string robIndex;
 	double vj;
 	double vk;
-	std::string qj;
-	std::string qk;
-	bool busy;
+	int qj;
+	int qk;
+	bool rs_busy;
 
 	// Load store queue
 	int offset;
 	int immediate;
 	int r_ls_register_operand;
 	int f_ls_register_operand;
-	int dest;
 
 	int pipelineTimer;
 
-	int issue_start_cycle;
-	int issue_end_cycle;
-	int ex_start_cycle;
-	int ex_end_cycle;
-	int writeback_start_cycle;
-	int writeback_end_cycle;
+	int issue_start_cycle = 0;
+	int issue_end_cycle = 0;
+	int ex_start_cycle = 0;
+	int ex_end_cycle = 0;
+	int writeback_start_cycle = 0;
+	int writeback_end_cycle = 0;
 };

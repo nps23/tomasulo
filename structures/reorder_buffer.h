@@ -1,12 +1,17 @@
 #pragma once
 
+#include <queue>
+#include "../instruction.h"
+
 class ReorderBuffer
 {
 public:
 	int entries;
 	int freeEntries;
+	std::queue<Instruction> table;
 	ReorderBuffer(int entries);
 
-	void insert();
+	int insert(const Instruction& instr);
 	bool isFull() const;
+	void updateROB();
 };

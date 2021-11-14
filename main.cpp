@@ -26,6 +26,11 @@ AddReservationStation addRS(config.fu_fp_adder[0]);
 FPReservationStation fRs(config.fu_fp_mult[0]);
 ReorderBuffer rob2(config.rob_entries);
 
+intReg intRegFile(config);
+fpReg fpRegFile(config);
+cpuMemory mainMem(config);
+instructionBuffer instBuff;
+
 int numCycles = 1;
 
 // Function prototypes
@@ -42,11 +47,7 @@ int main()
 	// Next, using the information read in with the file IO, configure the simulation
 
 	/*INSERT CODE TO CONFIGURE AND INITILIZE HERE*/ 
-	intReg intRegFile(config);
-	fpReg fpRegFile(config);
-	cpuMemory mainMem(config);
-	ROB rob(config);
-	instructionBuffer instBuff;
+
   
 	// Set the first column of the output 
 	for(int i = 0; i < output.numLines; i++){
