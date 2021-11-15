@@ -4,6 +4,7 @@
 #include "dataHoldingStructures.h"
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
+#include "structures/functional_units.h"
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRs;
@@ -11,6 +12,8 @@ extern ReorderBuffer rob2;
 extern RAT rat;
 extern intReg intRegFile;
 extern fpReg fpRegFile;
+extern AddFunctinalUnit addFu;
+extern FPFunctionalUnit fpFu;
 extern int numCycles;
 
 
@@ -127,21 +130,109 @@ bool Issue(Instruction& instr)
 	}
 };
 
-bool Ex(const Instruction& instr)
+bool Ex(Instruction& instruction)
 {
-	// in the driver function, we call this on every instruction in all Reservation Stations
-	switch (instr.op_code)
+	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
+	switch (instruction.op_code)
 	{
-		// if cycles ex == 0, then set the cycle counter
 	case add:
+		// check to see if an instruction is ready to go to FU, and has an open unit
 		// TODO change to for loop to handle multiple function units
-		if (instr.qj == 0 && instr.qk == 0 && !fpUnit.occupied)
+		if (instruction.qj == 0 && instruction.qk == 0 && !addFu.occupied)
 		{
-
+			// start the ex timer
+			instruction.ex_start_cycle = numCycles;
+			addFu.dispatch(&instruction);
+			return true;
 		}
-		break;
-	}
+		// instruction is already issued, just cycle the FU
+		else if (&instruction == addFu.instr)
+		{
+			// need to think a little more about the timing/handoff on this one
+			int result = addFu.next();
+			if (!addFu.occupied)
+			{
+				instruction.state = wb;
+				instruction.result = result;
+				instruction.ex_end_cycle = numCycles;
+			}
+			return true;
+		}
+	case sub:
+		// same as add
+		if (instruction.qj == 0 && instruction.qk == 0 && !addFu.occupied)
+		{
+			instruction.ex_start_cycle = numCycles;
+			addFu.dispatch(&instruction);
+			return true;
+		}
 
+		else if (&instruction == addFu.instr)
+		{
+			int result = addFu.next();
+			if (!addFu.occupied)
+			{
+				instruction.state = wb;
+				instruction.result = result;
+				instruction.ex_end_cycle = numCycles;
+			}
+			return true;
+		}
+	case add_d:
+		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
+		{
+			instruction.ex_start_cycle == numCycles;
+			fpFu.dispatch(&instruction);
+			return true;
+		}
+
+		else if (&instruction == addFu.instr)
+		{
+			int result = fpFu.next();
+			if (!addFu.occupied)
+			{
+				instruction.state = wb;
+				instruction.result = result;
+				instruction.ex_end_cycle = numCycles;
+			}
+		}
+	case sub_d:
+		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
+		{
+			instruction.ex_start_cycle == numCycles;
+			fpFu.dispatch(&instruction);
+			return true;
+		}
+
+		else if (&instruction == addFu.instr)
+		{
+			int result = fpFu.next();
+			if (!addFu.occupied)
+			{
+				instruction.state = wb;
+				instruction.result = result;
+				instruction.ex_end_cycle = numCycles;
+			}
+		}
+	case mult_d:
+		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
+		{
+			instruction.ex_start_cycle == numCycles;
+			fpFu.dispatch(&instruction);
+			return true;
+		}
+
+		else if (&instruction == addFu.instr)
+		{
+			int result = fpFu.next();
+			if (!addFu.occupied)
+			{
+				instruction.state = wb;
+				instruction.result = result;
+				instruction.ex_end_cycle = numCycles;
+			}
+		}
+	}
 }
 
 void WriteBack()

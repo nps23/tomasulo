@@ -29,8 +29,8 @@ intReg intRegFile(config);
 fpReg fpRegFile(config);
 cpuMemory mainMem(config);
 instructionBuffer instBuff;
-AddFunctinalUnit addFu;
-FPFunctionalUnit fpFu;
+AddFunctinalUnit addFu(config.fu_fp_adder[1]);
+FPFunctionalUnit fpFu(config.fu_fp_mult[1]);
 
 int numCycles = 0;
 
