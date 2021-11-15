@@ -171,6 +171,20 @@ CPUConfig ParseInput(std::string& input_file)
 					config.program.push_back(inst);
 				}
 
+				else if (opcode == "add_i")
+				{
+					inst.op_code = add_i;
+					char r;
+					int dest, l_operand, immediate;
+					infile >> r >> dest >> r >> l_operand >> immediate;
+					inst.dest = dest;
+					inst.r_left_operand = l_operand;
+					inst.immediate = immediate;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
+					config.program.push_back(inst);
+				}
+
 				else if (opcode == "add_d") {
 					inst.op_code = add_d;
 					char f;

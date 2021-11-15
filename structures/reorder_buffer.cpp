@@ -21,5 +21,5 @@ bool ReorderBuffer::isFull() const
 
 void ReorderBuffer::updateROB()
 {
-	// check each instruction sequentially. If an instruction
+
 }
