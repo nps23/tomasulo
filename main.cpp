@@ -48,7 +48,7 @@ int main()
 	while (true) {
 		
 		// Issue a new instruction if there are still instructions to read in
-		if(instBuff.curInst < instBuff.maxInstructions){
+		if(instBuff.curInst < instBuff.getNumInsts()){
 			// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
 			if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) && (instBuff.inst[instBuff.curInst].state != wb)){
 				instBuff.curInst++;
@@ -57,14 +57,14 @@ int main()
 		}
 		
 		// Step through every instruction to check and make sure 
-		for(int i = 0; i < instBuff.maxInstructions; i++){
+		for(int i = 0; i < instBuff.getNumInsts(); i++){
 			if(instBuff.inst[i].state != null){
 				programFSM(instBuff.inst[i]);
 			}
 		}
 
 		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
-		if((instBuff.maxInstructions == instBuff.curInst) && (rob2.entries == rob2.freeEntries)){
+		if((instBuff.getNumInsts() == instBuff.curInst) && (rob2.entries == rob2.freeEntries)){
 			break;
 		}
 		numCycles++;

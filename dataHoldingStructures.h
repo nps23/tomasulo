@@ -75,10 +75,8 @@ class instructionBuffer {
 	public:
 		vector<Instruction> inst;
 		int curInst;
-		int maxInstructions;
 		instructionBuffer(int maxInsts){
 			curInst = 0;
-			maxInstructions = maxInsts;
 		}
 		vector<Instruction> operator=(const instructionBuffer& rhs){
 			// New buffer to be filled
@@ -89,6 +87,11 @@ class instructionBuffer {
 				instNew.push_back(rhs.inst[i]);
 			}
 			return instNew;
+		}
+		
+		// Get the number of isntructions in the buffer for use in determining when the program is done running.
+		int getNumInsts(){
+			return inst.size();
 		}
 };
 
