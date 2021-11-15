@@ -46,8 +46,26 @@ bool Issue(Instruction& instr)
 	case sd:
 		break;
 	case beq:
+		if (rob2.isFull())
+		{
+			break;
+		}
+		rob2.insert(instr);
+		instr.rob_busy = true;
+		instr.issue_start_cycle = numCycles;
+		instr.issue_end_cycle = numCycles;
+		instr.state = ex;
 		break;
 	case bne:
+		if (rob2.isFull())
+		{
+			break;
+		}
+		rob2.insert(instr);
+		instr.rob_busy = true;
+		instr.issue_start_cycle = numCycles;
+		instr.issue_end_cycle = numCycles;
+		instr.state = ex;
 		break;
 	case add:
 	{
@@ -144,6 +162,10 @@ bool Ex(Instruction& instruction)
 	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
 	switch (instruction.op_code)
 	{
+	case beq:
+		break;
+	case bne:
+		break;
 	case nop:
 		instr.state = wb;
 		instr.ex_start_cycle = numCycles;

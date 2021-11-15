@@ -27,7 +27,7 @@ ReorderBuffer rob2(config.rob_entries);
 intReg intRegFile(config);
 fpReg fpRegFile(config);
 cpuMemory mainMem(config);
-instructionBuffer instBuff;
+instructionBuffer instBuff(10000);
 AddFunctinalUnit addFu(config.fu_fp_adder[1]);
 FPFunctionalUnit fpFu(config.fu_fp_mult[1]);
 
@@ -44,13 +44,6 @@ int main()
 	PrintCPUConfig(config);
 	
 	// Next, using the information read in with the file IO, configure the simulation
-
-	/*INSERT CODE TO CONFIGURE AND INITILIZE HERE*/ 
-	intReg intRegFile(config);
-	fpReg fpRegFile(config);
-	cpuMemory mainMem(config);
-	ROB rob(config);
-	instructionBuffer instBuff(config.program.size());
 
 	while (true) {
 		
@@ -71,7 +64,7 @@ int main()
 		}
 
 		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
-		if((instBuff.maxInstructions == instBuff.curInst) && rob.entries == rob.freeEntries){
+		if((instBuff.maxInstructions == instBuff.curInst) && (rob2.entries == rob2.freeEntries)){
 			break;
 		}
 		numCycles++;
@@ -79,39 +72,39 @@ int main()
 	
 	// Finally create the timing diagram
 	timingDiagram output(instBuff.inst.size());
-	for(int i = 0; i < instBuff.inst.size(); i++){
-		output.tDiag[i][1] = instBuff.inst.issue_end_cycle;
-		output.tDiag[i][2] = instBuff.inst.ex_end_cycle;
-		if(instBuff.inst.op_code == ld){
-			output.tDiag[i][3] = instBuff.inst.mem_end_cycle;
+	for(unsigned int i = 0; i < instBuff.inst.size(); i++){
+		output.tDiag[i][1] = instBuff.inst[i].issue_end_cycle;
+		output.tDiag[i][2] = instBuff.inst[i].ex_end_cycle;
+		if(instBuff.inst[i].op_code == ld){
+			output.tDiag[i][3] = instBuff.inst[i].mem_end_cycle;
 		}
-		output.tDiag[i][4] = instBuff.inst.writeback_end_cycle;
-		output.tDiag[i][5] = instBuff.inst.commit_end_cycle;
+		output.tDiag[i][4] = instBuff.inst[i].writeback_end_cycle;
+		output.tDiag[i][5] = instBuff.inst[i].commit_end_cycle;
 	}
 	return 0;
 }
 
-//void programFSM(Instruction& instr){
-/*
- * switch(instr.state){
+void programFSM(Instruction& instr){
+	switch(instr.state){
 		case issue:
-			Issue(instr, rob, intRS, fpRS, numCycles, output);
+			//Issue(instr);
 			break;
 		case ex:
-			
+			//Ex(instr);
 			break;
 		case mem:
-			
+			//Mem(instr);
 			break;
 		case wb:
-			
+			//WriteBack(instr);
 			break;
 		case commit:
-			
+			//Commit(instr);
+			break;
+		default:
 			break;
 	}
- */
-//}
+}
 
 
 // print the status of the CPU for debug
