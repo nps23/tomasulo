@@ -225,5 +225,9 @@ class timingDiagram {
 		timingDiagram(int m){
 			tDiag = new int[m][6];
 			numLines = m;
+			// Set the first column of the output 
+			for(int i = 0; i < numLines; i++){
+				tDiag[i][0] = i;
+			}
 		}
 };

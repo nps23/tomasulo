@@ -51,11 +51,6 @@ int main()
 	cpuMemory mainMem(config);
 	ROB rob(config);
 	instructionBuffer instBuff(config.program.size());
-  
-	// Set the first column of the output 
-	for(int i = 0; i < output.numLines; i++){
-		output.tDiag[i][0] = i;
-	}
 
 	while (true) {
 		
