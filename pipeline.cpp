@@ -156,57 +156,100 @@ bool Issue(Instruction& instr)
 				int index_value = (int)right_operand[3] - 48;
 				instr.qj = index_value;
 			}
-			instr.instType = instr.op_code;
-			instr.destValue = "r" + std::to_string(instr.dest);
-			instr.rob_busy = true;
+			
+			addRS.insert(instr);
+			// insert the instruction into the ROB
 			instr.robEntry = rob2.insert(instr);
-			instr.issue_start_cycle = numCycles;
-			instr.state = ex;
-	}
-		break;
-	case sub:
-		{
-			if (rob2.isFull() || addRS.isFull())
-			{
-				return false;
-			}
-			// This is not taking the fetch stage into account right now
-			instr.issue_start_cycle = numCycles;
 
-			// Look up the location of the operand.
-			std::string left_operand = rat.r_table[instr.r_left_operand];
-			std::string right_operand = rat.r_table[instr.r_right_operand];
-			if (left_operand[0] == 'r')
-			{
-				int left_index = (int)left_operand[1] - 48;
-				instr.vj = intRegFile.intRegFile[left_index];
-				instr.qj = 0;
-			}
-			// this indicates an ROB lookup instead
-			else if (left_operand[0] == 'R')
-			{
-				int index_value = (int)left_operand[3] - 48;
-				instr.qj = index_value;
-			}
-			if (right_operand[0] == 'r')
-			{
-				int right_index = (int)right_operand[1] - 48;
-				instr.vk = intRegFile.intRegFile[right_index];
-				instr.qk = 0;
-			}
-			else if (right_operand[0] == 'R')
-			{
-				int index_value = (int)right_operand[3] - 48;
-				instr.qj = index_value;
-			}
+			// update the instructions ROB metadata
 			instr.instType = instr.op_code;
 			instr.destValue = "r" + std::to_string(instr.dest);
 			instr.rob_busy = true;
-			instr.issue_end_cycle= numCycles;
-			instr.robEntry = rob2.insert(instr);
+			instr.issue_start_cycle = numCycles;
 			instr.state = ex;
+			return true;
+	}
+	case sub:
+	{
+		if (rob2.isFull() || addRS.isFull())
+		{
+			return false;
 		}
+		// This is not taking the fetch stage into account right now
+		instr.issue_start_cycle = numCycles;
+
+		// Insert into RS. Look up the location of the operand.
+		std::string left_operand = rat.r_table[instr.r_left_operand];
+		std::string right_operand = rat.r_table[instr.r_right_operand];
+		if (left_operand[0] == 'r')
+		{
+			int left_index = (int)left_operand[1] - 48;
+			instr.vj = intRegFile.intRegFile[left_index];
+			instr.qj = 0;
+		}
+		// this indicates an ROB lookup instead
+		else if (left_operand[0] == 'R')
+		{
+			int index_value = (int)left_operand[3] - 48;
+			instr.qj = index_value;
+		}
+		if (right_operand[0] == 'r')
+		{
+			int right_index = (int)right_operand[1] - 48;
+			instr.vk = intRegFile.intRegFile[right_index];
+			instr.qk = 0;
+		}
+		else if (right_operand[0] == 'R')
+		{
+			int index_value = (int)right_operand[3] - 48;
+			instr.qj = index_value;
+		}
+
+		// insert into the RS 
+		addRS.insert(instr);
+
+		// update the instructions ROB metadata
+		instr.instType = instr.op_code;
+		instr.destValue = "r" + std::to_string(instr.dest);
+		instr.rob_busy = true;
+		instr.issue_end_cycle = numCycles;
+		instr.robEntry = rob2.insert(instr);
+		instr.state = ex;
 		return true;
+	}
+	case add_i:
+	{
+		if (rob2.isFull() || addRS.isFull())
+		{
+			return false;
+		}
+		instr.issue_start_cycle = numCycles;
+		std::string left_operand = rat.r_table[instr.r_left_operand];
+		int immediate = instr.immediate;
+		if (left_operand[0] == 'r')
+		{
+			int left_index = (int)left_operand[1] - 48;
+			instr.vj = intRegFile.intRegFile[left_index];
+			instr.qj = 0;
+		}
+		else if (left_operand[0] == 'R')
+		{
+			int index_value = (int)left_operand[1] - 48;
+			instr.qj = index_value;
+		}
+		// insert into the RS
+		addRS.insert(instr);
+		
+		// insert into the ROB
+		instr.robEntry = rob2.insert(instr);
+		// update the instruction's ROB metadats
+		instr.instType = instr.op_code;
+		instr.destValue = "r" + std::to_string(instr.dest);
+		instr.rob_busy = true;
+		instr.issue_end_cycle = numCycles;
+		instr.state = ex;
+		return true;
+	}
 	default:
 		return true;
 

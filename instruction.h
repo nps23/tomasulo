@@ -8,12 +8,12 @@ enum OpCode {
 	sd,
 	beq,
 	bne,
-	add,
-	add_d,
+	add,   //issue,ex
+	add_d, //issue,ex
 	add_i,
-	sub,
-	sub_d,
-	mult_d
+	sub,   //issue,ex
+	sub_d, //issue,ex
+	mult_d //issue,ex
 };
 
 enum PipelineState {
