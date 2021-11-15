@@ -15,7 +15,7 @@ extern fpReg fpRegFile;
 extern AddFunctinalUnit addFu;
 extern FPFunctionalUnit fpFu;
 extern int numCycles;
-
+extern timingDiagram output;
 
 bool IssueFetch()
 {
@@ -31,6 +31,15 @@ bool Issue(Instruction& instr)
 	switch (instr.op_code)
 	{
 	case nop:
+		if (rob2.isFull())
+		{
+			break;
+		}
+		rob2.insert(instr);
+		instr.rob_busy = true;
+		instr.issue_start_cycle = numCycles;
+		instr.issue_end_cycle = numCycles;
+		instr.state = ex;
 		break;
 	case ld:
 		break;
@@ -135,6 +144,11 @@ bool Ex(Instruction& instruction)
 	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
 	switch (instruction.op_code)
 	{
+	case nop:
+		instr.state = wb;
+		instr.ex_start_cycle = numCycles;
+		instr.ex_end_cycle = numCycles;
+		break;
 	case add:
 		// check to see if an instruction is ready to go to FU, and has an open unit
 		// TODO change to for loop to handle multiple function units
@@ -237,10 +251,28 @@ bool Ex(Instruction& instruction)
 
 void WriteBack()
 {
-
+	switch(opCode)
+	{
+		case nop:
+			instr.state = commit;
+			instr.writeback_start_cycle = numCycles;
+			instr.writeback_end_cycle = numCycles;
+			break;
+		default:
+			break;
+	}
 }
 
 void Commit()
 {
-
+	switch(opCode)
+	{
+		case nop:
+			instr.state = commit;
+			instr.commit_start_cycle = numCycles;
+			instr.commit_end_cycle = numCycles;
+			break;
+		default:
+			break;
+	}
 }

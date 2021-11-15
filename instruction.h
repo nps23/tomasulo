@@ -73,6 +73,8 @@ public:
 	int ex_end_cycle = 0;
 	int writeback_start_cycle = 0;
 	int writeback_end_cycle = 0;
+	int commit_start_cycle = 0;
+	int commit_end_cycle = 0;
 };
 
 void Issue(Instruction& inst, ReorderBuffer& rob, ReservationStation& intRS, ReservationStation& fpRS, int numCycles, timingDiagram output)
