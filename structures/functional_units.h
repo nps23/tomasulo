@@ -27,7 +27,7 @@ public:
 	int right_operand;
 	Instruction* instr;
 	void dispatch(Instruction* instr);
-	int next();
+	double next();
 	bool occupied;
 	FPFunctionalUnit(int cycles_ex);
 };

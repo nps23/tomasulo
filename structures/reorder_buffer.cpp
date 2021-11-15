@@ -8,9 +8,10 @@ ReorderBuffer::ReorderBuffer(int entries)
 
 int ReorderBuffer::insert(const Instruction& instr)
 {
-	freeEntries--;
+	
 	table.push(instr);
 	int rob_index = entries - freeEntries;
+	freeEntries--;
 	return rob_index;
 }
 

@@ -48,7 +48,7 @@ FPFunctionalUnit::FPFunctionalUnit(int cycles_ex)
 	occupied = false;
 }
 
-int FPFunctionalUnit::next()
+double FPFunctionalUnit::next()
 {
 	if (internalCycle == cycleInEx)
 	{
@@ -63,6 +63,8 @@ int FPFunctionalUnit::next()
 			return right_operand - left_operand;
 		case mult_d:
 			return right_operand * left_operand;
+		default:
+			throw "Tried passing a non FP instruction into the FP unit";
 		}
 	}
 	internalCycle++;
