@@ -283,6 +283,7 @@ bool Issue(Instruction& instr)
 	return true;
 };
 
+// probably don't want this to return bool
 bool Ex(Instruction& instruction)
 {
 	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
