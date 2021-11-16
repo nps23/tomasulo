@@ -1,4 +1,5 @@
 #include <string>
+
 #include "dataHoldingStructures.h"
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
@@ -342,7 +343,7 @@ bool Ex(Instruction& instruction)
 
 		else if (&instruction == addFu.instr)
 		{
-			int result = fpFu.next();
+			double result = fpFu.next();
 			if (!addFu.occupied)
 			{
 				instruction.state = wb;
@@ -360,7 +361,7 @@ bool Ex(Instruction& instruction)
 
 		else if (&instruction == addFu.instr)
 		{
-			int result = fpFu.next();
+			double result = fpFu.next();
 			if (!addFu.occupied)
 			{
 				instruction.state = wb;
@@ -378,7 +379,7 @@ bool Ex(Instruction& instruction)
 
 		else if (&instruction == addFu.instr)
 		{
-			int result = fpFu.next();
+			double result = fpFu.next();
 			if (!addFu.occupied)
 			{
 				instruction.state = wb;
