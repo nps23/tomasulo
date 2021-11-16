@@ -27,7 +27,7 @@ ReorderBuffer rob2(config.rob_entries);
 intReg intRegFile(config);
 fpReg fpRegFile(config);
 cpuMemory mainMem(config);
-instructionBuffer instBuff(10000);
+instructionBuffer instBuff;
 AddFunctinalUnit addFu(config.fu_fp_adder[1]);
 FPFunctionalUnit fpFu(config.fu_fp_mult[1]);
 

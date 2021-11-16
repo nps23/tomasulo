@@ -75,7 +75,7 @@ class instructionBuffer {
 	public:
 		vector<Instruction> inst;
 		int curInst;
-		instructionBuffer(int maxInsts){
+		instructionBuffer(){
 			curInst = 0;
 		}
 		vector<Instruction> operator=(const instructionBuffer& rhs){
