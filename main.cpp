@@ -67,13 +67,15 @@ int main()
 				rom.pc++;
 				instBuff.inst[instBuff.curInst].state = issue;
 				instBuff.curInst++;
-				cout << "entering fetch" << endl;
+				cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
 			//}
 		}
 		
 		// Step through every instruction to check and make sure 
 		for(int i = 0; i < instBuff.getNumInsts(); i++){
 			if(instBuff.inst[i].state != null){
+				cout << "Stepping through the pipeline" << endl;
+				cout << "State of the currently executing instruction is: " << instBuff.inst[i].state << endl;
 				programFSM(instBuff.inst[i]);
 			}
 		}
@@ -185,6 +187,9 @@ int main()
 				outFile << i << "\t" << mainMem.mainMemory[i] << endl;
 			}
 		}
+
+		// Print out the number of cycles the program ran for
+		outFile << "Cycles run = " << numCycles << endl;
 	}else{
 		cout << "ERROR: FILE OPEN FAILURE" << endl;
 	}
