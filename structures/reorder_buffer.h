@@ -1,19 +1,18 @@
 #pragma once
 
-#include <queue>
-#include <map>
+#include <deque>
 #include "../instruction.h"
 
 class ReorderBuffer
 {
 public:
 	int entries;
-	int freeEntries;
-	int id;
-	std::queue<Instruction*> table;  // TODO change the calling functions to use pointers
+	std::deque<Instruction*> table;  // TODO change the calling functions to use pointers
 	ReorderBuffer(int entries);
 
-	int insert(const Instruction& instr);
+	void insert(Instruction& instr);
+	void clear(const Instruction& instr);
 	bool isFull() const;
+	bool isEmpty() const;
 	void updateROB();
 };

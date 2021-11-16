@@ -3,24 +3,30 @@
 ReorderBuffer::ReorderBuffer(int entries)
 {
 	entries = entries;
-	freeEntries = entries;
 }
 
-int ReorderBuffer::insert(const Instruction& instr)
+void ReorderBuffer::insert(Instruction& instr)
 {
-	
-	table.push(instr);
-	int rob_index = entries - freeEntries;
-	freeEntries--;
-	return rob_index;
+
+	table.push_back(&instr);
 }
 
 bool ReorderBuffer::isFull() const
 {
-	return (freeEntries == 0);
+	return (entries == table.size());
+}
+
+bool ReorderBuffer::isEmpty() const
+{
+	return table.empty();
 }
 
 void ReorderBuffer::updateROB()
 {
 
+}
+
+void ReorderBuffer::clear(const Instruction& instr)
+{
+	table.pop_back();
 }

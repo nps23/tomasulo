@@ -36,8 +36,8 @@ void AddFunctinalUnit::dispatch(Instruction* instruction)
 	instr = instruction;
 	occupied = true;
 	op_code = instruction->op_code;
-	left_operand = instruction->vj;
-	right_operand = instruction->vk;
+	left_operand = (int)instruction->vj;
+	right_operand = (int)instruction->vk;
 }
 
 FPFunctionalUnit::FPFunctionalUnit(int cycles_ex)

@@ -28,53 +28,57 @@ enum PipelineState {
 
 class Instruction {
 public:
-	// metadata associatd with the instruction itself
-	OpCode op_code;
+	// metadata to track and reference the instruction
+	int instructionId{ 0 };
 	PipelineState state;
 
-	int r_right_operand;
-	int r_left_operand;
-	int f_right_operand;
-	int f_left_operand;
-	int dest;
-
-	double result;
-
-	int programLine;
+	// INSTRUCTION METADATA
+	OpCode op_code;
+	// Integer ALU operands
+	int r_right_operand{ -1 };
+	int r_left_operand{ -1 };
+	// FP ALU operands
+	int f_right_operand{ -1 };
+	int f_left_operand{ -1 };
+	// Load store queue
+	int offset{ -1 };
+	int immediate{ -1 };
+	int r_ls_register_operand{ -1 };
+	int f_ls_register_operand{ -1 };
+	// Shared instruction metadata
+	int dest{ -1 };
+	double result{ -1 };
+	int programLine{ -1 };
 
 	// ROB fields
-	int robEntry;
-	int instType;
+	//int robEntry; this should be taken care of 
+	int instType{ -1 };
 	// int rs, rb, rt
-	std::string destValue;
-	bool rob_busy;
+	std::string destValue; // don't think we will need this
+	bool rob_busy{ false };
 
 	// RS fields
-	int rsEntry;
+	int rsEntry{ -1 };
 	std::string robIndex;
-	double vj;
-	double vk;
-	int qj;  // ROB entry which holds the value we are looking for
-	int qk;
-	bool rs_busy;
+	double vj{ -1 };
+	double vk{ -1 };
+	int qj{ -1 };  // instructions which will show 
+	int qk{ -1 };
+	bool rs_busy{ false };
 
-	// Load store queue
-	int offset;
-	int immediate;
-	int r_ls_register_operand;
-	int f_ls_register_operand;
 
-	int pipelineTimer;
+
+	int pipelineTimer{ -1 };
 
 	// Timing diagram values
-	int issue_start_cycle = 0;
-	int issue_end_cycle = 0;
-	int ex_start_cycle = 0;
-	int ex_end_cycle = 0;
-	int mem_start_cycle = 0;
-	int mem_end_cycle = 0;
-	int writeback_start_cycle = 0;
-	int writeback_end_cycle = 0;
-	int commit_start_cycle = 0;
-	int commit_end_cycle = 0;
+	int issue_start_cycle{ -1 };
+	int issue_end_cycle{ -1 };
+	int ex_start_cycle{ -1 };
+	int ex_end_cycle{ -1 };
+	int mem_start_cycle{ -1 };
+	int mem_end_cycle{ -1 };
+	int writeback_start_cycle{ -1 };
+	int writeback_end_cycle{ -1 };
+	int commit_start_cycle{ -1 };
+	int commit_end_cycle{ -1 };
 };

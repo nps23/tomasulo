@@ -14,11 +14,33 @@ extern intReg intRegFile;
 extern fpReg fpRegFile;
 extern AddFunctinalUnit addFu;
 extern FPFunctionalUnit fpFu;
+
+// Non hardware bookeeping variables;
+extern std::map<int, Instruction* > idMap;
 extern int numCycles;
 extern timingDiagram output;
 
+struct ROM
+{
+	std::vector<Instruction> program;
+	Instruction* pc;
+};
+
+// call this function before storing it in the instruction buffer
+void InitializeInstruction(Instruction& instr)
+{
+	// Read the last instructions value in the ROB. Expect the the ROB to have at least 1 entry.
+	int last_id_index = rob2.table.size() - 1;
+	instr.instructionId = (rob2.table[last_id_index]->instructionId)++;
+	idMap[instr.instructionId] = &instr;
+}
+
 bool IssueFetch()
 {
+	// get instruction pointed to by PC
+	// increment or branch
+	// InitializeInstruction
+	// put into instruction buffer
 	return true;
 	//
 }
@@ -46,6 +68,7 @@ bool Issue(Instruction& instr)
 	case sd:
 		break;
 	case beq:
+	{
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;
@@ -80,11 +103,13 @@ bool Issue(Instruction& instr)
 		instr.instType = instr.op_code;
 		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
-		instr.robEntry = rob2.insert(instr);
+		rob2.insert(instr);
 		instr.issue_start_cycle = numCycles;
 		instr.state = ex;
 		break;
+	}
 	case bne:
+	{
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;
@@ -119,10 +144,11 @@ bool Issue(Instruction& instr)
 		instr.instType = instr.op_code;
 		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
-		instr.robEntry = rob2.insert(instr);
+		rob2.insert(instr);
 		instr.issue_start_cycle = numCycles;
 		instr.state = ex;
 		break;
+	}
 	case add:
 	{
 			if (rob2.isFull() || addRS.isFull())
@@ -159,7 +185,7 @@ bool Issue(Instruction& instr)
 			
 			addRS.insert(instr);
 			// insert the instruction into the ROB
-			instr.robEntry = rob2.insert(instr);
+			rob2.insert(instr);
 
 			// update the instructions ROB metadata
 			instr.instType = instr.op_code;
@@ -213,7 +239,7 @@ bool Issue(Instruction& instr)
 		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		instr.issue_end_cycle = numCycles;
-		instr.robEntry = rob2.insert(instr);
+		rob2.insert(instr);
 		instr.state = ex;
 		return true;
 	}
@@ -241,7 +267,7 @@ bool Issue(Instruction& instr)
 		addRS.insert(instr);
 		
 		// insert into the ROB
-		instr.robEntry = rob2.insert(instr);
+		rob2.insert(instr);;
 		// update the instruction's ROB metadats
 		instr.instType = instr.op_code;
 		instr.destValue = "r" + std::to_string(instr.dest);
@@ -370,30 +396,32 @@ bool Ex(Instruction& instruction)
 	}
 }
 
-void WriteBack()
-{
-	switch(opCode)
-	{
-		case nop:
-			instr.state = commit;
-			instr.writeback_start_cycle = numCycles;
-			instr.writeback_end_cycle = numCycles;
-			break;
-		default:
-			break;
-	}
-}
-
-void Commit()
-{
-	switch(opCode)
-	{
-		case nop:
-			instr.state = commit;
-			instr.commit_start_cycle = numCycles;
-			instr.commit_end_cycle = numCycles;
-			break;
-		default:
-			break;
-	}
-}
+//void WriteBack(Instruction& instr)
+//{
+//	switch(instr.opCode)
+//	{
+//		case nop:
+//		{
+//			instr.state = commit;
+//			instr.writeback_start_cycle = numCycles;
+//			instr.writeback_end_cycle = numCycles;
+//			break;
+//		}
+//		default:
+//			break;
+//	}
+//}
+//
+//void Commit(Instruction& instr)
+//{
+//	switch(instr.opCode)
+//	{
+//		case nop:
+//			instr.state = commit;
+//			instr.commit_start_cycle = numCycles;
+//			instr.commit_end_cycle = numCycles;
+//			break;
+//		default:
+//			break;
+//	}
+//}

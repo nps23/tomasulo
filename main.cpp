@@ -31,6 +31,8 @@ instructionBuffer instBuff;
 AddFunctinalUnit addFu(config.fu_fp_adder[1]);
 FPFunctionalUnit fpFu(config.fu_fp_mult[1]);
 
+// Non-hardware bookkeeping units
+std::map<int, Instruction* > idMap;
 int numCycles = 0;
 
 // Function prototypes
@@ -64,7 +66,7 @@ int main()
 		}
 
 		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
-		if((instBuff.getNumInsts() == instBuff.curInst) && (rob2.entries == rob2.freeEntries)){
+		if((instBuff.getNumInsts() == instBuff.curInst) && rob2.isEmpty()){
 			break;
 		}
 		numCycles++;
