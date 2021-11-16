@@ -63,21 +63,25 @@ int main()
 			//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
 				// Pop a new instruction into the buffer, increment the current instruction, and set the new insts state to issue.
 				// This acts as the instruction fetch. 
+				InitializeInstruction((*rom.pc));
 				instBuff.inst.push_back((*rom.pc));
 				rom.pc++;
 				instBuff.inst[instBuff.curInst].state = issue;
 				instBuff.curInst++;
-				cout << "entering fetch" << endl;
+				cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
 			//}
 		}
-		
+		cout << "The amount of entries in the rob is: " << rob2.table.size() << endl;
 		// Step through every instruction to check and make sure 
 		for(int i = 0; i < instBuff.getNumInsts(); i++){
 			if(instBuff.inst[i].state != null){
+				cout << "Stepping through the pipeline" << endl;
+				cout << "State of the currently executing instruction is: " << instBuff.inst[i].state << endl;
+				cout << "ID of the current executing instruction is: " << instBuff.inst[i].instructionId << endl;
 				programFSM(instBuff.inst[i]);
 			}
 		}
-
+		cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
 		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
 		if(((*rom.pc).instructionId == -1) && rob2.isEmpty()){
 			break;
@@ -185,6 +189,9 @@ int main()
 				outFile << i << "\t" << mainMem.mainMemory[i] << endl;
 			}
 		}
+
+		// Print out the number of cycles the program ran for
+		outFile << "Cycles run = " << numCycles << endl;
 	}else{
 		cout << "ERROR: FILE OPEN FAILURE" << endl;
 	}
