@@ -83,6 +83,51 @@ int main()
 		output.tDiag[i][4] = instBuff.inst[i].writeback_end_cycle;
 		output.tDiag[i][5] = instBuff.inst[i].commit_end_cycle;
 	}
+	
+	// Print out the timing diagram and the register contents to a file
+	ofstream outFile("output.txt");
+	if(outFile.is_open()){
+		outFile << "\t\tIS EX MM WB CM" << endl;
+		for(unsigned int i = 0; i < instBuff.inst.size(); i++){
+			switch(instBuff.inst[i].op_code){
+				case nop:
+					outFile << "nop\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case ld:
+					outFile << "ld " << "F" << instBuff.inst[i].dest << ", " << instBuff.inst[i].offset << "(" << instBuff.inst[i].f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case sd:
+					outFile << "sd " << "F" << instBuff.inst[i].dest << ", " << instBuff.inst[i].offset << "(" << instBuff.inst[i].f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case beq:
+					outFile << "beq " << "R" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case bne:
+					outFile << "bne " << "R" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case add:
+					outFile << "add " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case add_d:
+					outFile << "add_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case add_i:
+					outFile << "add_i " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case sub:
+					outFile << "sub " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case sub_d:
+					outFile << "sub_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+				case mult_d:
+					outFile << "mult_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5];
+					break;
+			}
+		}
+	}else{
+		cout << "ERROR: FILE OPEN FAILURE" << endl;
+	}
 	return 0;
 }
 
