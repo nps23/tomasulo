@@ -1,8 +1,9 @@
 #include "reorder_buffer.h"
+#include <iostream>
 
-ReorderBuffer::ReorderBuffer(int entries)
+ReorderBuffer::ReorderBuffer(int robEntries)
 {
-	entries = entries;
+	entries = robEntries;
 }
 
 void ReorderBuffer::insert(Instruction& instr)
@@ -13,7 +14,8 @@ void ReorderBuffer::insert(Instruction& instr)
 
 bool ReorderBuffer::isFull()
 {
-	return (unsigned(entries) == table.size());
+	std::cout << "The number of entries = " << entries << " The size of the table is: " << table.size() << std::endl;
+	return (entries == table.size());
 }
 
 bool ReorderBuffer::isEmpty()
@@ -28,5 +30,5 @@ void ReorderBuffer::updateROB()
 
 void ReorderBuffer::clear()
 {
-	table.pop_back();
+	table.pop_front();
 }

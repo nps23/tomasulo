@@ -11,7 +11,7 @@ fu_load_store
 1 1 1
 
 rob_entries
-1
+5
 
 cdb_buffer_entries
 1

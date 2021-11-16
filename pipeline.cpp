@@ -1,5 +1,5 @@
 #include <string>
-
+#include <iostream>
 #include "dataHoldingStructures.h"
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
@@ -55,6 +55,7 @@ bool Issue(Instruction& instr)
 	case nop:
 		if (rob2.isFull())
 		{
+			std::cout << "ROB always full!!" << std::endl;
 			break;
 		}
 		rob2.insert(instr);
@@ -425,7 +426,8 @@ bool Commit(Instruction& instr)
 	switch(instr.op_code)
 	{
 		case nop:
-			if((*rob2.table.front()).programLine == instr.programLine){
+			std::cout << "top rob inst line = " << (*rob2.table.front()).programLine << "current inst program line = " << instr.programLine << std::endl;
+			if(((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr.programLine)){
 				instr.state = null;
 				rob2.clear();
 				instr.commit_start_cycle = numCycles;
