@@ -5,19 +5,19 @@
 #include <string>
 #include <queue>
 #include <deque>
+
 #include "cpu_config.h"
 #include "input_parser.h"
 #include "dataHoldingStructures.h"
 #include "CDB.h"
 #include "instruction.h"
 #include "pipeline.h"
-#include "pipeline.cpp"
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
 #include "structures/functional_units.h"
-#include "structures/reorder_buffer.cpp"
-#include "structures/reservation_station.cpp"
-#include "structures/functional_units.cpp"
+#include "structures/reorder_buffer.h"
+#include "structures/reservation_station.h"
+#include "structures/functional_units.h"
 
 using namespace std;
 
