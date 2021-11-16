@@ -396,32 +396,34 @@ bool Ex(Instruction& instruction)
 	}
 }
 
-//void WriteBack(Instruction& instr)
-//{
-//	switch(instr.opCode)
-//	{
-//		case nop:
-//		{
-//			instr.state = commit;
-//			instr.writeback_start_cycle = numCycles;
-//			instr.writeback_end_cycle = numCycles;
-//			break;
-//		}
-//		default:
-//			break;
-//	}
-//}
-//
-//void Commit(Instruction& instr)
-//{
-//	switch(instr.opCode)
-//	{
-//		case nop:
-//			instr.state = commit;
-//			instr.commit_start_cycle = numCycles;
-//			instr.commit_end_cycle = numCycles;
-//			break;
-//		default:
-//			break;
-//	}
-//}
+/*
+void writeback(instruction& instr)
+{
+	switch(instr.opcode)
+	{
+		case nop:
+		{
+			instr.state = commit;
+			instr.writeback_start_cycle = numcycles;
+			instr.writeback_end_cycle = numcycles;
+			break;
+		}
+		default:
+			break;
+	}
+}
+
+void commit(instruction& instr)
+{
+	switch(instr.opcode)
+	{
+		case nop:
+			instr.state = commit;
+			instr.commit_start_cycle = numcycles;
+			instr.commit_end_cycle = numcycles;
+			break;
+		default:
+			break;
+	}
+}
+*/
