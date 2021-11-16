@@ -45,6 +45,7 @@ public:
 	// ROB fields
 	int robEntry;
 	int instType;
+	// int rs, rb, rt
 	std::string destValue;
 	bool rob_busy;
 

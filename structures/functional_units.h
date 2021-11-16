@@ -23,8 +23,8 @@ public:
 	int internalCycle;
 	int cycleInEx;
 	int op_code;
-	int left_operand;
-	int right_operand;
+	double left_operand;
+	double right_operand;
 	Instruction* instr;
 	void dispatch(Instruction* instr);
 	double next();

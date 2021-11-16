@@ -266,9 +266,9 @@ bool Ex(Instruction& instruction)
 	case bne:
 		break;
 	case nop:
-		instr.state = wb;
-		instr.ex_start_cycle = numCycles;
-		instr.ex_end_cycle = numCycles;
+		instruction.state = wb;
+		instruction.ex_start_cycle = numCycles;
+		instruction.ex_end_cycle = numCycles;
 		break;
 	case add:
 		// check to see if an instruction is ready to go to FU, and has an open unit
