@@ -4,7 +4,7 @@
 #include <string>
 #include <fstream>
 #include "cpu_config.h"
-#include "program.h"
+#include "instruction.h"
 
 std::string input_file = "test/input.txt";
 
@@ -97,108 +97,156 @@ CPUConfig ParseInput(std::string& input_file)
 				Instruction inst;
 				std::string opcode;
 				infile >> opcode;
-				inst.programLine = i;
+				
 				if (opcode == "nop")
 				{
 					inst.op_code = nop;
+					std::cout << "Pushing instruction: " << inst.op_code 
+						<<" into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
-				else if (opcode == "ld_fa") {
-					inst.op_code = ld_fa;
-					std::string dest, op1;
-					infile >> dest >> op1;
+				else if (opcode == "ld") {
+					inst.op_code = ld;
+					char fpId, rId, paran;
+					int dest, operand, offset;
+					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
+
 					inst.dest = dest;
-					inst.operands[0] = op1;
+					inst.f_ls_register_operand = operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
-				else if (opcode == "sd_fa") {
-					inst.op_code = sd_fa;
-					std::string dest, op1;
-					infile >> dest >> op1;
+				else if (opcode == "sd") {
+					inst.op_code = sd;
+					char fpId, rId, paran;
+					int dest, operand, offset;
+					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
+
 					inst.dest = dest;
-					inst.operands[1] = op1;
+					inst.f_ls_register_operand = operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
-				// rest of the instruction
 				else if (opcode == "beq") {
 					inst.op_code = beq;
-					std::string op1, op2, dest;
-					infile >> op1 >> op2 >> dest;
-					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					char reg_id;
+					int l_operand, r_operand;
+					int offset;
+					infile >> reg_id >> l_operand >> reg_id >> r_operand;
+					infile >> offset;
+					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
+
 				else if (opcode == "bne") {
 					inst.op_code = bne;
-					std::string op1, op2, dest;
-					infile >> op1 >> op2 >> dest;
-					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					char r;
+					int l_operand, r_operand;
+					int offset;
+					infile >> r >> l_operand >> r >> r_operand;
+					infile >> offset;
+					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add") {
 					inst.op_code = add;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char r;
+					int dest, l_operand, r_operand;
+					infile >> r >> dest >> r >> l_operand >> r >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.r_right_operand = r_operand;
+					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
+					config.program.push_back(inst);
+				}
+
+				else if (opcode == "add_i")
+				{
+					inst.op_code = add_i;
+					char r;
+					int dest, l_operand, immediate;
+					infile >> r >> dest >> r >> l_operand >> immediate;
+					inst.dest = dest;
+					inst.r_left_operand = l_operand;
+					inst.immediate = immediate;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add_d") {
 					inst.op_code = add_d;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char f;
+					int dest, l_operand, r_operand;
+					infile >> f >> dest >> f >> l_operand >> f >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.f_right_operand = r_operand;
+					inst.f_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "add_i") {
 					inst.op_code = add_i;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
-					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					char r;
+					int l_operand, r_operand, immediate;
+					infile >> r >> l_operand >> r >> r_operand >> immediate;
+					inst.r_right_operand = r_operand;
+					inst.r_left_operand = l_operand;
+					inst.immediate = immediate;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sub") {
 					inst.op_code = sub;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char r;
+					int dest, l_operand, r_operand;
+					infile >> r >> dest >> r >> l_operand >> r >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.r_right_operand = r_operand;
+					inst.r_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
 				else if (opcode == "sub_d") {
-					inst.op_code = sub_d;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					inst.op_code = sub;
+					char f;
+					int dest, l_operand, r_operand;
+					infile >> f >> dest >> f >> l_operand >> f >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.f_right_operand = r_operand;
+					inst.f_left_operand = l_operand;
+					std::cout << "Pushing instruction: " << inst.op_code
+						<< " into the config" << std::endl;
 					config.program.push_back(inst);
 				}
 
+				// there is an implicit assumption here that the dest will alwayys be able to hold the result
 				else if (opcode == "mult_d") {
 					inst.op_code = mult_d;
-					std::string dest, op1, op2;
-					infile >> dest >> op1 >> op2;
+					char f;
+					int dest, l_operand, r_operand;
+					infile >> f >> dest >> f >> l_operand >> f >> r_operand;
 					inst.dest = dest;
-					inst.operands[0] = op1;
-					inst.operands[1] = op2;
+					inst.f_right_operand = r_operand;
+					inst.f_left_operand = l_operand;
+					std::cout << "Pushing back new instruction onto config" << std::endl;
 					config.program.push_back(inst);
 				}
 			}
@@ -214,6 +262,18 @@ CPUConfig ParseInput(std::string& input_file)
 				config.memory[address] = value;
 			}
 		}
+
+		else 
+		{
+			// local FU buffers requesting the central data bus
+			continue;
+		}
+		
+		if(infile.eof()){
+			std::cout << "end of input file reached" << std::endl;
+			break;
+		}
 	}
+	std::cout << "Finished parsing input file" << std::endl;
 	return config;	
 }

@@ -24,11 +24,12 @@ f_registers 2
 1 1.2
 2 2.4
 
-program 4
+program 5
 nop
-add_d f1 f2 f3
-ld_fa f4 8(r1)
-bne r2 r3 -3
+nop
+nop
+nop
+nop
 
 memory 3
 4 1

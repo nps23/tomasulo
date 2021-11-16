@@ -2,14 +2,14 @@
 
 #include <queue>
 #include <string>
+#include <deque>
 #include "cpu_config.h"
-#include "program.h"
+#include "instruction.h"
 
 using namespace std;
 
 class intReg {
 	public:
-		// TODO decide if we want to just change this to be a map anyways
 		int intRegFile[32];
 		intReg(const CPUConfig& config) {
 			intRegFile[0] = 0;
@@ -22,7 +22,7 @@ class intReg {
 
 class fpReg {
 	public:
-		double fpRegFile[32];
+		int fpRegFile[32];
 		fpReg(const CPUConfig& config) {
 			for (const auto& value : config.f_register_map)
 			{
@@ -37,6 +37,10 @@ class cpuMemory {
 		cpuMemory(const CPUConfig& config) {
 			if (!config.memory.empty())
 			{
+				for(int i = 0; i < 64; i++){
+					mainMemory[i] = 0;
+				}
+				
 				for (const auto& address : config.memory)
 				{
 					mainMemory[address.first] = address.second;
@@ -58,19 +62,17 @@ class storeQueue {
 };
 
 class RAT {
-	public:
-		string intMapping[32][2];
-		string fpMapping[32][2];
-		RAT(){
-			for(int i = 0; i < 32; i++){
-				intMapping[i][0] = "R" + to_string(i);
-				intMapping[i][1] = "R" + to_string(i);
-			}
-			for(int i = 0; i < 32; i++){
-				fpMapping[i][0] = "F" + to_string(i);
-				fpMapping[i][1] = "F" + to_string(i);
-			}
+public:
+	std::map<int, std::string> r_table;
+	std::map<int, std::string> f_table;
+	RAT() {
+		for (int i = 0; i < 32; i++) {
+			r_table[i] = "r" + std::to_string(i);
 		}
+		for (int i = 0; i < 32; i++) {
+			f_table[i] = "f" + std::to_string(i);
+		}
+	}
 };
 
 class instructionBuffer {
@@ -90,10 +92,16 @@ class instructionBuffer {
 			}
 			return instNew;
 		}
+		
+		// Get the number of isntructions in the buffer for use in determining when the program is done running.
+		int getNumInsts(){
+			return inst.size();
+		}
 };
 
 class ROB {
 	public:
+		int entry;
 		int* instType;
 		string* destValue;
 		double* valueField;
@@ -103,12 +111,12 @@ class ROB {
 		int maxEntries;
 		
 		ROB(const CPUConfig& config){
-			int numEntries = config.rob_entries;
+			maxEntries = config.rob_entries;
 			
-			instType = new int[numEntries];
-			destValue = new string[numEntries];
-			valueField = new double[numEntries];
-			readyField = new bool[numEntries];
+			instType = new int[maxEntries];
+			destValue = new string[maxEntries];
+			valueField = new double[maxEntries];
+			readyField = new bool[maxEntries];
 			currentInst = 0;
 			nextInsertedInst = 0;
 			for(int i = 0; i < maxEntries; i++){
@@ -137,6 +145,7 @@ class ROB {
 				}
 			}
 		}
+
 		void commit(){
 			if(readyField[currentInst] == true){
 				instType[currentInst] = -1;
@@ -215,12 +224,46 @@ class RS {
 		}
 };
 
+// TODO refactor this to be a vector
 class timingDiagram {
 	public:
-		int (*tDiag)[6];
+		int (*tDiag)[11];
 		int numLines;
 		timingDiagram(int m){
-			tDiag = new int[m][6];
+			tDiag = new int[m][11];
 			numLines = m;
+			// Set the first column of the output 
+			for(int i = 0; i < numLines; i++){
+				tDiag[i][0] = i;
+			}
+			for(int i = 0; i < numLines; i++){
+				tDiag[i][1] = -1;
+				tDiag[i][2] = -1;
+				tDiag[i][3] = -1;
+				tDiag[i][4] = -1;
+				tDiag[i][5] = -1;
+				tDiag[i][6] = -1;
+				tDiag[i][7] = -1;
+				tDiag[i][8] = -1;
+				tDiag[i][9] = -1;
+				tDiag[i][10] = -1;
+			}
+		}
+};
+
+class ROM
+{	
+	public:
+		std::vector<Instruction> program;
+		Instruction* pc;
+		ROM(deque<Instruction> iBuff){
+			for(unsigned int i = 0; i < iBuff.size(); i++){
+				program.push_back(iBuff[i]);
+			}
+			Instruction endDelimiter;
+			endDelimiter.instructionId = -1;
+			program.push_back(endDelimiter);
+			
+			pc = &program[0];
 		}
 };
