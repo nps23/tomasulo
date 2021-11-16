@@ -14,15 +14,22 @@ extern fpReg fpRegFile;
 extern AddFunctinalUnit addFu;
 extern FPFunctionalUnit fpFu;
 
+
 // Non hardware bookeeping variables;
 extern std::map<int, Instruction* > idMap;
 extern int numCycles;
 extern timingDiagram output;
 
-// call this function before storing it in the instruction buffer
+// call this function before storing an instruction in the instruction buffer
 void InitializeInstruction(Instruction& instr)
 {
 	// Read the last instructions value in the ROB. Expect the the ROB to have at least 1 entry.
+	if (rob2.table.size() == 0)
+	{
+		instr.instructionId = 1;
+		idMap[1] = &instr;
+		return;
+	}
 	int last_id_index = rob2.table.size() - 1;
 	instr.instructionId = (rob2.table[last_id_index]->instructionId)++;
 	idMap[instr.instructionId] = &instr;
