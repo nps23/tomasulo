@@ -63,7 +63,7 @@ int main()
 			//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
 				// Pop a new instruction into the buffer, increment the current instruction, and set the new insts state to issue.
 				// This acts as the instruction fetch. 
-				instBuff.inst[instBuff.curInst] = (*rom.pc);
+				instBuff.inst.push_back((*rom.pc));
 				rom.pc++;
 				instBuff.inst[instBuff.curInst].state = issue;
 				instBuff.curInst++;
