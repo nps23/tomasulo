@@ -268,6 +268,12 @@ CPUConfig ParseInput(std::string& input_file)
 			// local FU buffers requesting the central data bus
 			continue;
 		}
+		
+		if(infile.eof()){
+			std::cout << "end of input file reached" << std::endl;
+			break;
+		}
 	}
+	std::cout << "Finished parsing input file" << std::endl;
 	return config;	
 }

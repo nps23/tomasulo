@@ -26,10 +26,10 @@ f_registers 2
 
 program 5
 nop
-add f1 f2 f3
-ld f4 8(r1)
-bne r2 r3 -3
-add_i r2 r3 2
+nop
+nop
+nop
+nop
 
 memory 3
 4 1

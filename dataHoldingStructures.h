@@ -2,6 +2,7 @@
 
 #include <queue>
 #include <string>
+#include <deque>
 #include "cpu_config.h"
 #include "instruction.h"
 
@@ -9,7 +10,6 @@ using namespace std;
 
 class intReg {
 	public:
-		// TODO decide if we want to just change this to be a map anyways
 		int intRegFile[32];
 		intReg(const CPUConfig& config) {
 			intRegFile[0] = 0;
@@ -22,7 +22,7 @@ class intReg {
 
 class fpReg {
 	public:
-		double fpRegFile[32];
+		int fpRegFile[32];
 		fpReg(const CPUConfig& config) {
 			for (const auto& value : config.f_register_map)
 			{
@@ -37,6 +37,10 @@ class cpuMemory {
 		cpuMemory(const CPUConfig& config) {
 			if (!config.memory.empty())
 			{
+				for(int i = 0; i < 64; i++){
+					mainMemory[i] = 0;
+				}
+				
 				for (const auto& address : config.memory)
 				{
 					mainMemory[address.first] = address.second;
@@ -223,14 +227,43 @@ class RS {
 // TODO refactor this to be a vector
 class timingDiagram {
 	public:
-		int (*tDiag)[6];
+		int (*tDiag)[11];
 		int numLines;
 		timingDiagram(int m){
-			tDiag = new int[m][6];
+			tDiag = new int[m][11];
 			numLines = m;
 			// Set the first column of the output 
 			for(int i = 0; i < numLines; i++){
 				tDiag[i][0] = i;
 			}
+			for(int i = 0; i < numLines; i++){
+				tDiag[i][1] = -1;
+				tDiag[i][2] = -1;
+				tDiag[i][3] = -1;
+				tDiag[i][4] = -1;
+				tDiag[i][5] = -1;
+				tDiag[i][6] = -1;
+				tDiag[i][7] = -1;
+				tDiag[i][8] = -1;
+				tDiag[i][9] = -1;
+				tDiag[i][10] = -1;
+			}
+		}
+};
+
+class ROM
+{	
+	public:
+		std::vector<Instruction> program;
+		Instruction* pc;
+		ROM(deque<Instruction> iBuff){
+			for(unsigned int i = 0; i < iBuff.size(); i++){
+				program.push_back(iBuff[i]);
+			}
+			Instruction endDelimiter;
+			endDelimiter.instructionId = -1;
+			program.push_back(endDelimiter);
+			
+			pc = &program[0];
 		}
 };

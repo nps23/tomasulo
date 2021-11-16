@@ -1,6 +1,4 @@
 #include <string>
-
-#include "instruction.h"
 #include "dataHoldingStructures.h"
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
@@ -19,12 +17,6 @@ extern FPFunctionalUnit fpFu;
 extern std::map<int, Instruction* > idMap;
 extern int numCycles;
 extern timingDiagram output;
-
-struct ROM
-{
-	std::vector<Instruction> program;
-	Instruction* pc;
-};
 
 // call this function before storing it in the instruction buffer
 void InitializeInstruction(Instruction& instr)
@@ -251,7 +243,7 @@ bool Issue(Instruction& instr)
 		}
 		instr.issue_start_cycle = numCycles;
 		std::string left_operand = rat.r_table[instr.r_left_operand];
-		int immediate = instr.immediate;
+		//int immediate = instr.immediate;
 		if (left_operand[0] == 'r')
 		{
 			int left_index = (int)left_operand[1] - 48;
@@ -280,6 +272,7 @@ bool Issue(Instruction& instr)
 		return true;
 
 	}
+	return true;
 };
 
 bool Ex(Instruction& instruction)
@@ -342,7 +335,7 @@ bool Ex(Instruction& instruction)
 	case add_d:
 		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
 		{
-			instruction.ex_start_cycle == numCycles;
+			instruction.ex_start_cycle = numCycles;
 			fpFu.dispatch(&instruction);
 			return true;
 		}
@@ -360,7 +353,7 @@ bool Ex(Instruction& instruction)
 	case sub_d:
 		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
 		{
-			instruction.ex_start_cycle == numCycles;
+			instruction.ex_start_cycle = numCycles;
 			fpFu.dispatch(&instruction);
 			return true;
 		}
@@ -378,7 +371,7 @@ bool Ex(Instruction& instruction)
 	case mult_d:
 		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
 		{
-			instruction.ex_start_cycle == numCycles;
+			instruction.ex_start_cycle = numCycles;
 			fpFu.dispatch(&instruction);
 			return true;
 		}
@@ -393,37 +386,47 @@ bool Ex(Instruction& instruction)
 				instruction.ex_end_cycle = numCycles;
 			}
 		}
+	default:
+		break;
 	}
+	return true;
 }
 
-/*
-void writeback(instruction& instr)
+bool Mem(Instruction& instr){
+	return true;
+}
+bool WriteBack(Instruction& instr)
 {
-	switch(instr.opcode)
+	switch(instr.op_code)
 	{
 		case nop:
 		{
 			instr.state = commit;
-			instr.writeback_start_cycle = numcycles;
-			instr.writeback_end_cycle = numcycles;
+			instr.writeback_start_cycle = numCycles;
+			instr.writeback_end_cycle = numCycles;
 			break;
 		}
 		default:
 			break;
 	}
+	return true;
 }
 
-void commit(instruction& instr)
+bool Commit(Instruction& instr)
 {
-	switch(instr.opcode)
+	switch(instr.op_code)
 	{
 		case nop:
-			instr.state = commit;
-			instr.commit_start_cycle = numcycles;
-			instr.commit_end_cycle = numcycles;
+			if((*rob2.table.front()).programLine == instr.programLine){
+				instr.state = null;
+				rob2.clear();
+				instr.commit_start_cycle = numCycles;
+				instr.commit_end_cycle = numCycles;
+			}
 			break;
 		default:
 			break;
 	}
+	return true;
 }
-*/
+

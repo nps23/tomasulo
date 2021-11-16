@@ -11,12 +11,12 @@ void ReorderBuffer::insert(Instruction& instr)
 	table.push_back(&instr);
 }
 
-bool ReorderBuffer::isFull() const
+bool ReorderBuffer::isFull()
 {
-	return (entries == table.size());
+	return (unsigned(entries) == table.size());
 }
 
-bool ReorderBuffer::isEmpty() const
+bool ReorderBuffer::isEmpty()
 {
 	return table.empty();
 }
@@ -26,7 +26,7 @@ void ReorderBuffer::updateROB()
 
 }
 
-void ReorderBuffer::clear(const Instruction& instr)
+void ReorderBuffer::clear()
 {
 	table.pop_back();
 }

@@ -11,8 +11,8 @@ public:
 	ReorderBuffer(int entries);
 
 	void insert(Instruction& instr);
-	void clear(const Instruction& instr);
-	bool isFull() const;
-	bool isEmpty() const;
+	void clear();
+	bool isFull();
+	bool isEmpty();
 	void updateROB();
 };
