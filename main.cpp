@@ -60,11 +60,9 @@ int main()
 		
 		// Issue a new instruction if there are still instructions to read in
 		cout << (*rom.pc).instructionId << endl;
-		if (rom.pc->end)
+		if (!rom.pc->end)
 		{
-			break;
-		}
-		// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
+			// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
 		//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
 			// Pop a new instruction into the buffer, increment the current instruction, and set the new insts state to issue.
 			// This acts as the instruction fetch. 
@@ -75,6 +73,8 @@ int main()
 			instBuff.curInst++;
 			cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
 			//}
+		}
+		
 		cout << "The amount of entries in the rob is: " << rob2.entries << endl;
 		// Step through every instruction to check and make sure 
 		for(int i = 0; i < instBuff.getNumInsts(); i++){
@@ -87,6 +87,9 @@ int main()
 		}
 		cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
 		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
+		/*if (rom.pc->end && rob2.table.empty()) {
+			break;
+		}*/
 		numCycles++;
 	}
 
