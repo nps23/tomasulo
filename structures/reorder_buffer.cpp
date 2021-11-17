@@ -1,5 +1,8 @@
-#include "reorder_buffer.h"
 #include <iostream>
+#include <deque>
+
+#include "reorder_buffer.h"
+#include "../instruction.h"
 
 ReorderBuffer::ReorderBuffer(int robEntries)
 {

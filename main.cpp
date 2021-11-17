@@ -211,6 +211,9 @@ int main()
 	//return 0;
 
 	driver();
+	std::cout << intRat.table[3].value << std::endl;
+	
+	return 0;
 }
 
 void programFSM(Instruction& instr){

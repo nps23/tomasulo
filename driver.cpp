@@ -75,17 +75,22 @@ void driver()
 			}
 
 		}
-		
+
+		if (rob2.isEmpty())
+		{
+			break;
+		}
 
 		for (auto instr : rob2.table)
 		{
-			switch (instr->op_code)
+			switch (instr->state)
 			{
 			case ex:
 				Ex(*instr);
 				break;
 			case wb:
 				WriteBack(*instr);
+				bus.occupied = false;
 				break;
 			case commit:
 				Commit(*instr);

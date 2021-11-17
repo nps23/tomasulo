@@ -28,21 +28,41 @@ extern int numCycles;
 extern timingDiagram output;
 
 // call this function before storing an instruction in the instruction buffer
-void InitializeInstruction(Instruction& instr)
+// didn't feel like writing a copy constructor for the struct
+Instruction* copyInstruction(const Instruction* source)
+{
+	Instruction* new_instr = new Instruction;
+	new_instr->op_code = source->op_code;
+	new_instr->r_right_operand = source->r_right_operand;
+	new_instr->f_left_operand = source->r_left_operand;
+	new_instr->f_right_operand = source->f_right_operand;
+	new_instr->offset = source->offset;
+	new_instr->immediate = source->immediate;
+	new_instr->r_ls_register_operand = source->r_ls_register_operand;
+	new_instr->f_ls_register_operand = source->f_ls_register_operand;
+	new_instr->dest = source->dest;
+	new_instr->result = source->result;
+	new_instr->programLine = source->programLine;
+
+	return new_instr;
+}
+
+Instruction* InitializeInstruction(Instruction& instr)
 {
 	// Read the last instructions value in the ROB. Expect the the ROB to have at least 1 entry.
+	Instruction* new_instr = copyInstruction(&instr);
 	if (rob2.table.size() == 0)
 	{
 		instr.instructionId = 1;
 		idMap[1] = &instr;
-		return;
+		return new_instr;
 	}
 	int last_id_index = rob2.table.size() - 1;
 	//auto& last_instruction = rob2.table[last_id_index];
 	//int last_instruction_value = last_instruction->instructionId;
 	instr.instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
 	idMap[instr.instructionId] = &instr;
-	return;
+	return new_instr;
 }
 
 
@@ -185,7 +205,7 @@ bool Issue(Instruction& instr)
 			if (!r_entry.is_mapped)
 			{
 				instr.vk = l_entry.value;
-				instr.qj = 0;
+				instr.qk = 0;
 			}
 			else
 			{
@@ -328,6 +348,7 @@ bool Ex(Instruction& instruction)
 			}
 			return true;
 		}
+		break;
 	case sub:
 		// same as add
 		if (instruction.qj == 0 && instruction.qk == 0 && !addFu.occupied)
