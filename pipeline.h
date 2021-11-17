@@ -2,6 +2,7 @@
 
 #include "instruction.h"
 
+bool IssueFetch(Instruction& instr);
 bool Issue(Instruction& instr);
 bool Ex(Instruction& instr);
 bool Mem(Instruction& instr);

@@ -5,6 +5,7 @@
 #include "structures/reservation_station.h"
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
+#include "structures/RegisterAliasingTable.h"
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRs;
@@ -15,6 +16,10 @@ extern fpReg fpRegFile;
 extern AddFunctinalUnit addFu;
 extern FPFunctionalUnit fpFu;
 extern cdb bus;
+extern ROM rom;
+extern instructionBuffer instBuff;
+extern IntRegisterAliasingTable intRat;
+extern FPRegisterAliasingTable fpRat;
 
 
 // Non hardware bookeeping variables;
@@ -40,14 +45,17 @@ void InitializeInstruction(Instruction& instr)
 	return;
 }
 
-bool IssueFetch()
+
+bool IssueFetch(Instruction& instr)
 {
-	// get instruction pointed to by PC
-	// increment or branch
-	// InitializeInstruction
-	// put into instruction buffer
+	InitializeInstruction(*(rom.pc));
+	instBuff.inst.push_back(rom.pc);
+	rom.pc++;
+	instBuff.inst[instBuff.curInst]->state = issue;
+	instBuff.curInst++;
+	cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
+	
 	return true;
-	//
 }
 
 // At every cycle, call this function with the head of the ROB instruction
@@ -107,7 +115,7 @@ bool Issue(Instruction& instr)
 			instr.qj = index_value;
 		}
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
+		instr.destValue = "r" + std::to_string(instr.dest); // probbaly don't need this
 		instr.rob_busy = true;
 		rob2.insert(instr);
 		instr.issue_start_cycle = numCycles;
@@ -162,37 +170,35 @@ bool Issue(Instruction& instr)
 				break;
 			}
 			instr.issue_start_cycle = numCycles;
-			// Look up the location of the operand.
-			std::string left_operand = rat.r_table[instr.r_left_operand];
-			std::string right_operand = rat.r_table[instr.r_right_operand];
-			if (left_operand[0] == 'r')
+			
+			auto& l_entry = intRat.table[instr.r_right_operand];
+			auto& r_entry = intRat.table[instr.r_left_operand];
+			auto& dest = intRat.table[instr.dest];
+
+			if (!l_entry.is_mapped)
 			{
-				int left_index = (int)left_operand[1] - 48;
-				instr.vj = intRegFile.intRegFile[left_index];
+				instr.vj = l_entry.value;
 				instr.qj = 0;
 			}
-			// this indicates an ROB lookup instead
-			else if (left_operand[0] == 'R')
+			else
 			{
-				int index_value = (int)left_operand[3] - 48;
-				instr.qj = index_value;
+				instr.qj = l_entry.value;
 			}
-			if (right_operand[0] == 'r')
+			if (!r_entry.is_mapped)
 			{
-				int right_index = (int)right_operand[1] - 48;
-				instr.vk = intRegFile.intRegFile[right_index];
-				instr.qk = 0;
+				instr.vk = l_entry.value;
+				instr.qj = 0;
 			}
-			else if (right_operand[0] == 'R')
+			else
 			{
-				int index_value = (int)right_operand[3] - 48;
-				instr.qj = index_value;
+				instr.qk = l_entry.value;
 			}
-			
+			// update the ROB, RS, and the RAT
 			addRS.insert(instr);
-			// insert the instruction into the ROB
 			rob2.insert(instr);
-
+			dest.is_mapped = true;
+			dest.value = instr.instructionId;
+			
 			// update the instructions ROB metadata
 			instr.instType = instr.op_code;
 			instr.destValue = "r" + std::to_string(instr.dest);

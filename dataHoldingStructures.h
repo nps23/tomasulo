@@ -3,6 +3,8 @@
 #include <queue>
 #include <string>
 #include <deque>
+#include <algorithm>
+
 #include "cpu_config.h"
 #include "instruction.h"
 
@@ -82,20 +84,20 @@ class instructionBuffer {
 		instructionBuffer(){
 			curInst = 0;
 		}
-		//vector<Instruction> operator=(const instructionBuffer& rhs){
-		//	// New buffer to be filled
-		//	vector<Instruction> instNew;
-		//	
-		//	// Fill the buffer with the right hand operand
-		//	for(unsigned int i = 0; i < rhs.inst.size(); i++){
-		//		instNew.push_back(rhs.inst[i]);
-		//	}
-		//	return instNew;
-		//}
 
 		void update(Instruction* instruction)
 		{
 			inst.push_back(instruction);
+		}
+		
+		void clear(Instruction* head)
+		{
+			if (inst.size() == 0)
+			{
+				std::cout << "Empty instruction buffer. continuing..." << std::endl;
+				return;
+			}
+			inst.erase(std::remove(inst.begin(), inst.end(), head));
 		}
 		
 		// Get the number of isntructions in the buffer for use in determining when the program is done running.
