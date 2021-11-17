@@ -10,10 +10,10 @@ class FPReservationStation
 public:
 	int maxEntries;
 	int freeEntries;
-	std::vector<Instruction> table;
+	std::vector<Instruction*> table;
 	bool isFull();
-	int insert(const Instruction& instr);
-	void updateRS();
+	int insert(Instruction& instr);
+	void clear(Instruction& instruction);
 	FPReservationStation(int entries);
 };
 
@@ -22,9 +22,9 @@ class AddReservationStation
 public:
 	int maxEntries;
 	int freeEntries;
-	std::vector<Instruction> table;
+	std::vector<Instruction*> table;
 	bool isFull();
-	int insert(const Instruction& instr);
-	void updateRS();
+	int insert(Instruction& instr);
+	void clear(Instruction& instruction);
 	AddReservationStation(int entries);
 };

@@ -18,6 +18,7 @@
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
 #include "structures/functional_units.h"
+#include "structures/central_data_bus.h"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ cpuMemory mainMem(config);
 instructionBuffer instBuff;
 AddFunctinalUnit addFu(config.fu_fp_adder[1]);
 FPFunctionalUnit fpFu(config.fu_fp_mult[1]);
+cdb bus;
 
 // Non-hardware bookkeeping units
 std::map<int, Instruction* > idMap;
@@ -87,6 +89,8 @@ int main()
 		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
 		numCycles++;
 	}
+
+	// NOTE: at the end of a writeback stage, set the cdb.occupied bool back to none
 	
 	// Finally create the timing diagram
 	timingDiagram output(instBuff.inst.size());

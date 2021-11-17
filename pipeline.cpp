@@ -4,6 +4,7 @@
 #include "structures/reorder_buffer.h"
 #include "structures/reservation_station.h"
 #include "structures/functional_units.h"
+#include "structures/central_data_bus.h"
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRs;
@@ -13,6 +14,7 @@ extern intReg intRegFile;
 extern fpReg fpRegFile;
 extern AddFunctinalUnit addFu;
 extern FPFunctionalUnit fpFu;
+extern cdb bus;
 
 
 // Non hardware bookeeping variables;
@@ -399,6 +401,10 @@ bool Ex(Instruction& instruction)
 				instruction.ex_end_cycle = numCycles;
 			}
 		}
+	case ld:
+		break;
+	case sd:
+		break;
 	default:
 		break;
 	}
@@ -419,8 +425,56 @@ bool WriteBack(Instruction& instr)
 			instr.writeback_end_cycle = numCycles;
 			break;
 		}
-		default:
+		case ld:
 			break;
+		case sd:
+			break;
+		case beq:
+			break;
+		case bne:
+			break;
+		case fin:
+			break;
+
+		default:  // should work for add, add_d, add_i sub, sub_d, mult_d
+		{
+			if (!bus.occupied)
+			{
+				bus.clear(&instr);
+				bus.occupied = true;
+				for (auto& instruction : addRS.table)
+				{
+					if (instruction->qj = instr.instructionId)
+					{
+						instruction->qj = 0;
+						instruction->vj = instr.result;
+					}
+					if (instruction->qk = instruction->instructionId)
+					{
+						instruction->qk = 0;
+						instruction->vk = instr.result;
+					}
+				}
+				for (auto& instruction : fRs.table)
+				{
+					if (instruction->qj = instr.instructionId)
+					{
+						instruction->qj = 0;
+						instruction->vj = instr.result;
+					}
+					if (instruction->qk = instruction->instructionId)
+					{
+						instruction->qk = 0;
+						instruction->vk = instr.result;
+					}
+				}
+				instr.state = commit;
+			}
+			else
+			{
+				bus.insert(&instr);
+			}
+		}
 	}
 	return true;
 }

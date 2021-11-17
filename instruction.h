@@ -32,7 +32,7 @@ public:
 	// metadata to track and reference the instruction
 	int instructionId{ 0 };
 	PipelineState state;
-	bool end{ false };
+	bool end{ false };				// should be only true for fin instructions
 
 	// INSTRUCTION METADATA
 	OpCode op_code;
@@ -68,6 +68,8 @@ public:
 	int qk{ -1 };
 	bool rs_busy{ false };
 
+	//CDB fields
+	bool occupying_bus{ false };
 
 
 	int pipelineTimer{ -1 };
