@@ -24,12 +24,8 @@ f_registers 2
 1 1.2
 2 2.4
 
-program 6
-nop
-nop
-nop
-nop
-nop
+program 2
+add r2 r3 r4
 fin
 
 memory 3

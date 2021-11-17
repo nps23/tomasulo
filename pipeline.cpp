@@ -479,6 +479,7 @@ bool WriteBack(Instruction& instr)
 	return true;
 }
 
+// this should be called once per cycle on the head of the ROB
 bool Commit(Instruction& instr)
 {
 	switch(instr.op_code)
@@ -492,6 +493,19 @@ bool Commit(Instruction& instr)
 				instr.commit_end_cycle = numCycles;
 			}
 			break;
+		case add:
+		{
+			if (!rob2.isEmpty())
+			{
+				// we will write results to an R register
+				int result = instr.result;
+				int index = instr.dest;
+				intRegFile.intRegFile[index] = result;
+				rat.r_table[index] = "r" + std::to_string(index);
+				rob2.clear();
+			}
+		}
+		break;
 		default:
 			break;
 	}
