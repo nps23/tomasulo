@@ -24,7 +24,7 @@ f_registers 2
 1 1.2
 2 2.4
 
-program 2
+program 3
 add r2 r3 r4
 fin
 

@@ -115,7 +115,6 @@ bool Issue(Instruction& instr)
 			instr.qj = index_value;
 		}
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest); // probbaly don't need this
 		instr.rob_busy = true;
 		rob2.insert(instr);
 		instr.issue_start_cycle = numCycles;
@@ -156,7 +155,6 @@ bool Issue(Instruction& instr)
 			instr.qj = index_value;
 		}
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		rob2.insert(instr);
 		instr.issue_start_cycle = numCycles;
@@ -201,7 +199,6 @@ bool Issue(Instruction& instr)
 			
 			// update the instructions ROB metadata
 			instr.instType = instr.op_code;
-			instr.destValue = "r" + std::to_string(instr.dest);
 			instr.rob_busy = true;
 			instr.issue_start_cycle = numCycles;
 			instr.state = ex;
@@ -248,7 +245,6 @@ bool Issue(Instruction& instr)
 
 		// update the instructions ROB metadata
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		instr.issue_end_cycle = numCycles;
 		rob2.insert(instr);
@@ -282,7 +278,6 @@ bool Issue(Instruction& instr)
 		rob2.insert(instr);;
 		// update the instruction's ROB metadats
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		instr.issue_end_cycle = numCycles;
 		instr.state = ex;
@@ -507,7 +502,8 @@ bool Commit(Instruction& instr)
 				int result = instr.result;
 				int index = instr.dest;
 				intRegFile.intRegFile[index] = result;
-				rat.r_table[index] = "r" + std::to_string(index);
+				intRat.table[index].is_mapped = false;
+				intRat.table[index].value = result;
 				rob2.clear();
 			}
 		}

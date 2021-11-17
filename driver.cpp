@@ -65,37 +65,50 @@ void driver()
 		}
 
 		// ISSUE DECODE
-		auto& bufferHead = instBuff.inst[0];
-		Issue(*bufferHead);
-		
-		// make sure we were able to issue. If not, don't pop off the the instruction buffer (ie just stall)
-		if (bufferHead->state == ex)
+		if (instBuff.inst.size() != 0)
 		{
-			instBuff.clear(bufferHead);
+			auto& bufferHead = instBuff.inst[0];
+			Issue(*bufferHead);
+			if (bufferHead->state == ex)
+			{ 
+				instBuff.clear(bufferHead);
+			}
+
 		}
-
-
-
 		
-		// Step through every instruction to check and make sure 
-		for (int i = 0; i < instBuff.getNumInsts(); i++) {
-			if (instBuff.inst[i]->state != null) {
-				cout << "Stepping through the pipeline" << endl;
-				cout << "State of the currently executing instruction is: " << instBuff.inst[i]->state << endl;
-				cout << "ID of the current executing instruction is: " << instBuff.inst[i]->instructionId << endl;
-				programFSM(*instBuff.inst[i]);
+
+		for (auto instr : rob2.table)
+		{
+			switch (instr->op_code)
+			{
+			case ex:
+				Ex(*instr);
+				break;
+			case wb:
+				WriteBack(*instr);
+				break;
+			case commit:
+				Commit(*instr);
+				break;
 			}
 		}
-		cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
-		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
-		/*if (rom.pc->end && rob2.table.empty()) {
-			break;
-		}*/
+
+		
+		//// Step through every instruction to check and make sure 
+		//for (int i = 0; i < instBuff.getNumInsts(); i++) {
+		//	if (instBuff.inst[i]->state != null) {
+		//		cout << "Stepping through the pipeline" << endl;
+		//		cout << "State of the currently executing instruction is: " << instBuff.inst[i]->state << endl;
+		//		cout << "ID of the current executing instruction is: " << instBuff.inst[i]->instructionId << endl;
+		//		programFSM(*instBuff.inst[i]);
+		//	}
+		//}
+		//cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
+		//// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
+		///*if (rom.pc->end && rob2.table.empty()) {
+		//	break;
+		//}*/
 		numCycles++;
-		if (numCycles == 3)
-		{
-			break;
-		}
 	}
 }
 
