@@ -56,7 +56,6 @@ public:
 	//int robEntry; this should be taken care of 
 	int instType{ -1 };
 	// int rs, rb, rt
-	std::string destValue; // don't think we will need this
 	bool rob_busy{ false };
 
 	// RS fields

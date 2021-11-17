@@ -5,6 +5,7 @@
 #include "structures/reservation_station.h"
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
+#include "structures/RegisterAliasingTable.h"
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRs;
@@ -15,6 +16,10 @@ extern fpReg fpRegFile;
 extern AddFunctinalUnit addFu;
 extern FPFunctionalUnit fpFu;
 extern cdb bus;
+extern ROM rom;
+extern instructionBuffer instBuff;
+extern IntRegisterAliasingTable intRat;
+extern FPRegisterAliasingTable fpRat;
 
 
 // Non hardware bookeeping variables;
@@ -23,31 +28,54 @@ extern int numCycles;
 extern timingDiagram output;
 
 // call this function before storing an instruction in the instruction buffer
-void InitializeInstruction(Instruction& instr)
+// didn't feel like writing a copy constructor for the struct
+Instruction* copyInstruction(const Instruction* source)
+{
+	Instruction* new_instr = new Instruction;
+	new_instr->op_code = source->op_code;
+	new_instr->r_right_operand = source->r_right_operand;
+	new_instr->f_left_operand = source->r_left_operand;
+	new_instr->f_right_operand = source->f_right_operand;
+	new_instr->offset = source->offset;
+	new_instr->immediate = source->immediate;
+	new_instr->r_ls_register_operand = source->r_ls_register_operand;
+	new_instr->f_ls_register_operand = source->f_ls_register_operand;
+	new_instr->dest = source->dest;
+	new_instr->result = source->result;
+	new_instr->programLine = source->programLine;
+
+	return new_instr;
+}
+
+Instruction* InitializeInstruction(Instruction& instr)
 {
 	// Read the last instructions value in the ROB. Expect the the ROB to have at least 1 entry.
+	Instruction* new_instr = copyInstruction(&instr);
 	if (rob2.table.size() == 0)
 	{
-		instr.instructionId = 1;
-		idMap[1] = &instr;
-		return;
+		new_instr->instructionId = 1;
+		idMap[1] = new_instr;
+		return new_instr;
 	}
 	int last_id_index = rob2.table.size() - 1;
 	//auto& last_instruction = rob2.table[last_id_index];
 	//int last_instruction_value = last_instruction->instructionId;
-	instr.instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
-	idMap[instr.instructionId] = &instr;
-	return;
+	new_instr->instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
+	idMap[new_instr->instructionId] = &instr;
+	return new_instr;
 }
 
-bool IssueFetch()
+
+bool IssueFetch(Instruction& instr)
 {
-	// get instruction pointed to by PC
-	// increment or branch
-	// InitializeInstruction
-	// put into instruction buffer
+	InitializeInstruction(*(rom.pc));
+	instBuff.inst.push_back(rom.pc);
+	rom.pc++;
+	instBuff.inst[instBuff.curInst]->state = issue;
+	instBuff.curInst++;
+	cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
+	
 	return true;
-	//
 }
 
 // At every cycle, call this function with the head of the ROB instruction
@@ -107,7 +135,6 @@ bool Issue(Instruction& instr)
 			instr.qj = index_value;
 		}
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		rob2.insert(instr);
 		instr.issue_start_cycle = numCycles;
@@ -148,7 +175,6 @@ bool Issue(Instruction& instr)
 			instr.qj = index_value;
 		}
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		rob2.insert(instr);
 		instr.issue_start_cycle = numCycles;
@@ -162,40 +188,37 @@ bool Issue(Instruction& instr)
 				break;
 			}
 			instr.issue_start_cycle = numCycles;
-			// Look up the location of the operand.
-			std::string left_operand = rat.r_table[instr.r_left_operand];
-			std::string right_operand = rat.r_table[instr.r_right_operand];
-			if (left_operand[0] == 'r')
+			
+			auto& l_entry = intRat.table[instr.r_right_operand];
+			auto& r_entry = intRat.table[instr.r_left_operand];
+			auto& dest = intRat.table[instr.dest];
+
+			if (!l_entry.is_mapped)
 			{
-				int left_index = (int)left_operand[1] - 48;
-				instr.vj = intRegFile.intRegFile[left_index];
+				instr.vj = l_entry.value;
 				instr.qj = 0;
 			}
-			// this indicates an ROB lookup instead
-			else if (left_operand[0] == 'R')
+			else
 			{
-				int index_value = (int)left_operand[3] - 48;
-				instr.qj = index_value;
+				instr.qj = l_entry.value;
 			}
-			if (right_operand[0] == 'r')
+			if (!r_entry.is_mapped)
 			{
-				int right_index = (int)right_operand[1] - 48;
-				instr.vk = intRegFile.intRegFile[right_index];
+				instr.vk = l_entry.value;
 				instr.qk = 0;
 			}
-			else if (right_operand[0] == 'R')
+			else
 			{
-				int index_value = (int)right_operand[3] - 48;
-				instr.qj = index_value;
+				instr.qk = l_entry.value;
 			}
-			
+			// update the ROB, RS, and the RAT
 			addRS.insert(instr);
-			// insert the instruction into the ROB
 			rob2.insert(instr);
-
+			dest.is_mapped = true;
+			dest.value = instr.instructionId;
+			
 			// update the instructions ROB metadata
 			instr.instType = instr.op_code;
-			instr.destValue = "r" + std::to_string(instr.dest);
 			instr.rob_busy = true;
 			instr.issue_start_cycle = numCycles;
 			instr.state = ex;
@@ -242,7 +265,6 @@ bool Issue(Instruction& instr)
 
 		// update the instructions ROB metadata
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		instr.issue_end_cycle = numCycles;
 		rob2.insert(instr);
@@ -276,7 +298,6 @@ bool Issue(Instruction& instr)
 		rob2.insert(instr);;
 		// update the instruction's ROB metadats
 		instr.instType = instr.op_code;
-		instr.destValue = "r" + std::to_string(instr.dest);
 		instr.rob_busy = true;
 		instr.issue_end_cycle = numCycles;
 		instr.state = ex;
@@ -327,6 +348,7 @@ bool Ex(Instruction& instruction)
 			}
 			return true;
 		}
+		break;
 	case sub:
 		// same as add
 		if (instruction.qj == 0 && instruction.qk == 0 && !addFu.occupied)
@@ -479,6 +501,7 @@ bool WriteBack(Instruction& instr)
 	return true;
 }
 
+// this should be called once per cycle on the head of the ROB
 bool Commit(Instruction& instr)
 {
 	switch(instr.op_code)
@@ -492,6 +515,20 @@ bool Commit(Instruction& instr)
 				instr.commit_end_cycle = numCycles;
 			}
 			break;
+		case add:
+		{
+			if (!rob2.isEmpty())
+			{
+				// we will write results to an R register
+				int result = instr.result;
+				int index = instr.dest;
+				intRegFile.intRegFile[index] = result;
+				intRat.table[index].is_mapped = false;
+				intRat.table[index].value = result;
+				rob2.clear();
+			}
+		}
+		break;
 		default:
 			break;
 	}

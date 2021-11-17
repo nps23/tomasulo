@@ -19,6 +19,7 @@
 #include "structures/reservation_station.h"
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
+#include "structures/RegisterAliasingTable.h"
 
 using namespace std;
 
@@ -37,6 +38,9 @@ instructionBuffer instBuff;
 AddFunctinalUnit addFu(config.fu_fp_adder[1]);
 FPFunctionalUnit fpFu(config.fu_fp_mult[1]);
 cdb bus;
+ROM rom(config.program);
+IntRegisterAliasingTable intRat(config);
+FPRegisterAliasingTable fpRat(config);
 
 // Non-hardware bookkeeping units
 std::map<int, Instruction* > idMap;
@@ -45,170 +49,170 @@ int numCycles = 0;
 // Function prototypes
 void programFSM(Instruction& instr);
 void PrintCPUConfig(const CPUConfig& config);
+void driver();
 
 int main()
 {
-	// At the beginning of the simulation, file IO will be done first
-	cout << "All the vars actually are read in" << endl;
-	PrintCPUConfig(config);
-	cout << "Finished Configuration printing" << endl;
+	//
+	//// At the beginning of the simulation, file IO will be done first
+	//cout << "All the vars actually are read in" << endl;
+	//PrintCPUConfig(config);
+	//cout << "Finished Configuration printing" << endl;
+	//
+	//// Set the ROM Memory
+	//ROM rom(config.program);
+	//cout << "ROM Program memory set" << endl;
+	//while (true) {
+	//	
+	//	// Issue a new instruction if there are still instructions to read in
+	//	cout << (*rom.pc).instructionId << endl;
+	//	if (!rom.pc->end)
+	//	{
+	//		// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
+	//	//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
+	//		// Pop a new instruction into the buffer, increment the current instruction, and set the new insts state to issue.
+	//		// This acts as the instruction fetch. 
+	//		InitializeInstruction((*rom.pc));
+	//		instBuff.inst.push_back(rom.pc);
+	//		rom.pc++;
+	//		instBuff.inst[instBuff.curInst]->state = issue;
+	//		instBuff.curInst++;
+	//		cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
+	//		//}
+	//	}
+	//	
+	//	cout << "The amount of entries in the rob is: " << rob2.entries << endl;
+	//	// Step through every instruction to check and make sure 
+	//	for(int i = 0; i < instBuff.getNumInsts(); i++){
+	//		if(instBuff.inst[i]->state != null){
+	//			cout << "Stepping through the pipeline" << endl;
+	//			cout << "State of the currently executing instruction is: " << instBuff.inst[i]->state << endl;
+	//			cout << "ID of the current executing instruction is: " << instBuff.inst[i]->instructionId << endl;
+	//			programFSM(*instBuff.inst[i]);
+	//		}
+	//	}
+	//	cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
+	//	// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
+	//	/*if (rom.pc->end && rob2.table.empty()) {
+	//		break;
+	//	}*/
+	//	numCycles++;
+	//}
+
+	//// NOTE: at the end of a writeback stage, set the cdb.occupied bool back to none
+	//
+	//// Finally create the timing diagram
+	//timingDiagram output(instBuff.inst.size());
+	//for(unsigned int i = 0; i < instBuff.inst.size(); i++){
+	//	output.tDiag[i][1] = instBuff.inst[i]->issue_start_cycle;
+	//	output.tDiag[i][2] = instBuff.inst[i]->issue_end_cycle;
+	//	output.tDiag[i][3] = instBuff.inst[i]->ex_start_cycle;
+	//	output.tDiag[i][4] = instBuff.inst[i]->ex_end_cycle;
+	//	if(instBuff.inst[i]->op_code == ld){
+	//		output.tDiag[i][5] = instBuff.inst[i]->mem_start_cycle;
+	//		output.tDiag[i][6] = instBuff.inst[i]->mem_end_cycle;
+	//	}
+	//	output.tDiag[i][7] = instBuff.inst[i]->writeback_start_cycle;
+	//	output.tDiag[i][8] = instBuff.inst[i]->writeback_end_cycle;
+	//	output.tDiag[i][9] = instBuff.inst[i]->commit_start_cycle;
+	//	output.tDiag[i][10] = instBuff.inst[i]->commit_end_cycle;
+	//}
+	//
+	//// Print out the timing diagram and the register contents to a file
+	//ofstream outFile("output.txt");
+	//if(outFile.is_open()){
+	//	outFile << "\t\tIS  EX  MM  WB  CM" << endl;
+	//	for(unsigned int i = 0; i < instBuff.inst.size(); i++){
+	//		switch(instBuff.inst[i]->op_code){
+	//			case nop:
+	//				outFile << "nop\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+	//				break;
+	//			case ld:
+	//				outFile << "ld " << "F" << instBuff.inst[i]->dest << ", " << instBuff.inst[i]->offset << "(" << instBuff.inst[i]->f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case sd:
+	//				outFile << "sd " << "F" << instBuff.inst[i]->dest << ", " << instBuff.inst[i]->offset << "(" << instBuff.inst[i]->f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case beq:
+	//				outFile << "beq " << "R" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case bne:
+	//				outFile << "bne " << "R" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case add:
+	//				outFile << "add " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case add_d:
+	//				outFile << "add_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case add_i:
+	//				outFile << "add_i " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case sub:
+	//				outFile << "sub " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case sub_d:
+	//				outFile << "sub_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//			case mult_d:
+	//				outFile << "mult_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+	//				break;
+	//		}
+	//	}
+	//	
+	//	// Buffer space
+	//	outFile << endl << endl << endl;
+	//	// Register header
+	//	outFile << "Register Values" << endl;
+	//	
+	//	// Integer Register Header
+	//	for(int i = 0; i < 32; i++){
+	//		outFile << "R" << i << "\t";
+	//	}
+	//	
+	//	outFile << endl;
+	//	
+	//	// Print out the integer register contents
+	//	for(int i = 0; i < 32; i++){
+	//		outFile << intRegFile.intRegFile[i] << "\t";
+	//	}
+	//	
+	//	// Integer Register Header
+	//	for(int i = 0; i < 32; i++){
+	//		outFile << "F" << i << "\t";
+	//	}
+	//	
+	//	outFile << endl;
+	//	
+	//	// Print out the integer register contents
+	//	for(int i = 0; i < 32; i++){
+	//		outFile << fpRegFile.fpRegFile[i] << "\t";
+	//	}
+	//	
+	//	// Buffer space
+	//	outFile << endl << endl << endl;
+	//	
+	//	outFile << "Main Memory" << endl;
+	//	outFile << "Address\t" << "Value" << endl;
+	//	
+	//	// Print out the nonzero memory 
+	//	for(int i = 0; i < 64; i++){
+	//		if(mainMem.mainMemory[i] != 0){
+	//			outFile << i << "\t" << mainMem.mainMemory[i] << endl;
+	//		}
+	//	}
+
+	//	// Print out the number of cycles the program ran for
+	//	outFile << "Cycles run = " << numCycles << endl;
+	//}else{
+	//	cout << "ERROR: FILE OPEN FAILURE" << endl;
+	//}
+	//outFile.close();
+	//return 0;
+
+	driver();
+	std::cout << intRat.table[3].value << std::endl;
 	
-	// Set the ROM Memory
-	ROM rom(config.program);
-
-	//boolean for determining whether or not to continue to fetch instructions
-	bool continueFetch = true;
-
-	cout << "ROM Program memory set" << endl;
-	while (true) {
-		
-		// Issue a new instruction if there are still instructions to read in
-		cout << (*rom.pc).instructionId << endl;
-		if (continueFetch == true)
-		{
-			// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
-		//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
-			// Pop a new instruction into the buffer, increment the current instruction, and set the new insts state to issue.
-			// This acts as the instruction fetch. 
-			InitializeInstruction((*rom.pc));
-			instBuff.inst.push_back(rom.pc);
-			rom.pc++;
-			instBuff.inst[instBuff.curInst]->state = issue;
-			instBuff.curInst++;
-			cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
-			if (rom.pc->end) {
-				continueFetch = false;
-			}
-			//}
-		}
-		
-		cout << "The amount of entries in the rob is: " << rob2.entries << endl;
-		// Step through every instruction to check and make sure 
-		for(int i = 0; i < instBuff.getNumInsts(); i++){
-			if(instBuff.inst[i]->state != null){
-				cout << "Stepping through the pipeline" << endl;
-				cout << "State of the currently executing instruction is: " << instBuff.inst[i]->state << endl;
-				cout << "ID of the current executing instruction is: " << instBuff.inst[i]->instructionId << endl;
-				programFSM(*instBuff.inst[i]);
-			}
-		}
-		cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
-		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
-		/*if (rom.pc->end && rob2.table.empty()) {
-			break;
-		}*/
-		numCycles++;
-	}
-
-	// NOTE: at the end of a writeback stage, set the cdb.occupied bool back to none
-	
-	// Finally create the timing diagram
-	timingDiagram output(instBuff.inst.size());
-	for(unsigned int i = 0; i < instBuff.inst.size(); i++){
-		output.tDiag[i][1] = instBuff.inst[i]->issue_start_cycle;
-		output.tDiag[i][2] = instBuff.inst[i]->issue_end_cycle;
-		output.tDiag[i][3] = instBuff.inst[i]->ex_start_cycle;
-		output.tDiag[i][4] = instBuff.inst[i]->ex_end_cycle;
-		if(instBuff.inst[i]->op_code == ld){
-			output.tDiag[i][5] = instBuff.inst[i]->mem_start_cycle;
-			output.tDiag[i][6] = instBuff.inst[i]->mem_end_cycle;
-		}
-		output.tDiag[i][7] = instBuff.inst[i]->writeback_start_cycle;
-		output.tDiag[i][8] = instBuff.inst[i]->writeback_end_cycle;
-		output.tDiag[i][9] = instBuff.inst[i]->commit_start_cycle;
-		output.tDiag[i][10] = instBuff.inst[i]->commit_end_cycle;
-	}
-	
-	// Print out the timing diagram and the register contents to a file
-	ofstream outFile("output.txt");
-	if(outFile.is_open()){
-		outFile << "\t\tIS  EX  MM  WB  CM" << endl;
-		for(unsigned int i = 0; i < instBuff.inst.size(); i++){
-			switch(instBuff.inst[i]->op_code){
-				case nop:
-					outFile << "nop\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
-					break;
-				case ld:
-					outFile << "ld " << "F" << instBuff.inst[i]->dest << ", " << instBuff.inst[i]->offset << "(" << instBuff.inst[i]->f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case sd:
-					outFile << "sd " << "F" << instBuff.inst[i]->dest << ", " << instBuff.inst[i]->offset << "(" << instBuff.inst[i]->f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case beq:
-					outFile << "beq " << "R" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case bne:
-					outFile << "bne " << "R" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case add:
-					outFile << "add " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case add_d:
-					outFile << "add_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case add_i:
-					outFile << "add_i " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case sub:
-					outFile << "sub " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case sub_d:
-					outFile << "sub_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-				case mult_d:
-					outFile << "mult_d " << "" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
-					break;
-			}
-		}
-		
-		// Buffer space
-		outFile << endl << endl << endl;
-		// Register header
-		outFile << "Register Values" << endl;
-		
-		// Integer Register Header
-		for(int i = 0; i < 32; i++){
-			outFile << "R" << i << "\t";
-		}
-		
-		outFile << endl;
-		
-		// Print out the integer register contents
-		for(int i = 0; i < 32; i++){
-			outFile << intRegFile.intRegFile[i] << "\t";
-		}
-		
-		// Integer Register Header
-		for(int i = 0; i < 32; i++){
-			outFile << "F" << i << "\t";
-		}
-		
-		outFile << endl;
-		
-		// Print out the integer register contents
-		for(int i = 0; i < 32; i++){
-			outFile << fpRegFile.fpRegFile[i] << "\t";
-		}
-		
-		// Buffer space
-		outFile << endl << endl << endl;
-		
-		outFile << "Main Memory" << endl;
-		outFile << "Address\t" << "Value" << endl;
-		
-		// Print out the nonzero memory 
-		for(int i = 0; i < 64; i++){
-			if(mainMem.mainMemory[i] != 0){
-				outFile << i << "\t" << mainMem.mainMemory[i] << endl;
-			}
-		}
-
-		// Print out the number of cycles the program ran for
-		outFile << "Cycles run = " << numCycles << endl;
-	}else{
-		cout << "ERROR: FILE OPEN FAILURE" << endl;
-	}
-	outFile.close();
 	return 0;
 }
 
@@ -329,6 +333,9 @@ void PrintCPUConfig(const CPUConfig& config)
 			break;
 		case 10:
 			std::cout << "mult_d" << std::endl;
+			break;
+		case 11:
+			std::cout << "fin" << std::endl;
 			break;
 		default:
 			std::cout << "Bad instruction. Something went wrong" << std::endl;
