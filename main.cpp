@@ -53,12 +53,16 @@ int main()
 	
 	// Set the ROM Memory
 	ROM rom(config.program);
+
+	//boolean for determining whether or not to continue to fetch instructions
+	bool continueFetch = true;
+
 	cout << "ROM Program memory set" << endl;
 	while (true) {
 		
 		// Issue a new instruction if there are still instructions to read in
 		cout << (*rom.pc).instructionId << endl;
-		if (!rom.pc->end)
+		if (continueFetch == true)
 		{
 			// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
 		//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
@@ -70,6 +74,9 @@ int main()
 			instBuff.inst[instBuff.curInst]->state = issue;
 			instBuff.curInst++;
 			cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
+			if (rom.pc->end) {
+				continueFetch = false;
+			}
 			//}
 		}
 		
