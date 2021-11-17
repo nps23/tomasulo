@@ -53,15 +53,15 @@ Instruction* InitializeInstruction(Instruction& instr)
 	Instruction* new_instr = copyInstruction(&instr);
 	if (rob2.table.size() == 0)
 	{
-		instr.instructionId = 1;
-		idMap[1] = &instr;
+		new_instr->instructionId = 1;
+		idMap[1] = new_instr;
 		return new_instr;
 	}
 	int last_id_index = rob2.table.size() - 1;
 	//auto& last_instruction = rob2.table[last_id_index];
 	//int last_instruction_value = last_instruction->instructionId;
-	instr.instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
-	idMap[instr.instructionId] = &instr;
+	new_instr->instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
+	idMap[new_instr->instructionId] = &instr;
 	return new_instr;
 }
 
