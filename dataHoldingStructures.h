@@ -77,20 +77,25 @@ public:
 
 class instructionBuffer {
 	public:
-		vector<Instruction> inst;
+		vector<Instruction*> inst;
 		int curInst;
 		instructionBuffer(){
 			curInst = 0;
 		}
-		vector<Instruction> operator=(const instructionBuffer& rhs){
-			// New buffer to be filled
-			vector<Instruction> instNew;
-			
-			// Fill the buffer with the right hand operand
-			for(unsigned int i = 0; i < rhs.inst.size(); i++){
-				instNew.push_back(rhs.inst[i]);
-			}
-			return instNew;
+		//vector<Instruction> operator=(const instructionBuffer& rhs){
+		//	// New buffer to be filled
+		//	vector<Instruction> instNew;
+		//	
+		//	// Fill the buffer with the right hand operand
+		//	for(unsigned int i = 0; i < rhs.inst.size(); i++){
+		//		instNew.push_back(rhs.inst[i]);
+		//	}
+		//	return instNew;
+		//}
+
+		void update(Instruction* instruction)
+		{
+			inst.push_back(instruction);
 		}
 		
 		// Get the number of isntructions in the buffer for use in determining when the program is done running.
@@ -258,12 +263,17 @@ class ROM
 		Instruction* pc;
 		ROM(deque<Instruction> iBuff){
 			for(unsigned int i = 0; i < iBuff.size(); i++){
+				std::cout << "Pushing instruciton back" << std::endl;
 				program.push_back(iBuff[i]);
 			}
-			Instruction endDelimiter;
-			endDelimiter.instructionId = -1;
-			program.push_back(endDelimiter);
+			if (iBuff.size() != 0)
+			{
+				pc = &program[0];
+			}
+			//Instruction endDelimiter;
+			//endDelimiter.instructionId = -1;
+			//program.push_back(endDelimiter);
 			
-			pc = &program[0];
+			//pc = &program[0];
 		}
 };

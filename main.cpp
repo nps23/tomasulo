@@ -58,52 +58,51 @@ int main()
 		
 		// Issue a new instruction if there are still instructions to read in
 		cout << (*rom.pc).instructionId << endl;
-		if(((*rom.pc).instructionId != -1)){
-			// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
-			//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
-				// Pop a new instruction into the buffer, increment the current instruction, and set the new insts state to issue.
-				// This acts as the instruction fetch. 
-				InitializeInstruction((*rom.pc));
-				instBuff.inst.push_back((*rom.pc));
-				rom.pc++;
-				instBuff.inst[instBuff.curInst].state = issue;
-				instBuff.curInst++;
-				cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
-			//}
+		if (rom.pc->end)
+		{
+			break;
 		}
-		cout << "The amount of entries in the rob is: " << rob2.table.size() << endl;
+		// If the current instruction is a branch, stop grabbing instruction to avoid speculative branching
+		//if(((instBuff.inst[instBuff.curInst].op_code != bne) || (instBuff.inst[instBuff.curInst].op_code != beq)) || (instBuff.inst[instBuff.curInst].state != wb)){
+			// Pop a new instruction into the buffer, increment the current instruction, and set the new insts state to issue.
+			// This acts as the instruction fetch. 
+			InitializeInstruction((*rom.pc));
+			instBuff.inst.push_back(rom.pc);
+			rom.pc++;
+			instBuff.inst[instBuff.curInst]->state = issue;
+			instBuff.curInst++;
+			cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
+			//}
+		cout << "The amount of entries in the rob is: " << rob2.entries << endl;
 		// Step through every instruction to check and make sure 
 		for(int i = 0; i < instBuff.getNumInsts(); i++){
-			if(instBuff.inst[i].state != null){
+			if(instBuff.inst[i]->state != null){
 				cout << "Stepping through the pipeline" << endl;
-				cout << "State of the currently executing instruction is: " << instBuff.inst[i].state << endl;
-				cout << "ID of the current executing instruction is: " << instBuff.inst[i].instructionId << endl;
-				programFSM(instBuff.inst[i]);
+				cout << "State of the currently executing instruction is: " << instBuff.inst[i]->state << endl;
+				cout << "ID of the current executing instruction is: " << instBuff.inst[i]->instructionId << endl;
+				programFSM(*instBuff.inst[i]);
 			}
 		}
 		cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
 		// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
-		if(((*rom.pc).instructionId == -1) && rob2.isEmpty()){
-			break;
-		}
 		numCycles++;
 	}
 	
 	// Finally create the timing diagram
 	timingDiagram output(instBuff.inst.size());
 	for(unsigned int i = 0; i < instBuff.inst.size(); i++){
-		output.tDiag[i][1] = instBuff.inst[i].issue_start_cycle;
-		output.tDiag[i][2] = instBuff.inst[i].issue_end_cycle;
-		output.tDiag[i][3] = instBuff.inst[i].ex_start_cycle;
-		output.tDiag[i][4] = instBuff.inst[i].ex_end_cycle;
-		if(instBuff.inst[i].op_code == ld){
-			output.tDiag[i][5] = instBuff.inst[i].mem_start_cycle;
-			output.tDiag[i][6] = instBuff.inst[i].mem_end_cycle;
+		output.tDiag[i][1] = instBuff.inst[i]->issue_start_cycle;
+		output.tDiag[i][2] = instBuff.inst[i]->issue_end_cycle;
+		output.tDiag[i][3] = instBuff.inst[i]->ex_start_cycle;
+		output.tDiag[i][4] = instBuff.inst[i]->ex_end_cycle;
+		if(instBuff.inst[i]->op_code == ld){
+			output.tDiag[i][5] = instBuff.inst[i]->mem_start_cycle;
+			output.tDiag[i][6] = instBuff.inst[i]->mem_end_cycle;
 		}
-		output.tDiag[i][7] = instBuff.inst[i].writeback_start_cycle;
-		output.tDiag[i][8] = instBuff.inst[i].writeback_end_cycle;
-		output.tDiag[i][9] = instBuff.inst[i].commit_start_cycle;
-		output.tDiag[i][10] = instBuff.inst[i].commit_end_cycle;
+		output.tDiag[i][7] = instBuff.inst[i]->writeback_start_cycle;
+		output.tDiag[i][8] = instBuff.inst[i]->writeback_end_cycle;
+		output.tDiag[i][9] = instBuff.inst[i]->commit_start_cycle;
+		output.tDiag[i][10] = instBuff.inst[i]->commit_end_cycle;
 	}
 	
 	// Print out the timing diagram and the register contents to a file
@@ -111,15 +110,15 @@ int main()
 	if(outFile.is_open()){
 		outFile << "\t\tIS  EX  MM  WB  CM" << endl;
 		for(unsigned int i = 0; i < instBuff.inst.size(); i++){
-			switch(instBuff.inst[i].op_code){
+			switch(instBuff.inst[i]->op_code){
 				case nop:
 					outFile << "nop\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case ld:
-					outFile << "ld " << "F" << instBuff.inst[i].dest << ", " << instBuff.inst[i].offset << "(" << instBuff.inst[i].f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+					outFile << "ld " << "F" << instBuff.inst[i]->dest << ", " << instBuff.inst[i]->offset << "(" << instBuff.inst[i]->f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
 					break;
 				case sd:
-					outFile << "sd " << "F" << instBuff.inst[i].dest << ", " << instBuff.inst[i].offset << "(" << instBuff.inst[i].f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
+					outFile << "sd " << "F" << instBuff.inst[i]->dest << ", " << instBuff.inst[i]->offset << "(" << instBuff.inst[i]->f_ls_register_operand << ")\t\t" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;
 					break;
 				case beq:
 					outFile << "beq " << "R" << output.tDiag[i][1] << output.tDiag[i][2] << output.tDiag[i][3] << output.tDiag[i][4] << output.tDiag[i][5] << endl;

@@ -31,8 +31,11 @@ void InitializeInstruction(Instruction& instr)
 		return;
 	}
 	int last_id_index = rob2.table.size() - 1;
-	instr.instructionId = (rob2.table[last_id_index]->instructionId)++;
+	//auto& last_instruction = rob2.table[last_id_index];
+	//int last_instruction_value = last_instruction->instructionId;
+	instr.instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
 	idMap[instr.instructionId] = &instr;
+	return;
 }
 
 bool IssueFetch()

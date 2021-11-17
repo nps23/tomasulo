@@ -13,7 +13,8 @@ enum OpCode {
 	add_i,
 	sub,   //issue,ex
 	sub_d, //issue,ex
-	mult_d //issue,ex
+	mult_d, //issue,ex
+	fin
 };
 
 enum PipelineState {
@@ -31,6 +32,7 @@ public:
 	// metadata to track and reference the instruction
 	int instructionId{ 0 };
 	PipelineState state;
+	bool end{ false };
 
 	// INSTRUCTION METADATA
 	OpCode op_code;

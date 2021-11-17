@@ -249,6 +249,12 @@ CPUConfig ParseInput(std::string& input_file)
 					std::cout << "Pushing back new instruction onto config" << std::endl;
 					config.program.push_back(inst);
 				}
+
+				else if (opcode == "fin") {
+					inst.op_code = fin;
+					inst.end = true;
+					config.program.push_back(inst);
+				}
 			}
 		}
 
