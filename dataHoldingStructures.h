@@ -82,6 +82,7 @@ class instructionBuffer {
 		vector<Instruction*> inst;
 		int curInst;
 		instructionBuffer(){
+			inst.resize(0);
 			curInst = 0;
 		}
 
