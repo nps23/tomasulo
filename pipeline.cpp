@@ -344,12 +344,12 @@ bool Ex(Instruction* instruction)
 			// start the ex timer
 			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
+			addRS.clear(instruction);
 			return true;
 		}
 		// instruction is already issued, just cycle the FU
 		else if (instruction == addFu.instr)
 		{
-			// need to think a little more about the timing/handoff on this one
 			int result = addFu.next();
 			if (!addFu.occupied)
 			{
