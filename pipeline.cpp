@@ -49,10 +49,10 @@ Instruction* copyInstruction(const Instruction* source)
 	return new_instr;
 }
 
-Instruction* InitializeInstruction(Instruction& instr)
+Instruction* InitializeInstruction(Instruction* instr)
 {
 	// Read the last instructions value in the ROB. Expect the the ROB to have at least 1 entry.
-	Instruction* new_instr = copyInstruction(&instr);
+	Instruction* new_instr = copyInstruction(instr);
 	// lets try using the last element of the map instead of the ROB.
 	
 	// we seem to be clearing the ROB before getting to the next stage
@@ -77,13 +77,15 @@ Instruction* InitializeInstruction(Instruction& instr)
 
 bool IssueFetch(Instruction* instr)
 {
-	Instruction* fetch_instr = InitializeInstruction(*(rom.pc));
-	instBuff.inst.push_back(fetch_instr);
+	Instruction* fetch_instr = InitializeInstruction(rom.pc);
 	fetch_instr->issue_start_cycle = numCycles;
+	fetch_instr->state = issue;
+	fetch_instr->just_fetched = true;
+	instBuff.inst.push_back(fetch_instr);
 	rom.pc++;
-	instBuff.inst[instBuff.curInst]->state = issue;
-	instBuff.inst[instBuff.curInst]->just_fetched = true;
-	instBuff.curInst++;
+	//instBuff.inst[instBuff.curInst]->state = issue;
+	//instBuff.inst[instBuff.curInst]->just_fetched = true;
+	//instBuff.curInst++;
 	cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
 	
 	return true;
@@ -239,47 +241,42 @@ bool Issue(Instruction* instr)
 	{
 		if (rob2.isFull() || addRS.isFull())
 		{
-			return false;
+			break;
 		}
-		// This is not taking the fetch stage into account right now
-		instr->issue_start_cycle = numCycles;
 
-		// Insert into RS. Look up the location of the operand.
-		std::string left_operand = rat.r_table[instr->r_left_operand];
-		std::string right_operand = rat.r_table[instr->r_right_operand];
-		if (left_operand[0] == 'r')
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& r_entry = intRat.table[instr->r_right_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
 		{
-			int left_index = (int)left_operand[1] - 48;
-			instr->vj = intRegFile.intRegFile[left_index];
+			instr->vj = l_entry.value;
 			instr->qj = 0;
 		}
-		// this indicates an ROB lookup instead
-		else if (left_operand[0] == 'R')
+		else
 		{
-			int index_value = (int)left_operand[3] - 48;
-			instr->qj = index_value;
+			instr->qj = l_entry.value;
 		}
-		if (right_operand[0] == 'r')
+		if (!r_entry.is_mapped)
 		{
-			int right_index = (int)right_operand[1] - 48;
-			instr->vk = intRegFile.intRegFile[right_index];
+			instr->vk = r_entry.value;
 			instr->qk = 0;
 		}
-		else if (right_operand[0] == 'R')
+		else
 		{
-			int index_value = (int)right_operand[3] - 48;
-			instr->qj = index_value;
+			instr->qk = r_entry.value;
 		}
-
-		// insert into the RS 
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
 
-		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
 		instr->rob_busy = true;
-		instr->issue_end_cycle = numCycles;
-		rob2.insert(instr);
-		instr->state = ex;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
 		return true;
 	}
 	case add_i:
@@ -337,9 +334,7 @@ bool Ex(Instruction* instruction)
 		instruction->ex_end_cycle = numCycles;
 		break;
 	case add:
-		// check to see if an instruction is ready to go to FU, and has an open unit
 		// TODO change to for loop to handle multiple function units
-		
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			// start the ex timer
@@ -527,42 +522,63 @@ bool WriteBack(Instruction* instr)
 // this should be called once per cycle on the head of the ROB
 bool Commit(Instruction* instr)
 {
-	switch(instr->op_code)
+	switch (instr->op_code)
 	{
-		case nop:
-			std::cout << "top rob inst line = " << (*rob2.table.front()).programLine << "current inst program line = " << instr->programLine << std::endl;
-			if(((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr->programLine)){
-				instr->state = null;
-				rob2.clear();
-				instr->commit_start_cycle = numCycles;
-				instr->commit_end_cycle = numCycles;
-			}
-			break;
-		case add:
-		{
-			if (instr->commit_begin)
-			{
-				instr->commit_begin = false;
-				instr->commit_start_cycle = numCycles;
-			}
-
-			if (instr == rob2.table[0] && !rob2.hasCommited)
-			{
-				rob2.hasCommited = true;
-				int result = instr->result;
-				int index = instr->dest;
-				intRegFile.intRegFile[index] = result;
-				intRat.table[index].is_mapped = false;
-				intRat.table[index].value = result;
-				instr->commit_end_cycle = numCycles;
-				rob2.clear();
-				outputInstructions.push_back(instr);
-			}
+	case nop:
+		std::cout << "top rob inst line = " << (*rob2.table.front()).programLine << "current inst program line = " << instr->programLine << std::endl;
+		if (((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr->programLine)) {
+			instr->state = null;
+			rob2.clear();
+			instr->commit_start_cycle = numCycles;
+			instr->commit_end_cycle = numCycles;
 		}
 		break;
-		default:
-			break;
+	case add:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+
+		if (instr == rob2.table[0] && !rob2.hasCommited)
+		{
+			rob2.hasCommited = true;
+			int result = instr->result;
+			int index = instr->dest;
+			intRegFile.intRegFile[index] = result;
+			intRat.table[index].is_mapped = false;
+			intRat.table[index].value = result;
+			instr->commit_end_cycle = numCycles;
+			rob2.clear();
+			outputInstructions.push_back(instr);
+		}
+		break;
+	}
+	case sub:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+
+		if (instr == rob2.table[0] && !rob2.hasCommited)
+		{
+			rob2.hasCommited = true;
+			int result = instr->result;
+			int index = instr->dest;
+			intRegFile.intRegFile[index] = result;
+			intRat.table[index].is_mapped = false;
+			intRat.table[index].value = result;
+			instr->commit_end_cycle = numCycles;
+			rob2.clear();
+			outputInstructions.push_back(instr);
+		}
+	default:
+		return true;
 	}
 	return true;
+	}
 }
 

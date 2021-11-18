@@ -72,6 +72,7 @@ void driver()
 			{
 				bufferHead->just_fetched = false;
 				Issue(bufferHead);
+				instBuff.clear(bufferHead);
 			}
 			else
 			{
@@ -104,6 +105,7 @@ void driver()
 				if (instr->issued) 
 				{
 					instr->state = ex;
+					break;
 				}
 			case ex:
 				if (instr->ex_begin)
