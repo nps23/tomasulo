@@ -213,6 +213,7 @@ int main()
 
 	driver();
 	std::cout << intRat.table[3].value << std::endl;
+	std::cout << outputInstructions.size() << std::endl;
 	
 	return 0;
 }

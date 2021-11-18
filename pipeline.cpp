@@ -53,6 +53,9 @@ Instruction* InitializeInstruction(Instruction& instr)
 {
 	// Read the last instructions value in the ROB. Expect the the ROB to have at least 1 entry.
 	Instruction* new_instr = copyInstruction(&instr);
+	// lets try using the last element of the map instead of the ROB.
+	
+	// we seem to be clearing the ROB before getting to the next stage
 	if (rob2.table.size() == 0)
 	{
 		new_instr->instructionId = 1;
@@ -60,10 +63,14 @@ Instruction* InitializeInstruction(Instruction& instr)
 		return new_instr;
 	}
 	int last_id_index = rob2.table.size() - 1;
-	//auto& last_instruction = rob2.table[last_id_index];
-	//int last_instruction_value = last_instruction->instructionId;
-	new_instr->instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
-	idMap[new_instr->instructionId] = &instr;
+
+	//new_instr->instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
+	//idMap[new_instr->instructionId] = &instr;
+
+	int new_value = std::prev(idMap.end())->first + 1;
+	new_instr->instructionId = new_value;
+	idMap[new_value] = new_instr;
+
 	return new_instr;
 }
 
