@@ -68,17 +68,31 @@ void driver()
 		if (instBuff.inst.size() != 0)
 		{
 			auto& bufferHead = instBuff.inst[0];
-			Issue(*bufferHead);
-			if (bufferHead->state == ex)
-			{ 
-				instBuff.clear(bufferHead);
+			if (bufferHead->just_fetched == true)
+			{
+				bufferHead->just_fetched = false;
 			}
-
+			else
+			{
+				Issue(*bufferHead);
+				if (bufferHead->state == ex)
+				{
+					instBuff.clear(bufferHead);
+				}
+			}
 		}
 
+		// ROB will be empty at the beginning of the program and end
+		// We still want to count a cycle
 		if (rob2.isEmpty())
 		{
-			break;
+			if (numCycles > 0)
+			{
+				numCycles++;
+				break;
+			}
+			numCycles++;
+			continue;
 		}
 
 		for (auto instr : rob2.table)
@@ -97,6 +111,8 @@ void driver()
 				break;
 			}
 		}
+		numCycles++;
+
 
 		
 		//// Step through every instruction to check and make sure 
@@ -113,7 +129,6 @@ void driver()
 		///*if (rom.pc->end && rob2.table.empty()) {
 		//	break;
 		//}*/
-		numCycles++;
 	}
 }
 

@@ -4,9 +4,9 @@
 
 AddReservationStation::AddReservationStation(int entries)
 {
+	table.resize(0);
 	maxEntries= entries;
 	freeEntries = entries;
-	table.resize(entries);
 }
 
 bool AddReservationStation::isFull()

@@ -34,7 +34,8 @@ Instruction* copyInstruction(const Instruction* source)
 	Instruction* new_instr = new Instruction;
 	new_instr->op_code = source->op_code;
 	new_instr->r_right_operand = source->r_right_operand;
-	new_instr->f_left_operand = source->r_left_operand;
+	new_instr->r_left_operand = source->r_left_operand;
+	new_instr->f_left_operand = source->f_left_operand;
 	new_instr->f_right_operand = source->f_right_operand;
 	new_instr->offset = source->offset;
 	new_instr->immediate = source->immediate;
@@ -68,10 +69,11 @@ Instruction* InitializeInstruction(Instruction& instr)
 
 bool IssueFetch(Instruction& instr)
 {
-	InitializeInstruction(*(rom.pc));
-	instBuff.inst.push_back(rom.pc);
+	Instruction* fetch_instr = InitializeInstruction(*(rom.pc));
+	instBuff.inst.push_back(fetch_instr);
 	rom.pc++;
 	instBuff.inst[instBuff.curInst]->state = issue;
+	instBuff.inst[instBuff.curInst]->just_fetched = true;
 	instBuff.curInst++;
 	cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
 	

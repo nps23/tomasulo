@@ -84,4 +84,7 @@ public:
 	int writeback_end_cycle{ -1 };
 	int commit_start_cycle{ -1 };
 	int commit_end_cycle{ -1 };
+
+	//PIPELINE FLAGS
+	bool just_fetched = false;
 };

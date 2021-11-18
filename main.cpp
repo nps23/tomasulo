@@ -35,7 +35,7 @@ intReg intRegFile(config);
 fpReg fpRegFile(config);
 cpuMemory mainMem(config);
 instructionBuffer instBuff;
-AddFunctinalUnit addFu(config.fu_fp_adder[1]);
+AddFunctinalUnit addFu(config.fu_integer_adder[1]);
 FPFunctionalUnit fpFu(config.fu_fp_mult[1]);
 cdb bus;
 ROM rom(config.program);
@@ -45,6 +45,7 @@ FPRegisterAliasingTable fpRat(config);
 // Non-hardware bookkeeping units
 std::map<int, Instruction* > idMap;
 int numCycles = 0;
+std::vector<Instruction*> outputInstructions;
 
 // Function prototypes
 void programFSM(Instruction& instr);
