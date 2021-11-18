@@ -17,19 +17,19 @@ cdb_buffer_entries
 1
 
 r_registers 2
-1 10
-2 20
+1 1
+2 2
+5 5
 
 f_registers 2
-1 1.2
+1 1.5
 2 2.4
+3 0
 
 program 5
-nop
-nop
-nop
-nop
-nop
+ld F3, 4(R0)
+add F4, F3, F1
+sd F4, 4(R0)
 
 memory 3
 4 1
