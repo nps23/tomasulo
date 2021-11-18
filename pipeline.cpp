@@ -75,7 +75,7 @@ Instruction* InitializeInstruction(Instruction& instr)
 }
 
 
-bool IssueFetch(Instruction& instr)
+bool IssueFetch(Instruction* instr)
 {
 	Instruction* fetch_instr = InitializeInstruction(*(rom.pc));
 	instBuff.inst.push_back(fetch_instr);
@@ -91,10 +91,10 @@ bool IssueFetch(Instruction& instr)
 
 // At every cycle, call this function with the head of the ROB instruction
 // somewhere, we need a new function to create new "Instructions" based on branches 
-bool Issue(Instruction& instr)
+bool Issue(Instruction* instr)
 {
 	// Check the type of the instruction
-	switch (instr.op_code)
+	switch (instr->op_code)
 	{
 	case nop:
 		if (rob2.isFull())
@@ -103,10 +103,10 @@ bool Issue(Instruction& instr)
 			break;
 		}
 		rob2.insert(instr);
-		instr.rob_busy = true;
-		instr.issue_start_cycle = numCycles;
-		instr.issue_end_cycle = numCycles;
-		instr.state = ex;
+		instr->rob_busy = true;
+		instr->issue_start_cycle = numCycles;
+		instr->issue_end_cycle = numCycles;
+		instr->state = ex;
 		break;
 	case ld:
 		break;
@@ -118,38 +118,38 @@ bool Issue(Instruction& instr)
 		{
 			break;
 		}
-		instr.issue_start_cycle = numCycles;
+		instr->issue_start_cycle = numCycles;
 		// Look up the location of the operand.
-		std::string left_operand = rat.r_table[instr.r_left_operand];
-		std::string right_operand = rat.r_table[instr.r_right_operand];
+		std::string left_operand = rat.r_table[instr->r_left_operand];
+		std::string right_operand = rat.r_table[instr->r_right_operand];
 		if (left_operand[0] == 'r')
 		{
 			int left_index = (int)left_operand[1] - 48;
-			instr.vj = intRegFile.intRegFile[left_index];
-			instr.qj = 0;
+			instr->vj = intRegFile.intRegFile[left_index];
+			instr->qj = 0;
 		}
 		// this indicates an ROB lookup instead
 		else if (left_operand[0] == 'R')
 		{
 			int index_value = (int)left_operand[3] - 48;
-			instr.qj = index_value;
+			instr->qj = index_value;
 		}
 		if (right_operand[0] == 'r')
 		{
 			int right_index = (int)right_operand[1] - 48;
-			instr.vk = intRegFile.intRegFile[right_index];
-			instr.qk = 0;
+			instr->vk = intRegFile.intRegFile[right_index];
+			instr->qk = 0;
 		}
 		else if (right_operand[0] == 'R')
 		{
 			int index_value = (int)right_operand[3] - 48;
-			instr.qj = index_value;
+			instr->qj = index_value;
 		}
-		instr.instType = instr.op_code;
-		instr.rob_busy = true;
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
 		rob2.insert(instr);
-		instr.issue_start_cycle = numCycles;
-		instr.state = ex;
+		instr->issue_start_cycle = numCycles;
+		instr->state = ex;
 		break;
 	}
 	case bne:
@@ -158,38 +158,38 @@ bool Issue(Instruction& instr)
 		{
 			break;
 		}
-		instr.issue_start_cycle = numCycles;
+		instr->issue_start_cycle = numCycles;
 		// Look up the location of the operand.
-		std::string left_operand = rat.r_table[instr.r_left_operand];
-		std::string right_operand = rat.r_table[instr.r_right_operand];
+		std::string left_operand = rat.r_table[instr->r_left_operand];
+		std::string right_operand = rat.r_table[instr->r_right_operand];
 		if (left_operand[0] == 'r')
 		{
 			int left_index = (int)left_operand[1] - 48;
-			instr.vj = intRegFile.intRegFile[left_index];
-			instr.qj = 0;
+			instr->vj = intRegFile.intRegFile[left_index];
+			instr->qj = 0;
 		}
 		// this indicates an ROB lookup instead
 		else if (left_operand[0] == 'R')
 		{
 			int index_value = (int)left_operand[3] - 48;
-			instr.qj = index_value;
+			instr->qj = index_value;
 		}
 		if (right_operand[0] == 'r')
 		{
 			int right_index = (int)right_operand[1] - 48;
-			instr.vk = intRegFile.intRegFile[right_index];
-			instr.qk = 0;
+			instr->vk = intRegFile.intRegFile[right_index];
+			instr->qk = 0;
 		}
 		else if (right_operand[0] == 'R')
 		{
 			int index_value = (int)right_operand[3] - 48;
-			instr.qj = index_value;
+			instr->qj = index_value;
 		}
-		instr.instType = instr.op_code;
-		instr.rob_busy = true;
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
 		rob2.insert(instr);
-		instr.issue_start_cycle = numCycles;
-		instr.state = ex;
+		instr->issue_start_cycle = numCycles;
+		instr->state = ex;
 		break;
 	}
 	case add:
@@ -199,39 +199,39 @@ bool Issue(Instruction& instr)
 				break;
 			}
 			
-			auto& l_entry = intRat.table[instr.r_left_operand];
-			auto& r_entry = intRat.table[instr.r_right_operand];
-			auto& dest = intRat.table[instr.dest];
+			auto& l_entry = intRat.table[instr->r_left_operand];
+			auto& r_entry = intRat.table[instr->r_right_operand];
+			auto& dest = intRat.table[instr->dest];
 
 			if (!l_entry.is_mapped)
 			{
-				instr.vj = l_entry.value;
-				instr.qj = 0;
+				instr->vj = l_entry.value;
+				instr->qj = 0;
 			}
 			else
 			{
-				instr.qj = l_entry.value;
+				instr->qj = l_entry.value;
 			}
 			if (!r_entry.is_mapped)
 			{
-				instr.vk = r_entry.value;
-				instr.qk = 0;
+				instr->vk = r_entry.value;
+				instr->qk = 0;
 			}
 			else
 			{
-				instr.qk = r_entry.value;
+				instr->qk = r_entry.value;
 			}
 			// update the ROB, RS, and the RAT
-			instr.issue_end_cycle = numCycles;
+			instr->issue_end_cycle = numCycles;
 			addRS.insert(instr);
 			rob2.insert(instr);
 			dest.is_mapped = true;
-			dest.value = instr.instructionId;
+			dest.value = instr->instructionId;
 			
 			// update the instructions ROB metadata
-			instr.instType = instr.op_code;
-			instr.rob_busy = true;
-			instr.state = ex;
+			instr->instType = instr->op_code;
+			instr->rob_busy = true;
+			instr->state = ex;
 			return true;
 	}
 	case sub:
@@ -241,44 +241,44 @@ bool Issue(Instruction& instr)
 			return false;
 		}
 		// This is not taking the fetch stage into account right now
-		instr.issue_start_cycle = numCycles;
+		instr->issue_start_cycle = numCycles;
 
 		// Insert into RS. Look up the location of the operand.
-		std::string left_operand = rat.r_table[instr.r_left_operand];
-		std::string right_operand = rat.r_table[instr.r_right_operand];
+		std::string left_operand = rat.r_table[instr->r_left_operand];
+		std::string right_operand = rat.r_table[instr->r_right_operand];
 		if (left_operand[0] == 'r')
 		{
 			int left_index = (int)left_operand[1] - 48;
-			instr.vj = intRegFile.intRegFile[left_index];
-			instr.qj = 0;
+			instr->vj = intRegFile.intRegFile[left_index];
+			instr->qj = 0;
 		}
 		// this indicates an ROB lookup instead
 		else if (left_operand[0] == 'R')
 		{
 			int index_value = (int)left_operand[3] - 48;
-			instr.qj = index_value;
+			instr->qj = index_value;
 		}
 		if (right_operand[0] == 'r')
 		{
 			int right_index = (int)right_operand[1] - 48;
-			instr.vk = intRegFile.intRegFile[right_index];
-			instr.qk = 0;
+			instr->vk = intRegFile.intRegFile[right_index];
+			instr->qk = 0;
 		}
 		else if (right_operand[0] == 'R')
 		{
 			int index_value = (int)right_operand[3] - 48;
-			instr.qj = index_value;
+			instr->qj = index_value;
 		}
 
 		// insert into the RS 
 		addRS.insert(instr);
 
 		// update the instructions ROB metadata
-		instr.instType = instr.op_code;
-		instr.rob_busy = true;
-		instr.issue_end_cycle = numCycles;
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		instr->issue_end_cycle = numCycles;
 		rob2.insert(instr);
-		instr.state = ex;
+		instr->state = ex;
 		return true;
 	}
 	case add_i:
@@ -287,19 +287,19 @@ bool Issue(Instruction& instr)
 		{
 			return false;
 		}
-		instr.issue_start_cycle = numCycles;
-		std::string left_operand = rat.r_table[instr.r_left_operand];
-		//int immediate = instr.immediate;
+		instr->issue_start_cycle = numCycles;
+		std::string left_operand = rat.r_table[instr->r_left_operand];
+		//int immediate = instr->immediate;
 		if (left_operand[0] == 'r')
 		{
 			int left_index = (int)left_operand[1] - 48;
-			instr.vj = intRegFile.intRegFile[left_index];
-			instr.qj = 0;
+			instr->vj = intRegFile.intRegFile[left_index];
+			instr->qj = 0;
 		}
 		else if (left_operand[0] == 'R')
 		{
 			int index_value = (int)left_operand[1] - 48;
-			instr.qj = index_value;
+			instr->qj = index_value;
 		}
 		// insert into the RS
 		addRS.insert(instr);
@@ -307,10 +307,10 @@ bool Issue(Instruction& instr)
 		// insert into the ROB
 		rob2.insert(instr);;
 		// update the instruction's ROB metadats
-		instr.instType = instr.op_code;
-		instr.rob_busy = true;
-		instr.issue_end_cycle = numCycles;
-		instr.state = ex;
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		instr->issue_end_cycle = numCycles;
+		instr->state = ex;
 		return true;
 	}
 	default:
@@ -321,117 +321,117 @@ bool Issue(Instruction& instr)
 };
 
 // probably don't want this to return bool
-bool Ex(Instruction& instruction)
+bool Ex(Instruction* instruction)
 {
 	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
-	switch (instruction.op_code)
+	switch (instruction->op_code)
 	{
 	case beq:
 		break;
 	case bne:
 		break;
 	case nop:
-		instruction.state = wb;
-		instruction.ex_start_cycle = numCycles;
-		instruction.ex_end_cycle = numCycles;
+		instruction->state = wb;
+		instruction->ex_start_cycle = numCycles;
+		instruction->ex_end_cycle = numCycles;
 		break;
 	case add:
 		// check to see if an instruction is ready to go to FU, and has an open unit
 		// TODO change to for loop to handle multiple function units
 		
-		if (instruction.qj == 0 && instruction.qk == 0 && !addFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			// start the ex timer
-			instruction.ex_start_cycle = numCycles;
-			addFu.dispatch(&instruction);
+			instruction->ex_start_cycle = numCycles;
+			addFu.dispatch(instruction);
 			return true;
 		}
 		// instruction is already issued, just cycle the FU
-		else if (&instruction == addFu.instr)
+		else if (instruction == addFu.instr)
 		{
 			// need to think a little more about the timing/handoff on this one
 			int result = addFu.next();
 			if (!addFu.occupied)
 			{
-				instruction.state = wb;
-				instruction.result = result;
-				instruction.ex_end_cycle = numCycles;
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
 			}
 			return true;
 		}
 		break;
 	case sub:
 		// same as add
-		if (instruction.qj == 0 && instruction.qk == 0 && !addFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
-			instruction.ex_start_cycle = numCycles;
-			addFu.dispatch(&instruction);
+			instruction->ex_start_cycle = numCycles;
+			addFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (&instruction == addFu.instr)
+		else if (instruction == addFu.instr)
 		{
 			int result = addFu.next();
 			if (!addFu.occupied)
 			{
-				instruction.state = wb;
-				instruction.result = result;
-				instruction.ex_end_cycle = numCycles;
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
 			}
 			return true;
 		}
 	case add_d:
-		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
-			instruction.ex_start_cycle = numCycles;
-			fpFu.dispatch(&instruction);
+			instruction->ex_start_cycle = numCycles;
+			fpFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (&instruction == addFu.instr)
+		else if (instruction == addFu.instr)
 		{
 			double result = fpFu.next();
 			if (!addFu.occupied)
 			{
-				instruction.state = wb;
-				instruction.result = result;
-				instruction.ex_end_cycle = numCycles;
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
 			}
 		}
 	case sub_d:
-		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
-			instruction.ex_start_cycle = numCycles;
-			fpFu.dispatch(&instruction);
+			instruction->ex_start_cycle = numCycles;
+			fpFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (&instruction == addFu.instr)
+		else if (instruction == addFu.instr)
 		{
 			double result = fpFu.next();
 			if (!addFu.occupied)
 			{
-				instruction.state = wb;
-				instruction.result = result;
-				instruction.ex_end_cycle = numCycles;
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
 			}
 		}
 	case mult_d:
-		if (instruction.qj == 0 && instruction.qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
-			instruction.ex_start_cycle = numCycles;
-			fpFu.dispatch(&instruction);
+			instruction->ex_start_cycle = numCycles;
+			fpFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (&instruction == addFu.instr)
+		else if (instruction == addFu.instr)
 		{
 			double result = fpFu.next();
 			if (!addFu.occupied)
 			{
-				instruction.state = wb;
-				instruction.result = result;
-				instruction.ex_end_cycle = numCycles;
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
 			}
 		}
 	case ld:
@@ -444,18 +444,18 @@ bool Ex(Instruction& instruction)
 	return true;
 }
 
-bool Mem(Instruction& instr){
+bool Mem(Instruction* instr){
 	return true;
 }
-bool WriteBack(Instruction& instr)
+bool WriteBack(Instruction* instr)
 {
-	switch(instr.op_code)
+	switch(instr->op_code)
 	{
 		case nop:
 		{
-			instr.state = commit;
-			instr.writeback_start_cycle = numCycles;
-			instr.writeback_end_cycle = numCycles;
+			instr->state = commit;
+			instr->writeback_start_cycle = numCycles;
+			instr->writeback_end_cycle = numCycles;
 			break;
 		}
 		case ld:
@@ -471,52 +471,52 @@ bool WriteBack(Instruction& instr)
 
 		default:  // should work for add, add_d, add_i sub, sub_d, mult_d
 		{
-			if (instr.writeback_begin)
+			if (instr->writeback_begin)
 			{
-				instr.writeback_begin = false;
-				instr.writeback_start_cycle = numCycles;
+				instr->writeback_begin = false;
+				instr->writeback_start_cycle = numCycles;
 			}
 			if (!bus.occupied)
 			{
 				if (!bus.isEmpty())
 				{
-					bus.clear(&instr);
+					bus.clear(instr);
 				}
 				bus.occupied = true;
 				// TODO account for mappping logic
 				for (auto& instruction : addRS.table)
 				{
-					if (instruction->qj == instr.instructionId)
+					if (instruction->qj == instr->instructionId)
 					{
 						instruction->qj = 0;
-						instruction->vj = instr.result;
+						instruction->vj = instr->result;
 					}
 					if (instruction->qk == instruction->instructionId)
 					{
 						instruction->qk = 0;
-						instruction->vk = instr.result;
+						instruction->vk = instr->result;
 					}
 					instruction->writeback_end_cycle = numCycles;
 				}
 				for (auto& instruction : fRs.table)
 				{
-					if (instruction->qj == instr.instructionId)
+					if (instruction->qj == instr->instructionId)
 					{
 						instruction->qj = 0;
-						instruction->vj = instr.result;
+						instruction->vj = instr->result;
 					}
 					if (instruction->qk == instruction->instructionId)
 					{
 						instruction->qk = 0;
-						instruction->vk = instr.result;
+						instruction->vk = instr->result;
 					}
 				}
-				instr.state = commit;
-				instr.commit_start_cycle = numCycles + 1;
+				instr->state = commit;
+				instr->commit_start_cycle = numCycles + 1;
 			}
 			else
 			{
-				bus.insert(&instr);
+				bus.insert(instr);
 			}
 		}
 	}
@@ -524,38 +524,38 @@ bool WriteBack(Instruction& instr)
 }
 
 // this should be called once per cycle on the head of the ROB
-bool Commit(Instruction& instr)
+bool Commit(Instruction* instr)
 {
-	switch(instr.op_code)
+	switch(instr->op_code)
 	{
 		case nop:
-			std::cout << "top rob inst line = " << (*rob2.table.front()).programLine << "current inst program line = " << instr.programLine << std::endl;
-			if(((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr.programLine)){
-				instr.state = null;
+			std::cout << "top rob inst line = " << (*rob2.table.front()).programLine << "current inst program line = " << instr->programLine << std::endl;
+			if(((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr->programLine)){
+				instr->state = null;
 				rob2.clear();
-				instr.commit_start_cycle = numCycles;
-				instr.commit_end_cycle = numCycles;
+				instr->commit_start_cycle = numCycles;
+				instr->commit_end_cycle = numCycles;
 			}
 			break;
 		case add:
 		{
-			if (instr.commit_begin)
+			if (instr->commit_begin)
 			{
-				instr.commit_begin = false;
-				instr.commit_start_cycle = numCycles;
+				instr->commit_begin = false;
+				instr->commit_start_cycle = numCycles;
 			}
 
-			if (&instr == rob2.table[0] && !rob2.hasCommited)
+			if (instr == rob2.table[0] && !rob2.hasCommited)
 			{
 				rob2.hasCommited = true;
-				int result = instr.result;
-				int index = instr.dest;
+				int result = instr->result;
+				int index = instr->dest;
 				intRegFile.intRegFile[index] = result;
 				intRat.table[index].is_mapped = false;
 				intRat.table[index].value = result;
-				instr.commit_end_cycle = numCycles;
+				instr->commit_end_cycle = numCycles;
 				rob2.clear();
-				outputInstructions.push_back(&instr);
+				outputInstructions.push_back(instr);
 			}
 		}
 		break;

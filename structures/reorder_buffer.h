@@ -12,7 +12,7 @@ public:
 	std::deque<Instruction*> table;
 
 	ReorderBuffer(int robEntries);
-	void insert(Instruction& instr);
+	void insert(Instruction* instr);
 	void clear();
 	bool isFull();
 	bool isEmpty();

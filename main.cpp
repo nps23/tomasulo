@@ -218,8 +218,8 @@ int main()
 	return 0;
 }
 
-void programFSM(Instruction& instr){
-	switch(instr.state){
+void programFSM(Instruction* instr){
+	switch(instr->state){
 		case issue:
 			Issue(instr);
 			break;

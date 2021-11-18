@@ -61,7 +61,7 @@ void driver()
 		// ISSUE FETCH
 		if (!rom.pc->end)
 		{
-			IssueFetch(*rom.pc);
+			IssueFetch(rom.pc);
 		}
 
 		// ISSUE DECODE
@@ -74,7 +74,7 @@ void driver()
 			}
 			else
 			{
-				Issue(*bufferHead);
+				Issue(bufferHead);
 				if (bufferHead->state == ex)
 				{
 					instBuff.clear(bufferHead);
@@ -108,15 +108,15 @@ void driver()
 				}
 				else
 				{
-					Ex(*instr);
+					Ex(instr);
 					break;
 				}
 			case wb:
-				WriteBack(*instr);
+				WriteBack(instr);
 				bus.occupied = false;
 				break;
 			case commit:
-				Commit(*instr);
+				Commit(instr);
 				break;
 			}
 		}

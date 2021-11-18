@@ -14,27 +14,27 @@ bool AddReservationStation::isFull()
 	return (freeEntries == 0);
 }
 
-int AddReservationStation::insert(Instruction& instr)
+int AddReservationStation::insert(Instruction* instr)
 {
 	if (freeEntries == 0)
 	{
 		throw "Trying to insert into a full reservation station";
 	}
-	table.push_back(&instr);
+	table.push_back(instr);
 	freeEntries--;
 	int index = table.size() - 1;
 	return index;
 }
 
 // should be called at the end of each pipeline to account for the transition instructions
-void AddReservationStation::clear(Instruction& instruction)
+void AddReservationStation::clear(Instruction* instruction)
 {
-	if (instruction.qj != 0 || instruction.qk != 0 || table.size() == 0)
+	if (instruction->qj != 0 || instruction->qk != 0 || table.size() == 0)
 	{
 		throw "Error! Trying to remove an element from the Add RS before operands are ready";
 	}
 	
-	table.erase(std::remove(table.begin(), table.end(), &instruction));
+	table.erase(std::remove(table.begin(), table.end(), instruction));
 	/*
 	for (auto it = table.begin(); it != table.end();)
 	{

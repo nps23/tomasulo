@@ -9,10 +9,10 @@ ReorderBuffer::ReorderBuffer(int robEntries)
 	entries = robEntries;
 }
 
-void ReorderBuffer::insert(Instruction& instr)
+void ReorderBuffer::insert(Instruction* instr)
 {
 
-	table.push_back(&instr);
+	table.push_back(instr);
 }
 
 bool ReorderBuffer::isFull()
