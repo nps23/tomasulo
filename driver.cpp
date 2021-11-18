@@ -71,10 +71,10 @@ void driver()
 			if (bufferHead->just_fetched == true)
 			{
 				bufferHead->just_fetched = false;
+				Issue(bufferHead);
 			}
 			else
 			{
-				Issue(bufferHead);
 				if (bufferHead->state == ex)
 				{
 					instBuff.clear(bufferHead);
@@ -100,6 +100,11 @@ void driver()
 		{
 			switch (instr->state)
 			{
+			case issue:
+				if (instr->issued) 
+				{
+					instr->state = ex;
+				}
 			case ex:
 				if (instr->ex_begin)
 				{

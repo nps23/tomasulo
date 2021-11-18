@@ -16,7 +16,7 @@ rob_entries
 cdb_buffer_entries
 1
 
-r_registers 2
+r_registers 5
 1 10
 2 20
 5 5

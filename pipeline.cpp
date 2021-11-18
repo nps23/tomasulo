@@ -231,7 +231,8 @@ bool Issue(Instruction* instr)
 			// update the instructions ROB metadata
 			instr->instType = instr->op_code;
 			instr->rob_busy = true;
-			instr->state = ex;
+			// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+			instr->issued = true;
 			return true;
 	}
 	case sub:

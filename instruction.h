@@ -90,4 +90,5 @@ public:
 	bool writeback_begin = true;
 	bool commit_begin = true;
 	bool ex_begin = true;
+	bool issued = false;
 };
