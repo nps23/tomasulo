@@ -26,6 +26,7 @@ extern FPRegisterAliasingTable fpRat;
 extern std::map<int, Instruction* > idMap;
 extern int numCycles;
 extern timingDiagram output;
+extern std::vector<Instruction*> outputInstructions;
 
 // call this function before storing an instruction in the instruction buffer
 // didn't feel like writing a copy constructor for the struct
@@ -71,6 +72,7 @@ bool IssueFetch(Instruction& instr)
 {
 	Instruction* fetch_instr = InitializeInstruction(*(rom.pc));
 	instBuff.inst.push_back(fetch_instr);
+	fetch_instr->issue_start_cycle = numCycles;
 	rom.pc++;
 	instBuff.inst[instBuff.curInst]->state = issue;
 	instBuff.inst[instBuff.curInst]->just_fetched = true;
@@ -189,10 +191,9 @@ bool Issue(Instruction& instr)
 			{
 				break;
 			}
-			instr.issue_start_cycle = numCycles;
 			
-			auto& l_entry = intRat.table[instr.r_right_operand];
-			auto& r_entry = intRat.table[instr.r_left_operand];
+			auto& l_entry = intRat.table[instr.r_left_operand];
+			auto& r_entry = intRat.table[instr.r_right_operand];
 			auto& dest = intRat.table[instr.dest];
 
 			if (!l_entry.is_mapped)
@@ -206,14 +207,15 @@ bool Issue(Instruction& instr)
 			}
 			if (!r_entry.is_mapped)
 			{
-				instr.vk = l_entry.value;
+				instr.vk = r_entry.value;
 				instr.qk = 0;
 			}
 			else
 			{
-				instr.qk = l_entry.value;
+				instr.qk = r_entry.value;
 			}
 			// update the ROB, RS, and the RAT
+			instr.issue_end_cycle = numCycles;
 			addRS.insert(instr);
 			rob2.insert(instr);
 			dest.is_mapped = true;
@@ -222,7 +224,6 @@ bool Issue(Instruction& instr)
 			// update the instructions ROB metadata
 			instr.instType = instr.op_code;
 			instr.rob_busy = true;
-			instr.issue_start_cycle = numCycles;
 			instr.state = ex;
 			return true;
 	}
@@ -330,6 +331,7 @@ bool Ex(Instruction& instruction)
 	case add:
 		// check to see if an instruction is ready to go to FU, and has an open unit
 		// TODO change to for loop to handle multiple function units
+		
 		if (instruction.qj == 0 && instruction.qk == 0 && !addFu.occupied)
 		{
 			// start the ex timer
@@ -462,6 +464,11 @@ bool WriteBack(Instruction& instr)
 
 		default:  // should work for add, add_d, add_i sub, sub_d, mult_d
 		{
+			if (instr.writeback_begin)
+			{
+				instr.writeback_begin = false;
+				instr.writeback_start_cycle = numCycles;
+			}
 			if (!bus.occupied)
 			{
 				if (!bus.isEmpty())
@@ -469,33 +476,36 @@ bool WriteBack(Instruction& instr)
 					bus.clear(&instr);
 				}
 				bus.occupied = true;
+				// TODO account for mappping logic
 				for (auto& instruction : addRS.table)
 				{
-					if (instruction->qj = instr.instructionId)
+					if (instruction->qj == instr.instructionId)
 					{
 						instruction->qj = 0;
 						instruction->vj = instr.result;
 					}
-					if (instruction->qk = instruction->instructionId)
+					if (instruction->qk == instruction->instructionId)
 					{
 						instruction->qk = 0;
 						instruction->vk = instr.result;
 					}
+					instruction->writeback_end_cycle = numCycles;
 				}
 				for (auto& instruction : fRs.table)
 				{
-					if (instruction->qj = instr.instructionId)
+					if (instruction->qj == instr.instructionId)
 					{
 						instruction->qj = 0;
 						instruction->vj = instr.result;
 					}
-					if (instruction->qk = instruction->instructionId)
+					if (instruction->qk == instruction->instructionId)
 					{
 						instruction->qk = 0;
 						instruction->vk = instr.result;
 					}
 				}
 				instr.state = commit;
+				instr.commit_start_cycle = numCycles + 1;
 			}
 			else
 			{
@@ -522,15 +532,23 @@ bool Commit(Instruction& instr)
 			break;
 		case add:
 		{
-			if (!rob2.isEmpty())
+			if (instr.commit_begin)
 			{
-				// we will write results to an R register
+				instr.commit_begin = false;
+				instr.commit_start_cycle = numCycles;
+			}
+
+			if (&instr == rob2.table[0] && !rob2.hasCommited)
+			{
+				rob2.hasCommited = true;
 				int result = instr.result;
 				int index = instr.dest;
 				intRegFile.intRegFile[index] = result;
 				intRat.table[index].is_mapped = false;
 				intRat.table[index].value = result;
+				instr.commit_end_cycle = numCycles;
 				rob2.clear();
+				outputInstructions.push_back(&instr);
 			}
 		}
 		break;

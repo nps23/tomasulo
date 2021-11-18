@@ -87,4 +87,7 @@ public:
 
 	//PIPELINE FLAGS
 	bool just_fetched = false;
+	bool writeback_begin = true;
+	bool commit_begin = true;
+	bool ex_begin = true;
 };

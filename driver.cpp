@@ -78,6 +78,7 @@ void driver()
 				if (bufferHead->state == ex)
 				{
 					instBuff.clear(bufferHead);
+					bufferHead->ex_begin = true;
 				}
 			}
 		}
@@ -100,8 +101,16 @@ void driver()
 			switch (instr->state)
 			{
 			case ex:
-				Ex(*instr);
-				break;
+				if (instr->ex_begin)
+				{
+					instr->ex_begin = false;
+					break;
+				}
+				else
+				{
+					Ex(*instr);
+					break;
+				}
 			case wb:
 				WriteBack(*instr);
 				bus.occupied = false;
@@ -111,6 +120,7 @@ void driver()
 				break;
 			}
 		}
+		rob2.hasCommited = false;
 		numCycles++;
 
 

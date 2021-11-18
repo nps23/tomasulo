@@ -8,6 +8,7 @@ class ReorderBuffer
 {
 public:
 	int entries;
+	bool hasCommited{ false };
 	std::deque<Instruction*> table;
 
 	ReorderBuffer(int robEntries);
