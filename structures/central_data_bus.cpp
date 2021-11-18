@@ -9,6 +9,10 @@ cdb::cdb()
 	occupied = false;
 }
 
+bool cdb::isEmpty()
+{
+	return buffer.empty();
+}
 // make sure to fill the buffer before calling this method
 void cdb::clear(Instruction* instr)
 {

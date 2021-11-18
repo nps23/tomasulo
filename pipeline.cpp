@@ -462,7 +462,10 @@ bool WriteBack(Instruction& instr)
 		{
 			if (!bus.occupied)
 			{
-				bus.clear(&instr);
+				if (!bus.isEmpty())
+				{
+					bus.clear(&instr);
+				}
 				bus.occupied = true;
 				for (auto& instruction : addRS.table)
 				{
