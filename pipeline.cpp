@@ -497,7 +497,6 @@ bool WriteBack(Instruction* instr)
 						instruction->qk = 0;
 						instruction->vk = instr->result;
 					}
-					instruction->writeback_end_cycle = numCycles;
 				}
 				for (auto& instruction : fRs.table)
 				{
@@ -512,6 +511,8 @@ bool WriteBack(Instruction* instr)
 						instruction->vk = instr->result;
 					}
 				}
+
+				instr->writeback_end_cycle = numCycles;
 				instr->state = commit;
 				instr->commit_start_cycle = numCycles + 1;
 			}
@@ -530,12 +531,12 @@ bool Commit(Instruction* instr)
 	switch(instr->op_code)
 	{
 		case nop:
-			std::cout << "top rob inst line = " << (*rob2.table.front()).programLine << "current inst program line = " << instr->programLine << std::endl;
 			if(((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr->programLine)){
 				instr->state = null;
 				rob2.clear();
 				instr->commit_start_cycle = numCycles;
 				instr->commit_end_cycle = numCycles;
+				outputInstructions.push_back(instr);
 			}
 			break;
 		case add:

@@ -127,45 +127,6 @@ void driver()
 		}
 		rob2.hasCommited = false;
 		numCycles++;
-
-
-		
-		//// Step through every instruction to check and make sure 
-		//for (int i = 0; i < instBuff.getNumInsts(); i++) {
-		//	if (instBuff.inst[i]->state != null) {
-		//		cout << "Stepping through the pipeline" << endl;
-		//		cout << "State of the currently executing instruction is: " << instBuff.inst[i]->state << endl;
-		//		cout << "ID of the current executing instruction is: " << instBuff.inst[i]->instructionId << endl;
-		//		programFSM(*instBuff.inst[i]);
-		//	}
-		//}
-		//cout << "Instruction line of top instruction in ROB = " << (*rob2.table.front()).programLine << endl;
-		//// When the simulation is done, the ROB will be empty, and the curinst will be equal to the max number of insts. 
-		///*if (rom.pc->end && rob2.table.empty()) {
-		//	break;
-		//}*/
 	}
 }
-
-//void programFSM(Instruction& instr) {
-//	switch (instr.state) {
-//	case issue:
-//		Issue(instr);
-//		break;
-//	case ex:
-//		Ex(instr);
-//		break;
-//	case mem:
-//		Mem(instr);
-//		break;
-//	case wb:
-//		WriteBack(instr);
-//		break;
-//	case commit:
-//		Commit(instr);
-//		break;
-//	default:
-//		break;
-//	}
-//}
 

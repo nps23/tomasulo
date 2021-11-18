@@ -6,7 +6,7 @@ extern int numCycles;
 
 AddFunctinalUnit::AddFunctinalUnit(int cycles_ex)
 {
-	cycleInEx = cycles_ex;
+	cycleInEx = cycles_ex - 1;
 	internalCycle = 0;
 	occupied = false;
 	instr = nullptr;
