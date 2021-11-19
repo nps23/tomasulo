@@ -21,6 +21,8 @@ int AddFunctinalUnit::next()
 		internalCycle = 0;
 		switch (op_code)
 		{
+		case add_i:
+			return left_operand + right_operand;
 		case add:
 			return left_operand + right_operand;
 		case sub:
