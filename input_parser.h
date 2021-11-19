@@ -217,7 +217,7 @@ CPUConfig ParseInput(std::string& input_file)
 				}
 
 				else if (opcode == "sub_d") {
-					inst.op_code = sub;
+					inst.op_code = sub_d;
 					char f;
 					int dest, l_operand, r_operand;
 					infile >> f >> dest >> f >> l_operand >> f >> r_operand;

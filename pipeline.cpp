@@ -197,48 +197,48 @@ bool Issue(Instruction* instr)
 	}
 	case add:
 	{
-			if (rob2.isFull() || addRS.isFull())
-			{
-				break;
-			}
-			
-			instBuff.clear(instr);
-			auto& l_entry = intRat.table[instr->r_left_operand];
-			auto& r_entry = intRat.table[instr->r_right_operand];
-			auto& dest = intRat.table[instr->dest];
+		if (rob2.isFull() || addRS.isFull())
+		{
+			break;
+		}
 
-			if (!l_entry.is_mapped)
-			{
-				instr->vj = l_entry.value;
-				instr->qj = 0;
-			}
-			else
-			{
-				instr->qj = l_entry.value;
-			}
-			if (!r_entry.is_mapped)
-			{
-				instr->vk = r_entry.value;
-				instr->qk = 0;
-			}
-			else
-			{
-				instr->qk = r_entry.value;
-			}
-			// update the ROB, RS, and the RAT
-			instr->issue_end_cycle = numCycles;
-			addRS.insert(instr);
-			rob2.insert(instr);
-			dest.is_mapped = true;
-			dest.value = instr->instructionId;
-			
-			// update the instructions ROB metadata
-			instr->instType = instr->op_code;
-			instr->rob_busy = true;
-			// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-			instr->issued = true;
-			instr->state = ex;
-			return true;
+		instBuff.clear(instr);
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& r_entry = intRat.table[instr->r_right_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.value;
+		}
+		if (!r_entry.is_mapped)
+		{
+			instr->vk = r_entry.value;
+			instr->qk = 0;
+		}
+		else
+		{
+			instr->qk = r_entry.value;
+		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		addRS.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
 	}
 	case sub:
 	{
@@ -305,7 +305,7 @@ bool Issue(Instruction* instr)
 		{
 			instr->qj = l_entry.value;
 		}
-		
+
 		// The immediate value will always be given, so fill vk directly.
 		instr->vk = instr->immediate;
 
@@ -324,6 +324,96 @@ bool Issue(Instruction* instr)
 		return true;
 	}
 	case mult_d:
+	{
+		if (rob2.isFull() || fRs.isFull())
+		{
+			break;
+		}
+
+		instBuff.clear(instr);
+		auto& l_entry = fpRat.table[instr->f_left_operand];
+		auto& r_entry = fpRat.table[instr->f_right_operand];
+		auto& dest = fpRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.value;
+		}
+		if (!r_entry.is_mapped)
+		{
+			instr->vk = r_entry.value;
+			instr->qk = 0;
+		}
+		else
+		{
+			instr->qk = r_entry.value;
+		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		fRs.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
+	}
+	case add_d:
+	{
+		if (rob2.isFull() || fRs.isFull())
+		{
+			break;
+		}
+
+		instBuff.clear(instr);
+		auto& l_entry = fpRat.table[instr->f_left_operand];
+		auto& r_entry = fpRat.table[instr->f_right_operand];
+		auto& dest = fpRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.value;
+		}
+		if (!r_entry.is_mapped)
+		{
+			instr->vk = r_entry.value;
+			instr->qk = 0;
+		}
+		else
+		{
+			instr->qk = r_entry.value;
+		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		fRs.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
+	}
+	case sub_d:
 	{
 		if (rob2.isFull() || fRs.isFull())
 		{
@@ -457,47 +547,55 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+		break;
 	case add_d:
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
+			fRs.clear(instruction);
 			return true;
 		}
 
-		else if (instruction == addFu.instr)
+		else if (instruction == fpFu.instr)
 		{
 			double result = fpFu.next();
-			if (!addFu.occupied)
+			if (!fpFu.occupied)
 			{
 				instruction->state = wb;
 				instruction->result = result;
 				instruction->ex_end_cycle = numCycles;
 			}
+			return true;
 		}
+		break;
 	case sub_d:
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
+			fRs.clear(instruction);
 			return true;
 		}
 
-		else if (instruction == addFu.instr)
+		else if (instruction == fpFu.instr)
 		{
 			double result = fpFu.next();
-			if (!addFu.occupied)
+			if (!fpFu.occupied)
 			{
 				instruction->state = wb;
 				instruction->result = result;
 				instruction->ex_end_cycle = numCycles;
 			}
+			return true;
 		}
+		break;
 	case mult_d:
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
 			fpMulFu.dispatch(instruction);
+			fRs.clear(instruction);
 			return true;
 		}
 
@@ -510,7 +608,9 @@ bool Ex(Instruction* instruction)
 				instruction->result = result;
 				instruction->ex_end_cycle = numCycles;
 			}
+			return true;
 		}
+		break;
 	case ld:
 		break;
 	case sd:
@@ -684,6 +784,50 @@ bool Commit(Instruction* instr)
 		break;
 	}
 	case mult_d:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+
+		if (instr == rob2.table[0] && !rob2.hasCommited)
+		{
+			rob2.hasCommited = true;
+			double result = instr->result;
+			int index = instr->dest;
+			fpRegFile.fpRegFile[index] = result;
+			fpRat.table[index].is_mapped = false;
+			fpRat.table[index].value = result;
+			instr->commit_end_cycle = numCycles;
+			rob2.clear();
+			outputInstructions.push_back(instr);
+		}
+		break;
+	}
+	case add_d:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+
+		if (instr == rob2.table[0] && !rob2.hasCommited)
+		{
+			rob2.hasCommited = true;
+			double result = instr->result;
+			int index = instr->dest;
+			fpRegFile.fpRegFile[index] = result;
+			fpRat.table[index].is_mapped = false;
+			fpRat.table[index].value = result;
+			instr->commit_end_cycle = numCycles;
+			rob2.clear();
+			outputInstructions.push_back(instr);
+		}
+		break;
+	}
+	case sub_d:
 	{
 		if (instr->commit_begin)
 		{

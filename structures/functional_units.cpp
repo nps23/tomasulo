@@ -62,7 +62,7 @@ double FPAddFunctionalUnit::next()
 		case add_d:
 			return left_operand + right_operand;
 		case sub_d:
-			return right_operand - left_operand;
+			return left_operand - right_operand;
 		case mult_d:
 			throw "Trying to pass mult into the functional unit";
 		default:

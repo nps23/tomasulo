@@ -35,12 +35,11 @@ void AddReservationStation::clear(Instruction* instruction)
 FPReservationStation::FPReservationStation(int entries)
 {
 	maxEntries = entries;
-	freeEntries = entries;
 }
 
 bool FPReservationStation::isFull()
 {
-	return (freeEntries == 0);
+	return (table.size() == maxEntries);
 }
 
 int FPReservationStation::insert(Instruction* instr)
