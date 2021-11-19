@@ -24,7 +24,7 @@ class intReg {
 
 class fpReg {
 	public:
-		int fpRegFile[32];
+		double fpRegFile[32];
 		fpReg(const CPUConfig& config) {
 			for (const auto& value : config.f_register_map)
 			{

@@ -14,7 +14,8 @@ extern RAT rat;
 extern intReg intRegFile;
 extern fpReg fpRegFile;
 extern AddFunctinalUnit addFu;
-extern FPFunctionalUnit fpFu;
+extern FPAddFunctionalUnit fpFu;
+extern FPMultFunctionalUnit fpMulFu;
 extern cdb bus;
 extern ROM rom;
 extern instructionBuffer instBuff;
@@ -236,6 +237,7 @@ bool Issue(Instruction* instr)
 			instr->rob_busy = true;
 			// Setting the ex state is handled in the driver function in order to avoid a timing error. 
 			instr->issued = true;
+			instr->state = ex;
 			return true;
 	}
 	case sub:
@@ -279,6 +281,7 @@ bool Issue(Instruction* instr)
 		instr->rob_busy = true;
 		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
 		instr->issued = true;
+		instr->state = ex;
 		return true;
 	}
 	case add_i:
@@ -318,6 +321,51 @@ bool Issue(Instruction* instr)
 		instr->rob_busy = true;
 		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
 		instr->issued = true;
+		return true;
+	}
+	case mult_d:
+	{
+		if (rob2.isFull() || fRs.isFull())
+		{
+			break;
+		}
+
+		instBuff.clear(instr);
+		auto& l_entry = fpRat.table[instr->f_left_operand];
+		auto& r_entry = fpRat.table[instr->f_right_operand];
+		auto& dest = fpRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.value;
+		}
+		if (!r_entry.is_mapped)
+		{
+			instr->vk = r_entry.value;
+			instr->qk = 0;
+		}
+		else
+		{
+			instr->qk = r_entry.value;
+		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		fRs.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
 		return true;
 	}
 	default:
@@ -446,17 +494,17 @@ bool Ex(Instruction* instruction)
 			}
 		}
 	case mult_d:
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
-			fpFu.dispatch(instruction);
+			fpMulFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (instruction == addFu.instr)
+		else if (instruction == fpMulFu.instr)
 		{
-			double result = fpFu.next();
-			if (!addFu.occupied)
+			double result = fpMulFu.next();
+			if (!fpMulFu.occupied)
 			{
 				instruction->state = wb;
 				instruction->result = result;
@@ -540,6 +588,7 @@ bool WriteBack(Instruction* instr)
 					}
 				}
 
+
 				instr->writeback_end_cycle = numCycles;
 				instr->state = commit;
 				instr->commit_start_cycle = numCycles + 1;
@@ -558,16 +607,17 @@ bool Commit(Instruction* instr)
 {
 	switch (instr->op_code)
 	{
-		case nop:
-			if(((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr->programLine)){
-				instr->state = null;
-				rob2.clear();
-				instr->commit_start_cycle = numCycles;
-				instr->commit_end_cycle = numCycles;
-				outputInstructions.push_back(instr);
-			}
-			break;
-		case add:
+	case nop:
+		if (((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr->programLine))
+		{
+			instr->state = null;
+			rob2.clear();
+			instr->commit_start_cycle = numCycles;
+			instr->commit_end_cycle = numCycles;
+			outputInstructions.push_back(instr);
+		}
+		break;
+	case add:
 	{
 		if (instr->commit_begin)
 		{
@@ -631,10 +681,35 @@ bool Commit(Instruction* instr)
 			rob2.clear();
 			outputInstructions.push_back(instr);
 		}
-	default:
-		return true;
+		break;
 	}
-	return true;
+	case mult_d:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+
+		if (instr == rob2.table[0] && !rob2.hasCommited)
+		{
+			rob2.hasCommited = true;
+			double result = instr->result;
+			int index = instr->dest;
+			fpRegFile.fpRegFile[index] = result;
+			fpRat.table[index].is_mapped = false;
+			fpRat.table[index].value = result;
+			instr->commit_end_cycle = numCycles;
+			rob2.clear();
+			outputInstructions.push_back(instr);
+		}
+		break;
+	}
+	default:
+	{
+		throw "NO COMMIT IMPLEMENTED FOR INSTRUCTION YET";
+	}
 	}
 }
+
 

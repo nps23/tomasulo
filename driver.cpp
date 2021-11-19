@@ -34,7 +34,7 @@ extern fpReg fpRegFile;
 extern cpuMemory mainMem;
 extern instructionBuffer instBuff;
 extern AddFunctinalUnit addFu;
-extern FPFunctionalUnit fpFu;
+extern FPAddFunctionalUnit fpFu;
 extern cdb bus;
 extern ROM rom;
 extern IntRegisterAliasingTable intRat;

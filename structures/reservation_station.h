@@ -12,8 +12,8 @@ public:
 	int freeEntries;
 	std::vector<Instruction*> table;
 	bool isFull();
-	int insert(Instruction& instr);
-	void clear(Instruction& instruction);
+	int insert(Instruction* instr);
+	void clear(Instruction* instruction);
 	FPReservationStation(int entries);
 };
 
