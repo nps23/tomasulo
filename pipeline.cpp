@@ -285,32 +285,39 @@ bool Issue(Instruction* instr)
 	{
 		if (rob2.isFull() || addRS.isFull())
 		{
-			return false;
+			break;
 		}
-		instr->issue_start_cycle = numCycles;
-		std::string left_operand = rat.r_table[instr->r_left_operand];
-		//int immediate = instr->immediate;
-		if (left_operand[0] == 'r')
+
+		instBuff.clear(instr);
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& r_entry = intRat.table[instr->r_right_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
 		{
-			int left_index = (int)left_operand[1] - 48;
-			instr->vj = intRegFile.intRegFile[left_index];
+			instr->vj = l_entry.value;
 			instr->qj = 0;
 		}
-		else if (left_operand[0] == 'R')
+		else
 		{
-			int index_value = (int)left_operand[1] - 48;
-			instr->qj = index_value;
+			instr->qj = l_entry.value;
 		}
-		// insert into the RS
-		addRS.insert(instr);
 		
-		// insert into the ROB
-		rob2.insert(instr);;
-		// update the instruction's ROB metadats
+		// The immediate value will always be given, so fill vk directly.
+		instr->vk = instr->immediate;
+
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		addRS.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
 		instr->rob_busy = true;
-		instr->issue_end_cycle = numCycles;
-		instr->state = ex;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
 		return true;
 	}
 	default:
@@ -338,6 +345,29 @@ bool Ex(Instruction* instruction)
 	case add:
 		// TODO change to for loop to handle multiple function units
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
+		{
+			// start the ex timer
+			instruction->ex_start_cycle = numCycles;
+			addFu.dispatch(instruction);
+			addRS.clear(instruction);
+			return true;
+		}
+		// instruction is already issued, just cycle the FU
+		else if (instruction == addFu.instr)
+		{
+			int result = addFu.next();
+			if (!addFu.occupied)
+			{
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
+			}
+			return true;
+		}
+		break;
+	case add_i:
+		// TODO change to for loop to handle multiple function units
+		if (instruction->qj == 0 && !addFu.occupied)
 		{
 			// start the ex timer
 			instruction->ex_start_cycle = numCycles;
@@ -538,6 +568,28 @@ bool Commit(Instruction* instr)
 			}
 			break;
 		case add:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+
+		if (instr == rob2.table[0] && !rob2.hasCommited)
+		{
+			rob2.hasCommited = true;
+			int result = instr->result;
+			int index = instr->dest;
+			intRegFile.intRegFile[index] = result;
+			intRat.table[index].is_mapped = false;
+			intRat.table[index].value = result;
+			instr->commit_end_cycle = numCycles;
+			rob2.clear();
+			outputInstructions.push_back(instr);
+		}
+		break;
+	}
+	case add_i:
 	{
 		if (instr->commit_begin)
 		{
