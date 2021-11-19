@@ -24,7 +24,7 @@ int AddFunctinalUnit::next()
 		case add:
 			return left_operand + right_operand;
 		case sub:
-			return right_operand - left_operand;
+			return left_operand - right_operand;
 		}
 	}
 	internalCycle++;
