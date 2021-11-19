@@ -69,21 +69,6 @@ void driver()
 		{
 			auto& bufferHead = instBuff.inst[0];
 			Issue(bufferHead);
-			/*
-			if (bufferHead->just_fetched == true)
-			{
-				bufferHead->just_fetched = false;
-				//instBuff.clear(bufferHead);
-			}
-			else
-			{
-				if (bufferHead->state == ex)
-				{
-					//instBuff.clear(bufferHead);
-					bufferHead->ex_begin = true;
-				}
-			}
-			*/
 		}
 
 		// ROB will be empty at the beginning of the program and end
