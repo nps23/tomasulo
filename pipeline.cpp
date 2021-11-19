@@ -201,6 +201,7 @@ bool Issue(Instruction* instr)
 				break;
 			}
 			
+			instBuff.clear(instr);
 			auto& l_entry = intRat.table[instr->r_left_operand];
 			auto& r_entry = intRat.table[instr->r_right_operand];
 			auto& dest = intRat.table[instr->dest];

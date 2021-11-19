@@ -16,7 +16,7 @@ bool AddReservationStation::isFull()
 
 int AddReservationStation::insert(Instruction* instr)
 {
-	if (freeEntries == 0)
+	if (table.size() == maxEntries)
 	{
 		throw "Trying to insert into a full reservation station";
 	}
@@ -45,7 +45,7 @@ bool FPReservationStation::isFull()
 
 int FPReservationStation::insert(Instruction& instr)
 {
-	if (freeEntries == 0)
+	if (table.size() == maxEntries)
 	{
 		throw "Trying to insert into a full FP Reservations station";
 	}

@@ -29,8 +29,9 @@ f_registers 2
 2 2.4
 
 program 3
-add R3, R2, R1
-add R4, R5, R6
+add r3 r2 r1
+add r4 r5 r6
+add r10 r11 r15
 fin
 
 memory 3
