@@ -95,7 +95,7 @@ void driver()
 				}
 				break;
 			case ex:
-				if (instr->ex_begin)
+				/*if (instr->ex_begin)
 				{
 					instr->ex_begin = false;
 					break;
@@ -104,7 +104,9 @@ void driver()
 				{
 					Ex(instr);
 					break;
-				}
+				}*/
+				Ex(instr);
+				break;
 			case wb:
 				WriteBack(instr);
 				bus.occupied = false;
