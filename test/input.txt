@@ -30,8 +30,7 @@ f_registers 2
 
 program 3
 add r3 r2 r1
-add r4 r5 r6
-add r10 r11 r15
+add r4 r3 r6
 fin
 
 memory 3
