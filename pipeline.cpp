@@ -642,9 +642,9 @@ bool Commit(Instruction* instr)
 		if (instr == rob2.table[0] && !rob2.hasCommited)
 		{
 			rob2.hasCommited = true;
-			int result = instr->result;
+			double result = instr->result;
 			int index = instr->dest;
-			intRegFile.intRegFile[index] = result;
+			fpRegFile.fpRegFile[index] = result;
 			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;

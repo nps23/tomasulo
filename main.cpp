@@ -113,7 +113,7 @@ int main()
 					outFile << "ID = " << outputInstructions[i]->instructionId << " sub_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->r_left_operand << ", F" << outputInstructions[i]->r_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case mult_d:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " mult_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->r_left_operand << ", F" << outputInstructions[i]->r_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " mult_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 			}
 		}
