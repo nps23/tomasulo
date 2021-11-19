@@ -40,7 +40,7 @@ void AddFunctinalUnit::dispatch(Instruction* instruction)
 	right_operand = (int)instruction->vk;
 }
 
-FPFunctionalUnit::FPFunctionalUnit(int cycles_ex)
+FPAddFunctionalUnit::FPAddFunctionalUnit(int cycles_ex)
 {
 	cycleInEx = cycles_ex;
 	internalCycle = 0;
@@ -48,7 +48,7 @@ FPFunctionalUnit::FPFunctionalUnit(int cycles_ex)
 	occupied = false;
 }
 
-double FPFunctionalUnit::next()
+double FPAddFunctionalUnit::next()
 {
 	if (internalCycle == cycleInEx)
 	{
@@ -62,7 +62,7 @@ double FPFunctionalUnit::next()
 		case sub_d:
 			return right_operand - left_operand;
 		case mult_d:
-			return right_operand * left_operand;
+			throw "Trying to pass mult into the functional unit";
 		default:
 			throw "Tried passing a non FP instruction into the FP unit";
 		}
@@ -71,11 +71,45 @@ double FPFunctionalUnit::next()
 	return -1;
 }
 
-void FPFunctionalUnit::dispatch(Instruction* instruction)
+void FPAddFunctionalUnit::dispatch(Instruction* instruction)
 {
 	instr = instruction;
 	occupied = true;
 	op_code = instruction->op_code;
 	left_operand = instruction->vj;
 	right_operand = instruction->vk;
+}
+
+FPMultFunctionalUnit::FPMultFunctionalUnit(int cycles_ex)
+{
+	cycleInEx = cycles_ex - 1;
+	internalCycle = 0;
+	occupied = false;
+	instr = nullptr;
+}
+
+void FPMultFunctionalUnit::dispatch(Instruction* instruction)
+{
+	instr = instruction;
+	occupied = true;
+	op_code = instruction->op_code;
+	left_operand = instruction->vj;
+	right_operand = instruction->vk;
+}
+
+double FPMultFunctionalUnit::next()
+{
+	if (internalCycle == cycleInEx)
+	{
+		occupied = false;
+		instr = nullptr;
+		internalCycle = 0;
+		switch (op_code)
+		{
+		case mult_d:
+			return right_operand * left_operand;
+		}
+	}
+	internalCycle++;
+	return -1;
 }

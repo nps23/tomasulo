@@ -43,20 +43,20 @@ bool FPReservationStation::isFull()
 	return (freeEntries == 0);
 }
 
-int FPReservationStation::insert(Instruction& instr)
+int FPReservationStation::insert(Instruction* instr)
 {
 	if (table.size() == maxEntries)
 	{
 		throw "Trying to insert into a full FP Reservations station";
 	}
-	table.push_back(&instr);
+	table.push_back(instr);
 	freeEntries--;
 	int index = table.size() - 1;
 	return index;
 }
 
-void FPReservationStation::clear(Instruction& instruction)
+void FPReservationStation::clear(Instruction* instruction)
 {
-	table.erase(std::remove(table.begin(), table.end(), &instruction));
+	table.erase(std::remove(table.begin(), table.end(), instruction));
 
 }

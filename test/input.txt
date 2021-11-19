@@ -28,9 +28,8 @@ f_registers 2
 1 1.2
 2 2.4
 
-program 3
-sub r3 r2 r1
-sub r4 r3 r6
+program 5
+mult_d r3 r2 r1
 fin
 
 memory 3

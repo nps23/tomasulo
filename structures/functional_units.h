@@ -17,7 +17,7 @@ public:
 	AddFunctinalUnit(int cycles_ex);
 };
 
-class FPFunctionalUnit
+class FPAddFunctionalUnit
 {
 public:
 	int internalCycle;
@@ -29,6 +29,21 @@ public:
 	void dispatch(Instruction* instr);
 	double next();
 	bool occupied;
-	FPFunctionalUnit(int cycles_ex);
+	FPAddFunctionalUnit(int cycles_ex);
 };
 
+class FPMultFunctionalUnit
+{
+public:
+	int internalCycle;
+	int cycleInEx;
+	int op_code;
+	double left_operand;
+	double right_operand;
+	Instruction* instr;
+
+	void dispatch(Instruction* instr);
+	double next();
+	bool occupied;
+	FPMultFunctionalUnit(int cycles_ex);
+};
