@@ -33,6 +33,7 @@ sub_d f3 f2 f1
 add r2 r3 r1
 sub r5 r6 r7
 mult_d f8 f9 f10
+add_i r11 r3 10
 fin
 
 memory 3
