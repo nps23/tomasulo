@@ -25,10 +25,11 @@ f_registers 2
 1 1.2
 2 2.4
 
-program 5
-add R3, R2, R1
-add R5, R1, R3
-add R7, R2, R5
+program 4
+add r3 r2 r1
+add r5 r1 r3
+add r7 r2 r5
+fin
 
 memory 3
 4 1

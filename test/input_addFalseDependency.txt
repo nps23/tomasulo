@@ -2,7 +2,7 @@ fu_integer_adder
 2 1 1
 
 fu_fp_adder
-1 10 2 
+1 5 2 
 
 fu_fp_mult
 2 10 1
@@ -16,19 +16,24 @@ rob_entries
 cdb_buffer_entries
 1
 
-r_registers 2
-1 1
-2 2
-5 5
+r_registers 6
+1 2
+2 4
+5 6
+6 8
+7 10
+8 12
 
-f_registers 2
+f_registers 4
 1 1.2
 2 2.4
+3 1.5
+4 2.5
 
-program 5
-add R3, R2, R1
-add R3, R1, R5
-add R3, R2, R5
+program 3
+mult_d f5 f2 f1
+add_d f5 f3 f4
+fin
 
 memory 3
 4 1
