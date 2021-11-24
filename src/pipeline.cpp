@@ -30,6 +30,9 @@ extern int numCycles;
 extern timingDiagram output;
 extern std::vector<Instruction*> outputInstructions;
 
+// Stall controllers
+extern bool stall_fetch;
+
 // call this function before storing an instruction in the instruction buffer
 Instruction* copyInstruction(const Instruction* source)
 {
@@ -79,11 +82,17 @@ Instruction* InitializeInstruction(Instruction* instr)
 void ResetPC(Instruction* instr)
 {
 	// Set the program counter to the next instruction prior to the bad branch
-	rom.pc = (instr->sourceInstr) + 1;
+	rom.pc = (instr->source_instruction) + 1;
 	instr->triggered_branch = false;
+	// clear everything in the instruction buffer accept for the head
+	while (instBuff.inst.size() > 1)
+	{
+		instBuff.inst.pop_back();
+	}
 }
 
 // PIPELINE FUNCTIONS
+// Is this pipelined with issue decode?
 bool IssueFetch(Instruction* instr)
 {
 	Instruction* fetch_instr = InitializeInstruction(rom.pc);
@@ -101,7 +110,7 @@ bool IssueFetch(Instruction* instr)
 		Instruction* target_branch = branchPredictor.table[btb_index].second;
 		rom.pc = target_branch;
 		instr->triggered_branch = true;
-		instr->sourceInstr = rom.pc;
+		instr->source_instruction = rom.pc;
 	}
 	else
 	{
@@ -148,8 +157,13 @@ bool IssueDecode(Instruction* instr)
 	case beq:
 	{
 		// compute realized target of the branch instruction
-		instr->realizedInstructionTargetTarget = instr->sourceInstr + 1 + instr->offset;
-		std::cout << "Branch target computed. " << std::endl;
+		instr->realized_instruction_target = instr->source_instruction + 1 + instr->offset;
+		if (instr->btb_target_instruction != instr->realized_instruction_target && instr->triggered_branch)
+		{
+			ResetPC(instr);
+			bool stall_fetch = true;
+		}
+		
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;

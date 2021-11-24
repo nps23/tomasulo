@@ -50,6 +50,9 @@ std::map<int, Instruction* > idMap;
 int numCycles = 0;
 std::vector<Instruction*> outputInstructions;
 
+// Pipeline controllers
+bool stall_fetch;
+
 // Function prototypes
 void programFSM(Instruction& instr);
 void PrintCPUConfig(const CPUConfig& config);
