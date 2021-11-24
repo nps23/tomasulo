@@ -46,6 +46,9 @@ extern BranchPredictor branchPredictor;
 extern std::map<int, Instruction* > idMap;
 extern int numCycles;
 
+// Pipeline controllers
+extern bool stall_fetch;
+
 // Function prototypes
 void programFSM(Instruction& instr);
 void PrintCPUConfig(const CPUConfig& config);
@@ -56,7 +59,7 @@ void driver()
 	while (true) {
 
 		// ISSUE FETCH
-		if (!rom.pc->end)
+		if (!rom.pc->end && !stall_fetch)
 		{
 			IssueFetch(rom.pc);
 		}

@@ -42,35 +42,32 @@ public:
 	// FP ALU operands
 	int f_right_operand{ -1 };
 	int f_left_operand{ -1 };
-	// Load store queue
+	// Load store queue and branch instructions
 	int offset{ -1 };
 	int immediate{ -1 };
 	int r_ls_register_operand{ -1 };
 	int f_ls_register_operand{ -1 };
 	// Shared instruction metadata
-	int dest{ -1 };
 	double result{ -1 };
 	int programLine{ -1 };
 
 	// ROB fields
 	//int robEntry; this should be taken care of 
 	int instType{ -1 };
-	// int rs, rb, rt
+	double value{ -1 };
 	bool rob_busy{ false };
 
 	// RS fields
-	int rsEntry{ -1 };
-	std::string robIndex;
 	double vj{ -1 };
 	double vk{ -1 };
 	int qj{ -1 };  // instructions which will show 
 	int qk{ -1 };
 	bool rs_busy{ false };
+	int dest{ -1 };
+	//
 
 	//CDB fields
 	bool occupying_bus{ false };
-
-	int pipelineTimer{ -1 };
 
 	// Timing diagram values
 	int issue_start_cycle{ -1 };
@@ -85,15 +82,16 @@ public:
 	int commit_end_cycle{ -1 };
 
 	//PIPELINE FLAGS
-	bool just_fetched = false;
-	bool writeback_begin = true;
-	bool commit_begin = true;
-	bool ex_begin = true;
-	bool issued = false;
+	bool just_fetched{ false };
+	bool writeback_begin{ true };;
+	bool commit_begin{ true };
+	bool ex_begin{ true };
+	bool issued{ false };
 
 	//BTB 
 	int btb_index{ -1 };
 	bool triggered_branch{ false };
-	Instruction* sourceInstr{ nullptr };
-	Instruction* realizedInstructionTargetTarget{ nullptr };
+	Instruction* source_instruction{ nullptr };
+	Instruction* realized_instruction_target{ nullptr };
+	Instruction* btb_target_instruction{ nullptr };
 };
