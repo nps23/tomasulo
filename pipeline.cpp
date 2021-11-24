@@ -75,7 +75,7 @@ Instruction* InitializeInstruction(Instruction* instr)
 	return new_instr;
 }
 
-// Reset the program counter to the previous value, if we branched on a non branch instruction
+// Reset the program counter to the previous value if we branched on a non branch instruction
 void ResetPC(Instruction* instr)
 {
 	// Set the program counter to the next instruction prior to the bad branch
@@ -95,6 +95,7 @@ bool IssueFetch(Instruction* instr)
 	int btb_index = (rom.pc->btb_index) % 8;
 	std::cout << btb_index << std::endl;
 	bool branch_taken = branchPredictor.table[btb_index].first;
+
 	if (branch_taken)
 	{
 		Instruction* target_branch = branchPredictor.table[btb_index].second;
@@ -116,6 +117,7 @@ bool IssueDecode(Instruction* instr)
 	switch (instr->op_code)
 	{
 	case nop:
+	{
 		if (rob2.isFull())
 		{
 			break;
@@ -125,50 +127,71 @@ bool IssueDecode(Instruction* instr)
 		instr->issue_start_cycle = numCycles;
 		instr->issue_end_cycle = numCycles;
 		instr->state = ex;
+	}
 		break;
 	case ld:
+	{
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
+	}
 		break;
 	case sd:
+	{
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
+	}
 		break;
 	case beq:
 	{
+		// compute realized target of the branch instruction
+		instr->realizedInstructionTargetTarget = instr->sourceInstr + 1 + instr->offset;
+		std::cout << "Branch target computed. " << std::endl;
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;
 		}
-		instr->issue_start_cycle = numCycles;
-		// Look up the location of the operand.
-		std::string left_operand = rat.r_table[instr->r_left_operand];
-		std::string right_operand = rat.r_table[instr->r_right_operand];
-		if (left_operand[0] == 'r')
+		instBuff.clear(instr);
+
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& r_entry = intRat.table[instr->r_right_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
 		{
-			int left_index = (int)left_operand[1] - 48;
-			instr->vj = intRegFile.intRegFile[left_index];
+			instr->vj = l_entry.value;
 			instr->qj = 0;
 		}
-		// this indicates an ROB lookup instead
-		else if (left_operand[0] == 'R')
+		else
 		{
-			int index_value = (int)left_operand[3] - 48;
-			instr->qj = index_value;
+			instr->qj = l_entry.value;
 		}
-		if (right_operand[0] == 'r')
+		if (!r_entry.is_mapped)
 		{
-			int right_index = (int)right_operand[1] - 48;
-			instr->vk = intRegFile.intRegFile[right_index];
+			instr->vk = r_entry.value;
 			instr->qk = 0;
 		}
-		else if (right_operand[0] == 'R')
+		else
 		{
-			int index_value = (int)right_operand[3] - 48;
-			instr->qj = index_value;
+			instr->qk = r_entry.value;
 		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		addRS.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
 		instr->rob_busy = true;
-		rob2.insert(instr);
-		instr->issue_start_cycle = numCycles;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
 		instr->state = ex;
-		break;
+		return true;
 	}
 	case bne:
 	{
@@ -212,6 +235,10 @@ bool IssueDecode(Instruction* instr)
 	}
 	case add:
 	{		
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;
@@ -257,6 +284,10 @@ bool IssueDecode(Instruction* instr)
 	}
 	case sub:
 	{
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;
@@ -301,6 +332,10 @@ bool IssueDecode(Instruction* instr)
 	}
 	case add_i:
 	{
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;
@@ -340,6 +375,10 @@ bool IssueDecode(Instruction* instr)
 	}
 	case mult_d:
 	{
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
 		if (rob2.isFull() || fRs.isFull())
 		{
 			break;
@@ -385,6 +424,10 @@ bool IssueDecode(Instruction* instr)
 	}
 	case add_d:
 	{
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
 		if (rob2.isFull() || fRs.isFull())
 		{
 			break;
@@ -430,6 +473,10 @@ bool IssueDecode(Instruction* instr)
 	}
 	case sub_d:
 	{
+		if (instr->triggered_branch)
+		{
+			ResetPC(instr);
+		}
 		if (rob2.isFull() || fRs.isFull())
 		{
 			break;
@@ -872,5 +919,3 @@ bool Commit(Instruction* instr)
 	}
 	}
 }
-
-

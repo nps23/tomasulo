@@ -52,9 +52,7 @@ void PrintCPUConfig(const CPUConfig& config);
 
 void driver()
 {
-	// At the beginning of the simulation, file IO will be done first
-	PrintCPUConfig(config);
-
+	//PrintCPUConfig(config);
 	while (true) {
 
 		// ISSUE FETCH
@@ -62,6 +60,8 @@ void driver()
 		{
 			IssueFetch(rom.pc);
 		}
+		
+		numCycles++;
 
 		// ISSUE DECODE
 		if (instBuff.inst.size() != 0)
@@ -83,7 +83,8 @@ void driver()
 			continue;
 		}
 
-		for (auto instr : rob2.table)
+		// ISSUE EX, WRITEBACK, MEM, AND COMMIT
+		for (auto& instr : rob2.table)
 		{
 			switch (instr->state)
 			{

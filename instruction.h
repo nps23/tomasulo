@@ -95,4 +95,5 @@ public:
 	int btb_index{ -1 };
 	bool triggered_branch{ false };
 	Instruction* sourceInstr{ nullptr };
+	Instruction* realizedInstructionTargetTarget{ nullptr };
 };
