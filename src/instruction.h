@@ -70,7 +70,6 @@ public:
 	//CDB fields
 	bool occupying_bus{ false };
 
-
 	int pipelineTimer{ -1 };
 
 	// Timing diagram values
@@ -91,4 +90,9 @@ public:
 	bool commit_begin = true;
 	bool ex_begin = true;
 	bool issued = false;
+
+	//BTB 
+	int btb_index{ -1 };
+	bool triggered_branch{ false };
+	Instruction* sourceInstr{ nullptr };
 };
