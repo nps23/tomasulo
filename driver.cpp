@@ -19,6 +19,7 @@
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
+#include "structures/BranchPredictor.h"
 
 using namespace std;
 
@@ -39,6 +40,7 @@ extern cdb bus;
 extern ROM rom;
 extern IntRegisterAliasingTable intRat;
 extern FPRegisterAliasingTable fpRat;
+extern BranchPredictor branchPredictor;
 
 // Non-hardware bookkeeping units
 extern std::map<int, Instruction* > idMap;
@@ -51,11 +53,8 @@ void PrintCPUConfig(const CPUConfig& config);
 void driver()
 {
 	// At the beginning of the simulation, file IO will be done first
-	cout << "All the vars actually are read in" << endl;
 	PrintCPUConfig(config);
-	cout << "Finished Configuration printing" << endl;
 
-	cout << "ROM Program memory set" << endl;
 	while (true) {
 
 		// ISSUE FETCH
@@ -68,7 +67,7 @@ void driver()
 		if (instBuff.inst.size() != 0)
 		{
 			auto& bufferHead = instBuff.inst[0];
-			Issue(bufferHead);
+			IssueDecode(bufferHead);
 		}
 
 		// ROB will be empty at the beginning of the program and end

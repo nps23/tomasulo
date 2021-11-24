@@ -36,6 +36,7 @@
 *.sln
 *vcxproj*
 Debug/*
+x64/*
 
 # Program output files
 output.txt

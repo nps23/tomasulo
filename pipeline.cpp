@@ -6,6 +6,7 @@
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
+#include "structures/BranchPredictor.h"
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRs;
@@ -21,7 +22,7 @@ extern ROM rom;
 extern instructionBuffer instBuff;
 extern IntRegisterAliasingTable intRat;
 extern FPRegisterAliasingTable fpRat;
-
+extern BranchPredictor branchPredictor;
 
 // Non hardware bookeeping variables;
 extern std::map<int, Instruction* > idMap;
@@ -30,7 +31,6 @@ extern timingDiagram output;
 extern std::vector<Instruction*> outputInstructions;
 
 // call this function before storing an instruction in the instruction buffer
-// didn't feel like writing a copy constructor for the struct
 Instruction* copyInstruction(const Instruction* source)
 {
 	Instruction* new_instr = new Instruction;
@@ -75,7 +75,15 @@ Instruction* InitializeInstruction(Instruction* instr)
 	return new_instr;
 }
 
+// Reset the program counter to the previous value, if we branched on a non branch instruction
+void ResetPC(Instruction* instr)
+{
+	// Set the program counter to the next instruction prior to the bad branch
+	rom.pc = (instr->sourceInstr) + 1;
+	instr->triggered_branch = false;
+}
 
+// PIPELINE FUNCTIONS
 bool IssueFetch(Instruction* instr)
 {
 	Instruction* fetch_instr = InitializeInstruction(rom.pc);
@@ -83,18 +91,26 @@ bool IssueFetch(Instruction* instr)
 	fetch_instr->state = issue;
 	fetch_instr->just_fetched = true;
 	instBuff.inst.push_back(fetch_instr);
-	rom.pc++;
-	//instBuff.inst[instBuff.curInst]->state = issue;
-	//instBuff.inst[instBuff.curInst]->just_fetched = true;
-	//instBuff.curInst++;
-	cout << "entering fetch. Size of inst buffer = " << instBuff.inst.size() << endl;
-	
+	// Lookup the BTB index, predict a branch
+	int btb_index = (rom.pc->btb_index) % 8;
+	std::cout << btb_index << std::endl;
+	bool branch_taken = branchPredictor.table[btb_index].first;
+	if (branch_taken)
+	{
+		Instruction* target_branch = branchPredictor.table[btb_index].second;
+		rom.pc = target_branch;
+		instr->triggered_branch = true;
+		instr->sourceInstr = rom.pc;
+	}
+	else
+	{
+		rom.pc++;
+	}
+
 	return true;
 }
 
-// At every cycle, call this function with the head of the ROB instruction
-// somewhere, we need a new function to create new "Instructions" based on branches 
-bool Issue(Instruction* instr)
+bool IssueDecode(Instruction* instr)
 {
 	// Check the type of the instruction
 	switch (instr->op_code)
@@ -102,7 +118,6 @@ bool Issue(Instruction* instr)
 	case nop:
 		if (rob2.isFull())
 		{
-			std::cout << "ROB always full!!" << std::endl;
 			break;
 		}
 		rob2.insert(instr);
@@ -196,7 +211,7 @@ bool Issue(Instruction* instr)
 		break;
 	}
 	case add:
-	{
+	{		
 		if (rob2.isFull() || addRS.isFull())
 		{
 			break;

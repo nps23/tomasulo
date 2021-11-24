@@ -273,5 +273,11 @@ CPUConfig ParseInput(std::string& input_file)
 		}
 	}
 	std::cout << "Finished parsing input file" << std::endl;
+	
+	// initalize the BTB entries for the program
+	for (int i = 0; i < config.program.size(); i++)
+	{
+		config.program[i].btb_index = i;
+	}
 	return config;	
 }

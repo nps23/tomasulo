@@ -20,6 +20,7 @@
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
+#include "structures/BranchPredictor.h"
 
 using namespace std;
 
@@ -42,6 +43,7 @@ cdb bus;
 ROM rom(config.program);
 IntRegisterAliasingTable intRat(config);
 FPRegisterAliasingTable fpRat(config);
+BranchPredictor branchPredictor;
 
 // Non-hardware bookkeeping units
 std::map<int, Instruction* > idMap;
