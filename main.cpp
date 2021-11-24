@@ -79,41 +79,41 @@ int main()
 	// Print out the timing diagram and the register contents to a file
 	ofstream outFile("output.txt");
 	if(outFile.is_open()){
-		outFile << "\t\t\t\t\t\tIS  EX  MM  WB  CM" << endl;
+		outFile << "\t\t\t\t\t\t\tIS\t\tEX\t\tMM\t\tWB\t\tCM" << endl;
 		for(unsigned int i = 0; i < outputInstructions.size(); i++){
 			switch(outputInstructions[i]->op_code){
 				case nop:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " nop\t\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " nop\t\t\t\t\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case ld:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " ld " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " ld " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case sd:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " sd " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " sd " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case beq:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " beq " << "R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << ", " << outputInstructions[i]->offset << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " beq " << "R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << ", " << outputInstructions[i]->offset << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case bne:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " bne " << "R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << ", " << outputInstructions[i]->offset << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " bne " << "R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << ", " << outputInstructions[i]->offset << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case add:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " add " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " add " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case add_d:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " add_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " add_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case add_i:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " add_i " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", " << outputInstructions[i]->immediate << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " add_i " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", " << outputInstructions[i]->immediate << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case sub:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " sub " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " sub " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case sub_d:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " sub_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " sub_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case mult_d:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " mult_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << " " << output.tDiag[i][3] << "-" << output.tDiag[i][4] << " " << output.tDiag[i][5] << "-" << output.tDiag[i][6] << " " << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " mult_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 			}
 		}
@@ -222,14 +222,14 @@ void PrintCPUConfig(const CPUConfig& config)
 	std::cout << "Inital r register states:";
 	for (const auto& elem : config.r_register_map)
 	{
-		std::cout << "\n \t" << elem.first << " " << elem.second;
+		std::cout << "\n \t" << elem.first << "\t" << elem.second;
 	}
 	std::cout << std::endl;
 
 	std::cout << "Inital f register states:";
 	for (const auto& elem : config.f_register_map)
 	{
-		std::cout << "\n \t" << elem.first << " " << elem.second;
+		std::cout << "\n \t" << elem.first << "\t" << elem.second;
 	}
 	std::cout << std::endl;
 

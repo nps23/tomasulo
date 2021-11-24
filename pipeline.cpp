@@ -487,7 +487,6 @@ bool Ex(Instruction* instruction)
 			// start the ex timer
 			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			addRS.clear(instruction);
 			return true;
 		}
 		// instruction is already issued, just cycle the FU
@@ -510,7 +509,6 @@ bool Ex(Instruction* instruction)
 			// start the ex timer
 			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			addRS.clear(instruction);
 			return true;
 		}
 		// instruction is already issued, just cycle the FU
@@ -532,7 +530,6 @@ bool Ex(Instruction* instruction)
 		{
 			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			addRS.clear(instruction);
 			return true;
 		}
 
@@ -553,7 +550,6 @@ bool Ex(Instruction* instruction)
 		{
 			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
-			fRs.clear(instruction);
 			return true;
 		}
 
@@ -574,7 +570,6 @@ bool Ex(Instruction* instruction)
 		{
 			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
-			fRs.clear(instruction);
 			return true;
 		}
 
@@ -595,7 +590,6 @@ bool Ex(Instruction* instruction)
 		{
 			instruction->ex_start_cycle = numCycles;
 			fpMulFu.dispatch(instruction);
-			fRs.clear(instruction);
 			return true;
 		}
 
@@ -655,6 +649,14 @@ bool WriteBack(Instruction* instr)
 			}
 			if (!bus.occupied)
 			{
+				if (instr->op_code == add || instr->op_code == add_i || instr->op_code == sub)
+				{
+					addRS.clear(instr);
+				}
+				else if (instr->op_code == add_d || instr->op_code == sub_d || instr->op_code == mult_d)
+				{
+					fRs.clear(instr);
+				}
 				if (!bus.isEmpty())
 				{
 					bus.clear(instr);
