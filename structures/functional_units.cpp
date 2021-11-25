@@ -27,11 +27,36 @@ int AddFunctinalUnit::next()
 			return left_operand + right_operand;
 		case sub:
 			return left_operand - right_operand;
+		case bne:
+		{
+			if (left_operand != right_operand)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		case beq:
+		{
+			if (left_operand == right_operand)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		default:
+			throw "EX logic not found for instruction with op code in integer adder function unit";
 		}
 	}
 	internalCycle++;
 	return -1;
 }
+
 
 void AddFunctinalUnit::dispatch(Instruction* instruction)
 {

@@ -9,7 +9,7 @@
 #include "structures/BranchPredictor.h"
 
 extern AddReservationStation addRS;
-extern FPReservationStation fRs;
+extern FPReservationStation fRS;
 extern ReorderBuffer rob2;
 extern RAT rat;
 extern intReg intRegFile;
@@ -91,8 +91,52 @@ void ResetPC(Instruction* instr)
 	}
 }
 
+// Utility function to handle squashing all bad instrucitons after a mispredict
+void MispredictSquash(Instruction* instr)
+{
+	if (!instr->mispredict)
+	{ 
+		std::cout << "No mispredict! Are you sure you should be calling this fucntion?" << std::endl;
+		return;
+	}
+	// clear instruction buffer
+	while (instBuff.inst.size() > 0)
+	{
+		instBuff.inst.pop_back();
+	}
+	// set the PC to the correct locaiton
+	if (instr->branch_false_positive)
+		rom.pc = instr->source_instruction + 1;
+	else if (instr->branch_false_negative)
+		rom.pc = instr->realized_instruction_target;
+	// clear RS tags for incorrect instrutions
+	for (auto& entry : addRS.table)
+	{
+		if (entry->qj == instr->instructionId)
+		{
+
+		}
+		if (entry->qk == instr->instructionId)
+		{
+
+		}
+	}
+	for (auto& entry : fRS.table)
+	{
+		if (entry->qj == instr->instructionId)
+		{
+
+		}
+		if (entry->qk == instr->instructionId)
+		{
+
+		}
+	}
+	// Clear ROB entries
+}
+
 // PIPELINE FUNCTIONS
-// Is this pipelined with issue decode?
+// TODO: Figure out if this is pipeliend with IssueDecode
 bool IssueFetch(Instruction* instr)
 {
 	Instruction* fetch_instr = InitializeInstruction(rom.pc);
@@ -158,6 +202,7 @@ bool IssueDecode(Instruction* instr)
 	{
 		// compute realized target of the branch instruction
 		instr->realized_instruction_target = instr->source_instruction + 1 + instr->offset;
+		// if we branched to the wrong address, reset right away
 		if (instr->btb_target_instruction != instr->realized_instruction_target && instr->triggered_branch)
 		{
 			ResetPC(instr);
@@ -209,43 +254,7 @@ bool IssueDecode(Instruction* instr)
 	}
 	case bne:
 	{
-		if (rob2.isFull() || addRS.isFull())
-		{
-			break;
-		}
-		instr->issue_start_cycle = numCycles;
-		// Look up the location of the operand.
-		std::string left_operand = rat.r_table[instr->r_left_operand];
-		std::string right_operand = rat.r_table[instr->r_right_operand];
-		if (left_operand[0] == 'r')
-		{
-			int left_index = (int)left_operand[1] - 48;
-			instr->vj = intRegFile.intRegFile[left_index];
-			instr->qj = 0;
-		}
-		// this indicates an ROB lookup instead
-		else if (left_operand[0] == 'R')
-		{
-			int index_value = (int)left_operand[3] - 48;
-			instr->qj = index_value;
-		}
-		if (right_operand[0] == 'r')
-		{
-			int right_index = (int)right_operand[1] - 48;
-			instr->vk = intRegFile.intRegFile[right_index];
-			instr->qk = 0;
-		}
-		else if (right_operand[0] == 'R')
-		{
-			int index_value = (int)right_operand[3] - 48;
-			instr->qj = index_value;
-		}
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		rob2.insert(instr);
-		instr->issue_start_cycle = numCycles;
-		instr->state = ex;
-		break;
+		 
 	}
 	case add:
 	{		
@@ -393,7 +402,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || fRs.isFull())
+		if (rob2.isFull() || fRS.isFull())
 		{
 			break;
 		}
@@ -423,7 +432,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
-		fRs.insert(instr);
+		fRS.insert(instr);
 		rob2.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
@@ -442,7 +451,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || fRs.isFull())
+		if (rob2.isFull() || fRS.isFull())
 		{
 			break;
 		}
@@ -472,7 +481,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
-		fRs.insert(instr);
+		fRS.insert(instr);
 		rob2.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
@@ -491,7 +500,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || fRs.isFull())
+		if (rob2.isFull() || fRS.isFull())
 		{
 			break;
 		}
@@ -521,7 +530,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
-		fRs.insert(instr);
+		fRS.insert(instr);
 		rob2.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
@@ -541,17 +550,96 @@ bool IssueDecode(Instruction* instr)
 	return true;
 };
 
-// probably don't want this to return bool
+// TODO Change all pipeline functions to return void
 bool Ex(Instruction* instruction)
 {
 	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
 	switch (instruction->op_code)
 	{
 	case beq:
+	{
+		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
+		{
+			instruction->ex_start_cycle = numCycles;
+			addFu.dispatch(instruction);
+			return true;
+		}
+		else if (instruction == addFu.instr)
+		{
+			int result = addFu.next();
+			if (!addFu.occupied)
+			{
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
+				// update the branch target buffer
+				// TODO port this code outside of the ex stage
+				if (instruction->result == 1)
+				{
+					branchPredictor.table[instruction->btb_index].first = true;
+					branchPredictor.table[instruction->btb_index].second = instruction->realized_instruction_target;
+					if (!instruction->triggered_branch)
+					{
+						instruction->mispredict = true;
+						instruction->branch_false_negative = true;
+					}
+				}
+				else if (instruction->result == 0)
+				{
+					branchPredictor.table[instruction->btb_index].first = false;
+					if (instruction->triggered_branch)
+					{
+						instruction->mispredict = true;
+						instruction->branch_false_positive = true;
+					}
+				}
+			}
+		}
+	}
 		break;
 	case bne:
+	{
+		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
+		{
+			instruction->ex_start_cycle = numCycles;
+			addFu.dispatch(instruction);
+			return true;
+		}
+		else if (instruction == addFu.instr)
+		{
+			int result = addFu.next();
+			if (!addFu.occupied)
+			{
+				instruction->state = wb;
+				instruction->result = result;
+				instruction->ex_end_cycle = numCycles;
+				// update the branch target buffer
+				// TODO port this code outside of the ex stage
+				if (instruction->result == 1)
+				{
+					branchPredictor.table[instruction->btb_index].first = false;
+					branchPredictor.table[instruction->btb_index].second = instruction->realized_instruction_target;
+					if (instruction->triggered_branch)
+					{
+						instruction->mispredict = true;
+						instruction->branch_false_positive = true;
+					}
+				}
+				else if (instruction->result == 0)
+				{
+					branchPredictor.table[instruction->btb_index].first = true;
+					if (!instruction->triggered_branch)
+					{
+						instruction->mispredict = true;
+						instruction->branch_false_negative = true;
+					}
+				}
+			}
+		}
+	}
 		break;
 	case nop:
+		std::cout << "WARNING: Processing a NOP instruction with outdated logic" << std::endl;
 		instruction->state = wb;
 		instruction->ex_start_cycle = numCycles;
 		instruction->ex_end_cycle = numCycles;
@@ -710,6 +798,35 @@ bool WriteBack(Instruction* instr)
 		case sd:
 			break;
 		case beq:
+		{
+			if (instr->writeback_begin)
+			{
+				instr->writeback_begin = false;
+				instr->writeback_start_cycle = numCycles;
+			}
+			if (!bus.occupied)
+			{
+				addRS.clear(instr);
+				if (!bus.isEmpty())
+				{
+					bus.clear(instr);
+				}
+				bus.occupied = true;
+				instr->writeback_end_cycle = numCycles;
+				instr->state = commit;
+				instr->commit_start_cycle = numCycles + 1;
+			}
+			else
+			{
+				bus.insert(instr);
+			}
+			// if we mispredicted, clear out everything
+			if (instr->mispredict)
+			{
+				MispredictSquash(instr);
+
+			}
+		}
 			break;
 		case bne:
 			break;
@@ -731,7 +848,7 @@ bool WriteBack(Instruction* instr)
 				}
 				else if (instr->op_code == add_d || instr->op_code == sub_d || instr->op_code == mult_d)
 				{
-					fRs.clear(instr);
+					fRS.clear(instr);
 				}
 				if (!bus.isEmpty())
 				{
@@ -752,7 +869,7 @@ bool WriteBack(Instruction* instr)
 						instruction->vk = instr->result;
 					}
 				}
-				for (auto& instruction : fRs.table)
+				for (auto& instruction : fRS.table)
 				{
 					if (instruction->qj == instr->instructionId)
 					{

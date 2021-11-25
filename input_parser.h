@@ -244,7 +244,7 @@ CPUConfig ParseInput(std::string& input_file)
 
 				else if (opcode == "fin") {
 					inst.op_code = fin;
-					inst.end = true;
+					inst.program_end = true;
 					config.program.push_back(inst);
 				}
 			}

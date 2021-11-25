@@ -8,12 +8,12 @@ enum OpCode {
 	sd,
 	beq,
 	bne,
-	add,   //issue,ex
-	add_d, //issue,ex
+	add,	
+	add_d,			
 	add_i,
-	sub,   //issue,ex
-	sub_d, //issue,ex
-	mult_d, //issue,ex
+	sub,			
+	sub_d,				
+	mult_d,				
 	fin
 };
 
@@ -27,15 +27,14 @@ enum PipelineState {
 	stop
 };
 
-class Instruction {
-public:
-	// metadata to track and reference the instruction
+struct Instruction {
+	
+	// INSTRUCTION METADATA
 	int instructionId{ 0 };
 	PipelineState state;
-	bool end{ false };				// should be only true for fin instructions
-
-	// INSTRUCTION METADATA
+	bool program_end{ false };			
 	OpCode op_code;
+
 	// Integer ALU operands
 	int r_right_operand{ -1 };
 	int r_left_operand{ -1 };
@@ -52,7 +51,6 @@ public:
 	int programLine{ -1 };
 
 	// ROB fields
-	//int robEntry; this should be taken care of 
 	int instType{ -1 };
 	double value{ -1 };
 	bool rob_busy{ false };
@@ -64,7 +62,6 @@ public:
 	int qk{ -1 };
 	bool rs_busy{ false };
 	int dest{ -1 };
-	//
 
 	//CDB fields
 	bool occupying_bus{ false };
@@ -81,17 +78,28 @@ public:
 	int commit_start_cycle{ -1 };
 	int commit_end_cycle{ -1 };
 
-	//PIPELINE FLAGS
+	// BRANCH UNIT 
+	int btb_index{ -1 };
+	bool triggered_branch{ false };
+	Instruction* source_instruction{ nullptr };				// point to the sourc instruction 
+	Instruction* realized_instruction_target{ nullptr };	// resolved in the IssueDecode stage
+	Instruction* btb_target_instruction{ nullptr };
+	bool mispredict{ false };
+	bool branch_false_positive{ false };
+	bool branch_false_negative{ false };
+
+	// PIPELINE FLAGS
 	bool just_fetched{ false };
 	bool writeback_begin{ true };;
 	bool commit_begin{ true };
 	bool ex_begin{ true };
 	bool issued{ false };
 
-	//BTB 
-	int btb_index{ -1 };
-	bool triggered_branch{ false };
-	Instruction* source_instruction{ nullptr };
-	Instruction* realized_instruction_target{ nullptr };
-	Instruction* btb_target_instruction{ nullptr };
+	// FUNCTIONAL UNIT FLAGS
+	bool occupying_floating_point_add_unit{ false };
+	int floating_point_add_unit_cycle{ -1 };
+	bool occupying_floating_point_mult_unit{ false };
+	int floating_point_mult_unit_cycle{ -1 };
+	bool occuping_integer_add_unit{ false };
+	int integer_add_unit_cycle{ -1 };
 };
