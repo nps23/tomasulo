@@ -31,7 +31,7 @@ RAT rat;
 CDB dataBus;
 AddReservationStation addRS(config.fu_integer_adder[0]);
 FPReservationStation fRS(config.fu_fp_mult[0]);
-ReorderBuffer rob2(config.rob_entries);
+ReorderBuffer rob(config.rob_entries);
 intReg intRegFile(config);
 fpReg fpRegFile(config);
 cpuMemory mainMem(config);

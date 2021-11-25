@@ -13,7 +13,8 @@ public:
 
 	ReorderBuffer(int robEntries);
 	void insert(Instruction* instr);
-	void clear();
+	void pop();
+	void clear(Instruction* instr);
 	bool isFull();
 	bool isEmpty();
 	void updateROB();

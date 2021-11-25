@@ -31,7 +31,12 @@ void ReorderBuffer::updateROB()
 
 }
 
-void ReorderBuffer::clear()
+void ReorderBuffer::pop()
 {
 	table.pop_front();
+}
+
+void ReorderBuffer::clear(Instruction* instr)
+{
+	table.erase(std::remove(table.begin(), table.end(), instr));
 }

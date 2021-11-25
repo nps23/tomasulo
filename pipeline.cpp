@@ -10,7 +10,7 @@
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRS;
-extern ReorderBuffer rob2;
+extern ReorderBuffer rob;
 extern RAT rat;
 extern intReg intRegFile;
 extern fpReg fpRegFile;
@@ -60,13 +60,13 @@ Instruction* InitializeInstruction(Instruction* instr)
 	// lets try using the last element of the map instead of the ROB.
 	
 	// we seem to be clearing the ROB before getting to the next stage
-	if (rob2.table.size() == 0)
+	if (rob.table.size() == 0)
 	{
 		new_instr->instructionId = 1;
 		idMap[1] = new_instr;
 		return new_instr;
 	}
-	int last_id_index = rob2.table.size() - 1;
+	int last_id_index = rob.table.size() - 1;
 
 	//new_instr->instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
 	//idMap[new_instr->instructionId] = &instr;
@@ -109,30 +109,48 @@ void MispredictSquash(Instruction* instr)
 		rom.pc = instr->source_instruction + 1;
 	else if (instr->branch_false_negative)
 		rom.pc = instr->realized_instruction_target;
-	// clear RS tags for incorrect instrutions
-	for (auto& entry : addRS.table)
+	// recover the RAT
+	// clear RS of incorrect instrutions
+	for (auto& entry : addRS.table) 
 	{
-		if (entry->qj == instr->instructionId)
+		if (entry->instructionId > instr->instructionId)
 		{
-
-		}
-		if (entry->qk == instr->instructionId)
-		{
-
+			addRS.clear(instr);
+			entry->state = stop;
 		}
 	}
-	for (auto& entry : fRS.table)
+	for (auto& entry : fRS.table) 
 	{
-		if (entry->qj == instr->instructionId)
+		if (entry->instructionId > instr->instructionId) 
 		{
-
+			fRS.clear(instr);
+			entry->state = stop;
 		}
-		if (entry->qk == instr->instructionId)
+	}
+	// Reset tags of any valid instructions waiting on this instruction's value
+	for (auto& entry : addRS.table)
+	{
+		int qj = entry->qj;
+		int qk = entry->qk;
+		if (idMap[qj]->state == stop)
 		{
-
+			// reset the Q values to the previous valid map
+			throw std::runtime_error("Logic in squash not implemented");
+		}
+		if (idMap[qk]->state == stop)
+		{
+			// reset the Q values to the previous valid map
+			throw std::runtime_error("Logic in squash not implemented");
 		}
 	}
 	// Clear ROB entries
+	for (auto& entry : rob.table)
+	{
+		if (entry->instructionId > instr->instructionId)
+		{
+			rob.clear(instr);
+		}
+	}
 }
 
 // PIPELINE FUNCTIONS
@@ -171,11 +189,11 @@ bool IssueDecode(Instruction* instr)
 	{
 	case nop:
 	{
-		if (rob2.isFull())
+		if (rob.isFull())
 		{
 			break;
 		}
-		rob2.insert(instr);
+		rob.insert(instr);
 		instr->rob_busy = true;
 		instr->issue_start_cycle = numCycles;
 		instr->issue_end_cycle = numCycles;
@@ -209,7 +227,7 @@ bool IssueDecode(Instruction* instr)
 			bool stall_fetch = true;
 		}
 		
-		if (rob2.isFull() || addRS.isFull())
+		if (rob.isFull() || addRS.isFull())
 		{
 			break;
 		}
@@ -240,7 +258,7 @@ bool IssueDecode(Instruction* instr)
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
-		rob2.insert(instr);
+		rob.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
@@ -262,7 +280,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || addRS.isFull())
+		if (rob.isFull() || addRS.isFull())
 		{
 			break;
 		}
@@ -293,7 +311,7 @@ bool IssueDecode(Instruction* instr)
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
-		rob2.insert(instr);
+		rob.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
@@ -311,7 +329,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || addRS.isFull())
+		if (rob.isFull() || addRS.isFull())
 		{
 			break;
 		}
@@ -342,7 +360,7 @@ bool IssueDecode(Instruction* instr)
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
-		rob2.insert(instr);
+		rob.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
@@ -359,7 +377,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || addRS.isFull())
+		if (rob.isFull() || addRS.isFull())
 		{
 			break;
 		}
@@ -385,7 +403,7 @@ bool IssueDecode(Instruction* instr)
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
-		rob2.insert(instr);
+		rob.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
@@ -402,7 +420,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || fRS.isFull())
+		if (rob.isFull() || fRS.isFull())
 		{
 			break;
 		}
@@ -433,7 +451,7 @@ bool IssueDecode(Instruction* instr)
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
-		rob2.insert(instr);
+		rob.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
@@ -451,7 +469,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || fRS.isFull())
+		if (rob.isFull() || fRS.isFull())
 		{
 			break;
 		}
@@ -482,7 +500,7 @@ bool IssueDecode(Instruction* instr)
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
-		rob2.insert(instr);
+		rob.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
@@ -500,7 +518,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (rob2.isFull() || fRS.isFull())
+		if (rob.isFull() || fRS.isFull())
 		{
 			break;
 		}
@@ -531,7 +549,7 @@ bool IssueDecode(Instruction* instr)
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
-		rob2.insert(instr);
+		rob.insert(instr);
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
@@ -903,10 +921,10 @@ bool Commit(Instruction* instr)
 	switch (instr->op_code)
 	{
 	case nop:
-		if (((*rob2.table.front()).state == commit) && ((*rob2.table.front()).programLine == instr->programLine))
+		if (((*rob.table.front()).state == commit) && ((*rob.table.front()).programLine == instr->programLine))
 		{
 			instr->state = null;
-			rob2.clear();
+			rob.pop();
 			instr->commit_start_cycle = numCycles;
 			instr->commit_end_cycle = numCycles;
 			outputInstructions.push_back(instr);
@@ -920,16 +938,16 @@ bool Commit(Instruction* instr)
 			instr->commit_start_cycle = numCycles;
 		}
 
-		if (instr == rob2.table[0] && !rob2.hasCommited)
+		if (instr == rob.table[0] && !rob.hasCommited)
 		{
-			rob2.hasCommited = true;
+			rob.hasCommited = true;
 			int result = instr->result;
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
 			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob2.clear();
+			rob.pop();
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -942,16 +960,16 @@ bool Commit(Instruction* instr)
 			instr->commit_start_cycle = numCycles;
 		}
 
-		if (instr == rob2.table[0] && !rob2.hasCommited)
+		if (instr == rob.table[0] && !rob.hasCommited)
 		{
-			rob2.hasCommited = true;
+			rob.hasCommited = true;
 			int result = instr->result;
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
 			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob2.clear();
+			rob.pop();
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -964,16 +982,16 @@ bool Commit(Instruction* instr)
 			instr->commit_start_cycle = numCycles;
 		}
 
-		if (instr == rob2.table[0] && !rob2.hasCommited)
+		if (instr == rob.table[0] && !rob.hasCommited)
 		{
-			rob2.hasCommited = true;
+			rob.hasCommited = true;
 			int result = instr->result;
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
 			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob2.clear();
+			rob.pop();
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -986,16 +1004,16 @@ bool Commit(Instruction* instr)
 			instr->commit_start_cycle = numCycles;
 		}
 
-		if (instr == rob2.table[0] && !rob2.hasCommited)
+		if (instr == rob.table[0] && !rob.hasCommited)
 		{
-			rob2.hasCommited = true;
+			rob.hasCommited = true;
 			double result = instr->result;
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
 			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob2.clear();
+			rob.pop();
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -1008,16 +1026,16 @@ bool Commit(Instruction* instr)
 			instr->commit_start_cycle = numCycles;
 		}
 
-		if (instr == rob2.table[0] && !rob2.hasCommited)
+		if (instr == rob.table[0] && !rob.hasCommited)
 		{
-			rob2.hasCommited = true;
+			rob.hasCommited = true;
 			double result = instr->result;
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
 			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob2.clear();
+			rob.pop();
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -1030,16 +1048,16 @@ bool Commit(Instruction* instr)
 			instr->commit_start_cycle = numCycles;
 		}
 
-		if (instr == rob2.table[0] && !rob2.hasCommited)
+		if (instr == rob.table[0] && !rob.hasCommited)
 		{
-			rob2.hasCommited = true;
+			rob.hasCommited = true;
 			double result = instr->result;
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
 			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob2.clear();
+			rob.pop();
 			outputInstructions.push_back(instr);
 		}
 		break;
