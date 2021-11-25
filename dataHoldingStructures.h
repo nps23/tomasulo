@@ -54,15 +54,6 @@ class cpuMemory {
 		}
 };
 
-class storeQueue {
-	public:
-		queue<int> memAddress;
-		queue<double> memValue;
-		int addressCalc(int base, int offset){
-				return base + offset;
-		}
-};
-
 class RAT {
 public:
 	std::map<int, std::string> r_table;

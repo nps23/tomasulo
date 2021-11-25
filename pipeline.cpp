@@ -6,6 +6,7 @@
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
+#include "load_store_queue.h"
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRs;
@@ -21,7 +22,7 @@ extern ROM rom;
 extern instructionBuffer instBuff;
 extern IntRegisterAliasingTable intRat;
 extern FPRegisterAliasingTable fpRat;
-
+extern storeQueue sQueue;
 
 // Non hardware bookeeping variables;
 extern std::map<int, Instruction* > idMap;
@@ -112,9 +113,79 @@ bool Issue(Instruction* instr)
 		instr->state = ex;
 		break;
 	case ld:
+	{
+		if (sQueue.isFull() || rob2.isFull())
+		{
+			break;
+		}
+
+		instBuff.clear(instr);
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.value;
+		}
+		instr->vk = instr->offset;
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		sQueue.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
+	}
 		break;
 	case sd:
-		break;
+	{
+		if (sQueue.isFull() || rob2.isFull())
+		{
+			break;
+		}
+
+		instBuff.clear(instr);
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.value;
+		}
+		instr->vk = instr->offset;
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		sQueue.insert(instr);
+		rob2.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
+	}
+	break;
 	case beq:
 	{
 		if (rob2.isFull() || addRS.isFull())
@@ -606,8 +677,48 @@ bool Ex(Instruction* instruction)
 		}
 		break;
 	case ld:
+		// TODO change to for loop to handle multiple function units
+		if (instruction->qj == 0 && !sQueue.addUnit.occupied)
+		{
+			// start the ex timer
+			instruction->ex_start_cycle = numCycles;
+			sQueue.addUnit.dispatch(instruction);
+			return true;
+		}
+		// instruction is already issued, just cycle the FU
+		else if (instruction == sQueue.addUnit.instr)
+		{
+			int result = sQueue.addUnit.next();
+			if (!addFu.occupied)
+			{
+				instruction->state = mem;
+				instruction->address = result;
+				instruction->ex_end_cycle = numCycles;
+			}
+			return true;
+		}
 		break;
 	case sd:
+		// TODO change to for loop to handle multiple function units
+		if (instruction->qj == 0 && !sQueue.addUnit.occupied)
+		{
+			// start the ex timer
+			instruction->ex_start_cycle = numCycles;
+			sQueue.addUnit.dispatch(instruction);
+			return true;
+		}
+		// instruction is already issued, just cycle the FU
+		else if (instruction == sQueue.addUnit.instr)
+		{
+			int result = sQueue.addUnit.next();
+			if (!addFu.occupied)
+			{
+				instruction->state = mem;
+				instruction->address = result;
+				instruction->ex_end_cycle = numCycles;
+			}
+			return true;
+		}
 		break;
 	default:
 		break;
@@ -616,6 +727,15 @@ bool Ex(Instruction* instruction)
 }
 
 bool Mem(Instruction* instr){
+	switch (instr->op_code) {
+	case sd:
+		// Do forwarding from a store
+		int forward = sQueue.forwardFromStore()
+		if()
+		break;
+	case ld:
+		break;
+	}
 	return true;
 }
 bool WriteBack(Instruction* instr)

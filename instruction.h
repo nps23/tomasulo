@@ -47,11 +47,16 @@ public:
 	int immediate{ -1 };
 	int r_ls_register_operand{ -1 };
 	int f_ls_register_operand{ -1 };
+
+	// Load / Store Specific
+	int address{ -1 };
+	int sQueueIndex{ -1 };
+
 	// Shared instruction metadata
 	int dest{ -1 };
 	double result{ -1 };
 	int programLine{ -1 };
-
+	
 	// ROB fields
 	//int robEntry; this should be taken care of 
 	int instType{ -1 };

@@ -20,6 +20,7 @@
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
+#include "load_store_queue.h"
 
 using namespace std;
 
@@ -42,6 +43,7 @@ cdb bus;
 ROM rom(config.program);
 IntRegisterAliasingTable intRat(config);
 FPRegisterAliasingTable fpRat(config);
+storeQueue sQueue(config.fu_load_store[0], config.fu_integer_adder[1], config.fu_load_store[1]);
 
 // Non-hardware bookkeeping units
 std::map<int, Instruction* > idMap;
