@@ -17,6 +17,7 @@ public:
 	AddFunctinalUnit(int cycles_ex);
 };
 
+// TODO: The floating point units are pipelined
 class FPAddFunctionalUnit
 {
 public:

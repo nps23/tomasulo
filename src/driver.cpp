@@ -28,7 +28,7 @@ extern CPUConfig config;
 extern RAT rat;
 extern CDB dataBus;
 extern AddReservationStation addRS;
-extern FPReservationStation fRs;
+extern FPReservationStation fRS;
 extern ReorderBuffer rob2;
 extern intReg intRegFile;
 extern fpReg fpRegFile;
@@ -59,7 +59,7 @@ void driver()
 	while (true) {
 
 		// ISSUE FETCH
-		if (!rom.pc->end && !stall_fetch)
+		if (!rom.pc->program_end && !stall_fetch)
 		{
 			IssueFetch(rom.pc);
 		}
