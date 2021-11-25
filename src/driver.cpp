@@ -29,7 +29,7 @@ extern RAT rat;
 extern CDB dataBus;
 extern AddReservationStation addRS;
 extern FPReservationStation fRS;
-extern ReorderBuffer rob2;
+extern ReorderBuffer rob;
 extern intReg intRegFile;
 extern fpReg fpRegFile;
 extern cpuMemory mainMem;
@@ -75,7 +75,7 @@ void driver()
 
 		// ROB will be empty at the beginning of the program and end
 		// We still want to count a cycle
-		if (rob2.isEmpty())
+		if (rob.isEmpty())
 		{
 			if (numCycles > 0)
 			{
@@ -87,7 +87,7 @@ void driver()
 		}
 
 		// ISSUE EX, WRITEBACK, MEM, AND COMMIT
-		for (auto& instr : rob2.table)
+		for (auto& instr : rob.table)
 		{
 			switch (instr->state)
 			{
@@ -119,7 +119,7 @@ void driver()
 				break;
 			}
 		}
-		rob2.hasCommited = false;
+		rob.hasCommited = false;
 		numCycles++;
 	}
 }
