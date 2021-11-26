@@ -28,7 +28,7 @@ f_registers 2
 1 1.2
 2 2.4
 
-program 5
+program 6
 sub_d f3 f2 f1
 add r2 r3 r1
 sub r5 r6 r7
