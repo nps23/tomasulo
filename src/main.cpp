@@ -5,6 +5,7 @@
 #include <string>
 #include <queue>
 #include <deque>
+#include <exception>
 
 #include "cpu_config.h"
 #include "input_parser.h"

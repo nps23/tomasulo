@@ -79,6 +79,11 @@ void driver()
 		{
 			if (numCycles > 0)
 			{
+				// if we stalled on a misbranch until the ROB was clear, resume fetching
+				if (stall_fetch)
+				{
+					stall_fetch == false;
+				}
 				numCycles++;
 				break;
 			}
