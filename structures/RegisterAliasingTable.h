@@ -14,6 +14,7 @@ class IntRegisterAliasingTable
 public:
 	IntRegisterAliasingTableEntry table[32];
 	IntRegisterAliasingTable(const CPUConfig& config);
+	void ClearRatId(int id);
 };
 
 struct FPRegisterAliasingTableEntry
@@ -28,4 +29,5 @@ class FPRegisterAliasingTable
 public:
 	FPRegisterAliasingTableEntry table[32];
 	FPRegisterAliasingTable (const CPUConfig& config);
+	void ClearRatId(int id);
 };

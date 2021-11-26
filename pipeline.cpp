@@ -249,7 +249,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -258,7 +258,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.register_value;
+			instr->qk = r_entry.map_entries.back();
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
@@ -303,7 +303,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -312,7 +312,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.register_value;
+			instr->qk = r_entry.map_entries.back();
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
@@ -352,7 +352,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -361,7 +361,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.register_value;
+			instr->qk = r_entry.map_entries.back();
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
@@ -401,7 +401,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -410,7 +410,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.register_value;
+			instr->qk = r_entry.map_entries.back();
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
@@ -449,7 +449,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 
 		// The immediate value will always be given, so fill vk directly.
@@ -492,7 +492,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -501,7 +501,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.register_value;
+			instr->qk = r_entry.map_entries.back();
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
@@ -541,7 +541,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -550,14 +550,14 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.register_value;
+			instr->qk = r_entry.map_entries.back();
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.register_value = instr->instructionId;
+		dest.map_entries.push_back(instr->instructionId);
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -590,7 +590,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.register_value;
+			instr->qj = l_entry.map_entries.back();
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -599,19 +599,18 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.register_value;
+			instr->qk = r_entry.map_entries.back();
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.register_value = instr->instructionId;
+		dest.map_entries.push_back(instr->instructionId);
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
 		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
 		instr->issued = true;
 		instr->state = ex;
 		return true;
