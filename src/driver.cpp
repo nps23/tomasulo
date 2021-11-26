@@ -82,6 +82,14 @@ void driver()
 				// if we stalled on a misbranch until the ROB was clear, resume fetching
 				if (stall_fetch)
 				{
+					for (auto& entry : intRat.table)
+					{
+						entry.is_mapped = false;
+					}
+					for (auto& entry : fpRat.table)
+					{
+						entry.is_mapped = false;
+					}
 					stall_fetch == false;
 				}
 				numCycles++;
