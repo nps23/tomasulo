@@ -99,6 +99,8 @@ void MispredictSquash(Instruction* instr)
 		std::cout << "No mispredict! Are you sure you should be calling this fucntion?" << std::endl;
 		return;
 	}
+	
+	stall_fetch = true;
 	// clear instruction buffer
 	while (instBuff.inst.size() > 0)
 	{
@@ -109,7 +111,6 @@ void MispredictSquash(Instruction* instr)
 		rom.pc = instr->source_instruction + 1;
 	else if (instr->branch_false_negative)
 		rom.pc = instr->realized_instruction_target;
-	// recover the RAT
 	// clear RS of incorrect instrutions
 	for (auto& entry : addRS.table) 
 	{
@@ -125,22 +126,6 @@ void MispredictSquash(Instruction* instr)
 		{
 			fRS.clear(instr);
 			entry->state = stop;
-		}
-	}
-	// Reset tags of any valid instructions waiting on this instruction's value
-	for (auto& entry : addRS.table)
-	{
-		int qj = entry->qj;
-		int qk = entry->qk;
-		if (idMap[qj]->state == stop)
-		{
-			// reset the Q values to the previous valid map
-			throw std::runtime_error("Logic in squash not implemented");
-		}
-		if (idMap[qk]->state == stop)
-		{
-			// reset the Q values to the previous valid map
-			throw std::runtime_error("Logic in squash not implemented");
 		}
 	}
 	// Clear ROB entries
@@ -224,7 +209,7 @@ bool IssueDecode(Instruction* instr)
 		if (instr->btb_target_instruction != instr->realized_instruction_target && instr->triggered_branch)
 		{
 			ResetPC(instr);
-			bool stall_fetch = true;
+			stall_fetch = true;
 		}
 		
 		if (rob.isFull() || addRS.isFull())
@@ -272,7 +257,57 @@ bool IssueDecode(Instruction* instr)
 	}
 	case bne:
 	{
-		 
+		// compute realized target of the branch instruction
+		instr->realized_instruction_target = instr->source_instruction + 1 + instr->offset;
+		// if we branched to the wrong address, reset right away
+		if (instr->btb_target_instruction != instr->realized_instruction_target && instr->triggered_branch)
+		{
+			ResetPC(instr);
+			stall_fetch = true;
+		}
+
+		if (rob.isFull() || addRS.isFull())
+		{
+			break;
+		}
+		instBuff.clear(instr);
+
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& r_entry = intRat.table[instr->r_right_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.value;
+		}
+		if (!r_entry.is_mapped)
+		{
+			instr->vk = r_entry.value;
+			instr->qk = 0;
+		}
+		else
+		{
+			instr->qk = r_entry.value;
+		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		addRS.insert(instr);
+		rob.insert(instr);
+		dest.is_mapped = true;
+		dest.value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
 	}
 	case add:
 	{		
@@ -924,7 +959,7 @@ bool Commit(Instruction* instr)
 		if (((*rob.table.front()).state == commit) && ((*rob.table.front()).programLine == instr->programLine))
 		{
 			instr->state = null;
-			rob.pop();
+			rob.clear(instr);
 			instr->commit_start_cycle = numCycles;
 			instr->commit_end_cycle = numCycles;
 			outputInstructions.push_back(instr);
@@ -947,7 +982,7 @@ bool Commit(Instruction* instr)
 			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob.pop();
+			rob.clear(instr);
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -969,7 +1004,7 @@ bool Commit(Instruction* instr)
 			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob.pop();
+			rob.clear(instr);
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -991,7 +1026,7 @@ bool Commit(Instruction* instr)
 			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob.pop();
+			rob.clear(instr);
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -1013,7 +1048,7 @@ bool Commit(Instruction* instr)
 			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob.pop();
+			rob.clear(instr);
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -1035,7 +1070,7 @@ bool Commit(Instruction* instr)
 			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob.pop();
+			rob.clear(instr);
 			outputInstructions.push_back(instr);
 		}
 		break;
@@ -1057,7 +1092,7 @@ bool Commit(Instruction* instr)
 			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
-			rob.pop();
+			rob.clear(instr);
 			outputInstructions.push_back(instr);
 		}
 		break;
