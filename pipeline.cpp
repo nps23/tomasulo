@@ -229,7 +229,7 @@ bool IssueDecode(Instruction* instr)
 		if (instr->btb_target_instruction != instr->realized_instruction_target && instr->triggered_branch)
 		{
 			ResetPC(instr);
-			bool stall_fetch = true;
+			stall_fetch = true;
 		}
 		
 		if (rob.isFull() || addRS.isFull())
@@ -283,7 +283,7 @@ bool IssueDecode(Instruction* instr)
 		if (instr->btb_target_instruction != instr->realized_instruction_target && instr->triggered_branch)
 		{
 			ResetPC(instr);
-			bool stall_fetch = true;
+			stall_fetch = true;
 		}
 
 		if (rob.isFull() || addRS.isFull())
