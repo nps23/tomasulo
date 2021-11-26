@@ -49,6 +49,8 @@ Instruction* copyInstruction(const Instruction* source)
 	new_instr->dest = source->dest;
 	new_instr->result = source->result;
 	new_instr->programLine = source->programLine;
+	new_instr->btb_index = source->btb_index;
+	new_instr->source_instruction = rom.pc;
 
 	return new_instr;
 }
@@ -60,16 +62,12 @@ Instruction* InitializeInstruction(Instruction* instr)
 	// lets try using the last element of the map instead of the ROB.
 	
 	// we seem to be clearing the ROB before getting to the next stage
-	if (rob.table.size() == 0)
+	if (rob.table.size() == 0 && numCycles == 0)
 	{
 		new_instr->instructionId = 1;
 		idMap[1] = new_instr;
 		return new_instr;
 	}
-	int last_id_index = rob.table.size() - 1;
-
-	//new_instr->instructionId = ((rob2.table[last_id_index])->instructionId) + 1;
-	//idMap[new_instr->instructionId] = &instr;
 
 	int new_value = std::prev(idMap.end())->first + 1;
 	new_instr->instructionId = new_value;
@@ -111,7 +109,7 @@ void MispredictSquash(Instruction* instr)
 		rom.pc = instr->source_instruction + 1;
 	else if (instr->branch_false_negative)
 		rom.pc = instr->realized_instruction_target;
-	// clear RS of incorrect instrutions
+	// clear RS of incorrect instrutions past the branch
 	for (auto& entry : addRS.table) 
 	{
 		if (entry->instructionId > instr->instructionId)
@@ -149,7 +147,6 @@ bool IssueFetch(Instruction* instr)
 	instBuff.inst.push_back(fetch_instr);
 	// Lookup the BTB index, predict a branch
 	int btb_index = (rom.pc->btb_index) % 8;
-	std::cout << btb_index << std::endl;
 	bool branch_taken = branchPredictor.table[btb_index].first;
 
 	if (branch_taken)
@@ -882,6 +879,34 @@ bool WriteBack(Instruction* instr)
 		}
 			break;
 		case bne:
+		{
+			if (instr->writeback_begin)
+			{
+				instr->writeback_begin = false;
+				instr->writeback_start_cycle = numCycles;
+			}
+			if (!bus.occupied)
+			{
+				addRS.clear(instr);
+				if (!bus.isEmpty())
+				{
+					bus.clear(instr);
+				}
+				bus.occupied = true;
+				instr->writeback_end_cycle = numCycles;
+				instr->state = commit;
+				instr->commit_start_cycle = numCycles + 1;
+			}
+			else
+			{
+				bus.insert(instr);
+			}
+			// if we mispredicted, clear out everything
+			if (instr->mispredict)
+			{
+				MispredictSquash(instr);
+			}
+		}
 			break;
 		case fin:
 			break;
@@ -1096,6 +1121,39 @@ bool Commit(Instruction* instr)
 			outputInstructions.push_back(instr);
 		}
 		break;
+	}
+	case bne:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+		if (instr == rob.table[0] && !rob.hasCommited)
+		{
+			rob.hasCommited = true;
+			int result = instr->result;
+			instr->commit_end_cycle = numCycles;
+			rob.clear(instr);
+			outputInstructions.push_back(instr);
+		}
+	}
+		break;
+	case beq:
+	{
+		if (instr->commit_begin)
+		{
+			instr->commit_begin = false;
+			instr->commit_start_cycle = numCycles;
+		}
+		if (instr == rob.table[0] && !rob.hasCommited)
+		{
+			rob.hasCommited = true;
+			int result = instr->result;
+			instr->commit_end_cycle = numCycles;
+			rob.clear(instr);
+			outputInstructions.push_back(instr);
+		}
 	}
 	default:
 	{

@@ -28,12 +28,18 @@ f_registers 2
 1 1.2
 2 2.4
 
+<<<<<<< HEAD:src/test/input.txt
 program 6
 sub_d f3 f2 f1
 add r2 r3 r1
 sub r5 r6 r7
 mult_d f8 f9 f10
 add_i r11 r3 10
+=======
+program 3
+add r1 r2 r3
+bne r7 r8 -2
+>>>>>>> 8b2f161 (finished core speculative branching logic, onto debugging):test/input.txt
 fin
 
 memory 3

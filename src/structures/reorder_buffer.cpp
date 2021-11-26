@@ -26,11 +26,6 @@ bool ReorderBuffer::isEmpty()
 	return table.empty();
 }
 
-void ReorderBuffer::updateROB()
-{
-
-}
-
 void ReorderBuffer::pop()
 {
 	table.pop_front();
