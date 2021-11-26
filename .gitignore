@@ -32,10 +32,11 @@
 *.app
 
 # VS
-.vs
-*.sln
-*vcxproj*
 Debug/*
+Release/*
+x64/
+.vs
+*.user
 
 # Program output files
 output.txt

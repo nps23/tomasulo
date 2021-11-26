@@ -6,7 +6,7 @@
 #include "cpu_config.h"
 #include "instruction.h"
 
-std::string input_file = "test/input.txt";
+std::string input_file = "src/test/input.txt";
 
 //parse an input file and return a CPU config struct
 CPUConfig ParseInput(std::string& input_file)
@@ -14,10 +14,15 @@ CPUConfig ParseInput(std::string& input_file)
 	CPUConfig config;
 	std::string line;
 	std::ifstream infile(input_file);
-	
+	if (!infile.is_open())
+	{
+		throw std::runtime_error("Error reading input file");
+	}
+
 	while (!infile.eof())
 	{
 		infile >> line;
+		std::cout << "Line is: " << line << std::endl;
 		// extract functional unit config options 
 		if (line[0] == 'f' && line[1] == 'u')
 		{
@@ -259,12 +264,6 @@ CPUConfig ParseInput(std::string& input_file)
 				infile >> address >> value;
 				config.memory[address] = value;
 			}
-		}
-
-		else 
-		{
-			// local FU buffers requesting the central data bus
-			continue;
 		}
 		
 		if(infile.eof()){
