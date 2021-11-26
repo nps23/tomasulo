@@ -79,6 +79,7 @@ Instruction* InitializeInstruction(Instruction* instr)
 }
 
 // Reset the program counter to the previous value if we branched on a non branch instruction
+// TODO only clear instructions that are not good
 void ResetPC(Instruction* instr)
 {
 	// Set the program counter to the next instruction prior to the bad branch
@@ -110,6 +111,7 @@ void MispredictSquash(Instruction* instr)
 	else if (instr->branch_false_negative)
 		rom.pc = instr->realized_instruction_target;
 	// recover the RAT
+	//THIS ONLY NEEDS TO DELETE ALL INSTRUCITONS IN THE MAP VALUES VECTOR AFTER THE MISPREDICT
 	// clear RS of incorrect instrutions
 	for (auto& entry : addRS.table) 
 	{
@@ -128,6 +130,8 @@ void MispredictSquash(Instruction* instr)
 		}
 	}
 	// Reset tags of any valid instructions waiting on this instruction's value
+	// THIS SHOULDN'T NEED TO HAPPEND CAUSE ALL LATER INSTRUCCTIONS SHOULD HAVE ALREADY BEEN REMOVED
+	/*
 	for (auto& entry : addRS.table)
 	{
 		int qj = entry->qj;
@@ -143,6 +147,7 @@ void MispredictSquash(Instruction* instr)
 			throw std::runtime_error("Logic in squash not implemented");
 		}
 	}
+	*/
 	// Clear ROB entries
 	for (auto& entry : rob.table)
 	{
@@ -239,28 +244,28 @@ bool IssueDecode(Instruction* instr)
 
 		if (!l_entry.is_mapped)
 		{
-			instr->vj = l_entry.value;
+			instr->vj = l_entry.register_value;
 			instr->qj = 0;
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.register_value;
 		}
 		if (!r_entry.is_mapped)
 		{
-			instr->vk = r_entry.value;
+			instr->vk = r_entry.register_value;
 			instr->qk = 0;
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.register_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.register_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -272,7 +277,57 @@ bool IssueDecode(Instruction* instr)
 	}
 	case bne:
 	{
-		 
+		// compute realized target of the branch instruction
+		instr->realized_instruction_target = instr->source_instruction + 1 + instr->offset;
+		// if we branched to the wrong address, reset right away
+		if (instr->btb_target_instruction != instr->realized_instruction_target && instr->triggered_branch)
+		{
+			ResetPC(instr);
+			bool stall_fetch = true;
+		}
+
+		if (rob.isFull() || addRS.isFull())
+		{
+			break;
+		}
+		instBuff.clear(instr);
+
+		auto& l_entry = intRat.table[instr->r_left_operand];
+		auto& r_entry = intRat.table[instr->r_right_operand];
+		auto& dest = intRat.table[instr->dest];
+
+		if (!l_entry.is_mapped)
+		{
+			instr->vj = l_entry.register_value;
+			instr->qj = 0;
+		}
+		else
+		{
+			instr->qj = l_entry.register_value;
+		}
+		if (!r_entry.is_mapped)
+		{
+			instr->vk = r_entry.register_value;
+			instr->qk = 0;
+		}
+		else
+		{
+			instr->qk = r_entry.register_value;
+		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		addRS.insert(instr);
+		rob.insert(instr);
+		dest.is_mapped = true;
+		dest.register_value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
 	}
 	case add:
 	{		
@@ -292,28 +347,28 @@ bool IssueDecode(Instruction* instr)
 
 		if (!l_entry.is_mapped)
 		{
-			instr->vj = l_entry.value;
+			instr->vj = l_entry.register_value;
 			instr->qj = 0;
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.register_value;
 		}
 		if (!r_entry.is_mapped)
 		{
-			instr->vk = r_entry.value;
+			instr->vk = r_entry.register_value;
 			instr->qk = 0;
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.register_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.register_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -341,28 +396,28 @@ bool IssueDecode(Instruction* instr)
 
 		if (!l_entry.is_mapped)
 		{
-			instr->vj = l_entry.value;
+			instr->vj = l_entry.register_value;
 			instr->qj = 0;
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.register_value;
 		}
 		if (!r_entry.is_mapped)
 		{
-			instr->vk = r_entry.value;
+			instr->vk = r_entry.register_value;
 			instr->qk = 0;
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.register_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.register_value = instr->instructionId;
 
 		instr->instType = instr->op_code;
 		instr->rob_busy = true;
@@ -389,12 +444,12 @@ bool IssueDecode(Instruction* instr)
 
 		if (!l_entry.is_mapped)
 		{
-			instr->vj = l_entry.value;
+			instr->vj = l_entry.register_value;
 			instr->qj = 0;
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.register_value;
 		}
 
 		// The immediate value will always be given, so fill vk directly.
@@ -405,7 +460,7 @@ bool IssueDecode(Instruction* instr)
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.register_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -432,28 +487,28 @@ bool IssueDecode(Instruction* instr)
 
 		if (!l_entry.is_mapped)
 		{
-			instr->vj = l_entry.value;
+			instr->vj = l_entry.register_value;
 			instr->qj = 0;
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.register_value;
 		}
 		if (!r_entry.is_mapped)
 		{
-			instr->vk = r_entry.value;
+			instr->vk = r_entry.register_value;
 			instr->qk = 0;
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.register_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.register_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -481,28 +536,28 @@ bool IssueDecode(Instruction* instr)
 
 		if (!l_entry.is_mapped)
 		{
-			instr->vj = l_entry.value;
+			instr->vj = l_entry.register_value;
 			instr->qj = 0;
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.register_value;
 		}
 		if (!r_entry.is_mapped)
 		{
-			instr->vk = r_entry.value;
+			instr->vk = r_entry.register_value;
 			instr->qk = 0;
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.register_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.register_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -530,28 +585,28 @@ bool IssueDecode(Instruction* instr)
 
 		if (!l_entry.is_mapped)
 		{
-			instr->vj = l_entry.value;
+			instr->vj = l_entry.register_value;
 			instr->qj = 0;
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.register_value;
 		}
 		if (!r_entry.is_mapped)
 		{
-			instr->vk = r_entry.value;
+			instr->vk = r_entry.register_value;
 			instr->qk = 0;
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.register_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.register_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -945,7 +1000,7 @@ bool Commit(Instruction* instr)
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
 			intRat.table[index].is_mapped = false;
-			intRat.table[index].value = result;
+			intRat.table[index].register_value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.pop();
 			outputInstructions.push_back(instr);
@@ -967,7 +1022,7 @@ bool Commit(Instruction* instr)
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
 			intRat.table[index].is_mapped = false;
-			intRat.table[index].value = result;
+			intRat.table[index].register_value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.pop();
 			outputInstructions.push_back(instr);
@@ -989,7 +1044,7 @@ bool Commit(Instruction* instr)
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
 			intRat.table[index].is_mapped = false;
-			intRat.table[index].value = result;
+			intRat.table[index].register_value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.pop();
 			outputInstructions.push_back(instr);
@@ -1011,7 +1066,7 @@ bool Commit(Instruction* instr)
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
 			fpRat.table[index].is_mapped = false;
-			fpRat.table[index].value = result;
+			fpRat.table[index].register_value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.pop();
 			outputInstructions.push_back(instr);
@@ -1033,7 +1088,7 @@ bool Commit(Instruction* instr)
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
 			fpRat.table[index].is_mapped = false;
-			fpRat.table[index].value = result;
+			fpRat.table[index].register_value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.pop();
 			outputInstructions.push_back(instr);
@@ -1055,7 +1110,7 @@ bool Commit(Instruction* instr)
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
 			fpRat.table[index].is_mapped = false;
-			fpRat.table[index].value = result;
+			fpRat.table[index].register_value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.pop();
 			outputInstructions.push_back(instr);

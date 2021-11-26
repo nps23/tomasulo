@@ -174,7 +174,7 @@ int main()
 	}
 	outFile.close();
 
-	std::cout << intRat.table[3].value << std::endl;
+	std::cout << intRat.table[3].register_value << std::endl;
 	std::cout << outputInstructions.size() << std::endl;
 	
 	return 0;

@@ -5,7 +5,8 @@
 struct IntRegisterAliasingTableEntry
 {
 	bool is_mapped;
-	int value;
+	std::vector<int> map_entries;
+	int register_value;
 };
 
 class IntRegisterAliasingTable
@@ -18,7 +19,8 @@ public:
 struct FPRegisterAliasingTableEntry
 {
 	bool is_mapped;
-	double value;
+	std::vector<int> map_entries;
+	double register_value;
 };
 
 class FPRegisterAliasingTable
