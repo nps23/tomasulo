@@ -229,7 +229,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -238,14 +238,14 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.map_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -283,7 +283,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -292,14 +292,14 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.map_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -332,7 +332,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -341,14 +341,14 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.map_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -381,7 +381,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -390,7 +390,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.map_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
@@ -429,7 +429,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 
 		// The immediate value will always be given, so fill vk directly.
@@ -440,7 +440,7 @@ bool IssueDecode(Instruction* instr)
 		addRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -472,7 +472,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -481,14 +481,14 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.map_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -521,7 +521,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -530,14 +530,14 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.map_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -570,7 +570,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qj = l_entry.value;
+			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
 		{
@@ -579,14 +579,14 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
-			instr->qk = r_entry.value;
+			instr->qk = r_entry.map_value;
 		}
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		fRS.insert(instr);
 		rob.insert(instr);
 		dest.is_mapped = true;
-		dest.value = instr->instructionId;
+		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;

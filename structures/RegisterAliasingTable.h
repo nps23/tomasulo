@@ -5,6 +5,7 @@
 struct IntRegisterAliasingTableEntry
 {
 	bool is_mapped;
+	int map_value;
 	int value;
 };
 
@@ -18,6 +19,7 @@ public:
 struct FPRegisterAliasingTableEntry
 {
 	bool is_mapped;
+	int map_value;
 	double value;
 };
 
