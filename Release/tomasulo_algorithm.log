@@ -1,0 +1,13 @@
+﻿  pipeline.cpp
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(425,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(434,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(474,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(483,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(523,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(532,23): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(929,15): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(951,15): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(973,15): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\pipeline.cpp(1055): warning C4715: 'Commit': not all control paths return a value
+LINK : warning LNK4075: ignoring '/INCREMENTAL' due to '/OPT:ICF' specification
+  tomasulo_algorithm.vcxproj -> C:\Users\nates\OneDrive\Desktop\Grad school\computer_architecture\project\Release\tomasulo_algorithm.exe

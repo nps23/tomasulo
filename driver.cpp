@@ -58,6 +58,8 @@ void driver()
 	//PrintCPUConfig(config);
 	while (true) {
 
+		if (numCycles == 20)
+			break;
 		// ISSUE FETCH
 		if (!rom.pc->program_end && !stall_fetch)
 		{
@@ -90,7 +92,7 @@ void driver()
 					{
 						entry.is_mapped = false;
 					}
-					stall_fetch == false;
+					stall_fetch = false;
 				}
 				numCycles++;
 				break;
@@ -136,4 +138,3 @@ void driver()
 		numCycles++;
 	}
 }
-
