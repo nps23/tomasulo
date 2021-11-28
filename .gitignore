@@ -50,3 +50,4 @@ output.txt
 CMakeFiles
 *.cmake
 CMakeCache.txt
+*.dir
