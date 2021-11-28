@@ -37,6 +37,16 @@ Release/*
 x64/
 .vs
 *.user
+*.sln
+*.vcxproj
+*.filters
+
+
 
 # Program output files
 output.txt
+
+# CMake
+CMakeFiles
+*.cmake
+CMakeCache.txt
