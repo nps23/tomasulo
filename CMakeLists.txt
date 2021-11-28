@@ -14,25 +14,16 @@ file (GLOB header_files
     "${source_dir}/*.h"
     "${source_dir}/structures/*.h")
 
-add_executable(Tomasulo ${sources} ${header_files})
+file (GLOB text_files "${source_dir}/test/*.txt")
+
+add_executable(Tomasulo ${sources} ${header_files} ${text_files})
 set(CMAKE_SUPPRESS_REGENERATION true)
+# hopefully remove the "ALL BUILDS" solution problem
+#set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+#set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
+#set_property(GLOBAL PROPERTY VS_STARTUP_PROJECT "Tomasulo")
+set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT "Tomasulo")
 
-# cmake_minimum_required(VERSION 3.10)
-
-# # set the project name
-# # Maps to a solution file
-# project(Tomasulo)
-
-# # Turn on the ability to create folders to organize projects
-# set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-# # Set the compiler flags and options. Visual Studio warning set to level 4
-# set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-# #set (source_dir "${PROJECT_SOURCE_DIR}/src/")
-
-# message("cxx flags" ${CMAKE_CXX_FLAGS})
-
-# # sub dirs where we have more CMakeLists.txt files
-# add_subdirectory(src)
-
-# add_executable(tomasulo main.cpp)
+message("${CMAKE_CURRENT_SOURCE_DIR} ---------  ${CMAKE_CURRENT_BINARY_DIR}")
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/src/test/input.txt
+        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/test/)
