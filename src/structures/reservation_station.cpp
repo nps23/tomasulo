@@ -1,4 +1,6 @@
 #include <algorithm>
+#include <iostream>
+#include <iostream>
 
 #include "reservation_station.h"
 
@@ -18,7 +20,7 @@ int AddReservationStation::insert(Instruction* instr)
 {
 	if (table.size() == maxEntries)
 	{
-		throw "Trying to insert into a full reservation station";
+		throw std::runtime_error("Trying to insert into a full reservation station");
 	}
 	table.push_back(instr);
 	freeEntries--;
@@ -46,7 +48,7 @@ int FPReservationStation::insert(Instruction* instr)
 {
 	if (table.size() == maxEntries)
 	{
-		throw "Trying to insert into a full FP Reservations station";
+		throw std::runtime_error("Trying to insert into a full FP Reservations station");
 	}
 	table.push_back(instr);
 	freeEntries--;

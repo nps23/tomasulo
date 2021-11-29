@@ -1165,7 +1165,7 @@ bool Commit(Instruction* instr)
 	}
 	default:
 	{
-		throw "NO COMMIT IMPLEMENTED FOR INSTRUCTION YET";
+		throw std::runtime_error("NO COMMIT IMPLEMENTED FOR INSTRUCTION YET");
 	}
 	}
 }
