@@ -32,11 +32,28 @@
 *.app
 
 # VS
+Debug/*
+Release/*
+x64/
 .vs
+*.user
 *.sln
+<<<<<<< HEAD
+*.vcxproj
+*.filters
+
+
+=======
 *vcxproj*
 Debug/*
 x64/*
+>>>>>>> 03aae0b (starting branch predictor)
 
 # Program output files
 output.txt
+
+# CMake
+CMakeFiles
+*.cmake
+CMakeCache.txt
+*.dir

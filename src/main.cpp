@@ -169,7 +169,7 @@ int main()
 		}
 
 		// Print out the number of cycles the program ran for
-		outFile << "Cycles run = " << numCycles << endl;
+		outFile << "Cycles run = " << (numCycles-2) << endl;
 	}else{
 		cout << "ERROR: FILE OPEN FAILURE" << endl;
 	}

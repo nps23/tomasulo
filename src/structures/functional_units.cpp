@@ -6,7 +6,7 @@ extern int numCycles;
 
 AddFunctinalUnit::AddFunctinalUnit(int cycles_ex)
 {
-	cycleInEx = cycles_ex - 1;
+	cycleInEx = cycles_ex;
 	internalCycle = 0;
 	occupied = false;
 	instr = nullptr;
@@ -14,7 +14,7 @@ AddFunctinalUnit::AddFunctinalUnit(int cycles_ex)
 
 int AddFunctinalUnit::next()
 {
-	if (internalCycle == cycleInEx)
+	if (internalCycle == (cycleInEx-1))
 	{
 		occupied = false;
 		instr = nullptr;
@@ -69,7 +69,7 @@ void AddFunctinalUnit::dispatch(Instruction* instruction)
 
 FPAddFunctionalUnit::FPAddFunctionalUnit(int cycles_ex)
 {
-	cycleInEx = cycles_ex;
+	cycleInEx = cycles_ex-1;
 	internalCycle = 0;
 	instr = nullptr;
 	occupied = false;
@@ -77,7 +77,7 @@ FPAddFunctionalUnit::FPAddFunctionalUnit(int cycles_ex)
 
 double FPAddFunctionalUnit::next()
 {
-	if (internalCycle == cycleInEx)
+	if (internalCycle == (cycleInEx-1))
 	{
 		occupied = false;
 		instr = nullptr;
@@ -126,7 +126,7 @@ void FPMultFunctionalUnit::dispatch(Instruction* instruction)
 
 double FPMultFunctionalUnit::next()
 {
-	if (internalCycle == cycleInEx)
+	if (internalCycle == (cycleInEx-1))
 	{
 		occupied = false;
 		instr = nullptr;
