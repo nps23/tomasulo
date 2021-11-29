@@ -58,7 +58,7 @@ void driver()
 	//PrintCPUConfig(config);
 	while (true) {
 
-		if (numCycles == 20)
+		if (numCycles == 100)
 			break;
 		// ISSUE FETCH
 		if (!rom.pc->program_end && !stall_fetch)
@@ -113,16 +113,6 @@ void driver()
 				}
 				break;
 			case ex:
-				/*if (instr->ex_begin)
-				{
-					instr->ex_begin = false;
-					break;
-				}
-				else
-				{
-					Ex(instr);
-					break;
-				}*/
 				Ex(instr);
 				break;
 			case wb:

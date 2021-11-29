@@ -5,8 +5,8 @@
 
 BranchPredictor::BranchPredictor()
 {
-	table.resize(TABLE_SIZE);
-	for (auto& value : table)
+	table.resize(0);
+	for (int i = 0; i < TABLE_SIZE; i++ )
 	{
 		table.push_back(std::make_pair(false, nullptr));
 	}

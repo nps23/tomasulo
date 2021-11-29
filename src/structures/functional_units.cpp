@@ -29,7 +29,7 @@ int AddFunctinalUnit::next()
 			return left_operand - right_operand;
 		case bne:
 		{
-			if (left_operand != right_operand)
+			if (left_operand == right_operand)
 			{
 				return 1;
 			}

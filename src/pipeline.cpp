@@ -98,7 +98,6 @@ void MispredictSquash(Instruction* instr)
 		return;
 	}
 	
-	stall_fetch = true;
 	// clear instruction buffer
 	while (instBuff.inst.size() > 0)
 	{
@@ -134,6 +133,7 @@ void MispredictSquash(Instruction* instr)
 			rob.clear(instr);
 		}
 	}
+	stall_fetch = false;
 }
 
 // PIPELINE FUNCTIONS
@@ -147,11 +147,17 @@ bool IssueFetch(Instruction* instr)
 	instBuff.inst.push_back(fetch_instr);
 	// Lookup the BTB index, predict a branch
 	int btb_index = (rom.pc->btb_index) % 8;
+	std::cout << "BTB INDEX: " << btb_index;
 	bool branch_taken = branchPredictor.table[btb_index].first;
+	std::cout << "BRANCH TAKEN: " << branch_taken << std::endl;;
 
 	if (branch_taken)
 	{
 		Instruction* target_branch = branchPredictor.table[btb_index].second;
+		if (!target_branch)
+		{
+			throw std::runtime_error("Trying to set the Program Counter to NULL!");
+		}
 		rom.pc = target_branch;
 		instr->triggered_branch = true;
 		instr->source_instruction = rom.pc;
@@ -668,20 +674,22 @@ bool Ex(Instruction* instruction)
 				if (instruction->result == 1)
 				{
 					branchPredictor.table[instruction->btb_index].first = false;
-					branchPredictor.table[instruction->btb_index].second = instruction->realized_instruction_target;
 					if (instruction->triggered_branch)
 					{
 						instruction->mispredict = true;
 						instruction->branch_false_positive = true;
+						stall_fetch = true;
 					}
 				}
 				else if (instruction->result == 0)
 				{
 					branchPredictor.table[instruction->btb_index].first = true;
+					branchPredictor.table[instruction->btb_index].second = instruction->realized_instruction_target;
 					if (!instruction->triggered_branch)
 					{
 						instruction->mispredict = true;
 						instruction->branch_false_negative = true;
+						stall_fetch = true;
 					}
 				}
 			}
