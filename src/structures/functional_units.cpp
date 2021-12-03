@@ -1,7 +1,7 @@
+#include <iostream>
+
 #include "functional_units.h"
-
 #include "../instruction.h"
-
 extern int numCycles;
 
 AddFunctinalUnit::AddFunctinalUnit(int cycles_ex)
@@ -27,11 +27,36 @@ int AddFunctinalUnit::next()
 			return left_operand + right_operand;
 		case sub:
 			return left_operand - right_operand;
+		case bne:
+		{
+			if (left_operand == right_operand)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		case beq:
+		{
+			if (left_operand == right_operand)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		default:
+			throw std::runtime_error("EX logic not found for instruction with op code in integer adder function unit");
 		}
 	}
 	internalCycle++;
 	return -1;
 }
+
 
 void AddFunctinalUnit::dispatch(Instruction* instruction)
 {
@@ -64,9 +89,9 @@ double FPAddFunctionalUnit::next()
 		case sub_d:
 			return left_operand - right_operand;
 		case mult_d:
-			throw "Trying to pass mult into the functional unit";
+			throw std::runtime_error("Trying to pass mult into the functional unit");
 		default:
-			throw "Tried passing a non FP instruction into the FP unit";
+			throw std::runtime_error("Tried passing a non FP instruction into the FP unit");
 		}
 	}
 	internalCycle++;

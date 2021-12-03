@@ -5,6 +5,7 @@
 #include <string>
 #include <queue>
 #include <deque>
+#include <exception>
 
 #include "cpu_config.h"
 #include "input_parser.h"
@@ -20,6 +21,7 @@
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
+#include "structures/BranchPredictor.h"
 
 using namespace std;
 
@@ -29,8 +31,8 @@ CPUConfig config = ParseInput(input_file);
 RAT rat;
 CDB dataBus;
 AddReservationStation addRS(config.fu_integer_adder[0]);
-FPReservationStation fRs(config.fu_fp_mult[0]);
-ReorderBuffer rob2(config.rob_entries);
+FPReservationStation fRS(config.fu_fp_mult[0]);
+ReorderBuffer rob(config.rob_entries);
 intReg intRegFile(config);
 fpReg fpRegFile(config);
 cpuMemory mainMem(config);
@@ -42,11 +44,15 @@ cdb bus;
 ROM rom(config.program);
 IntRegisterAliasingTable intRat(config);
 FPRegisterAliasingTable fpRat(config);
+BranchPredictor branchPredictor;
 
 // Non-hardware bookkeeping units
 std::map<int, Instruction* > idMap;
 int numCycles = 0;
 std::vector<Instruction*> outputInstructions;
+
+// Pipeline controllers
+bool stall_fetch;
 
 // Function prototypes
 void programFSM(Instruction& instr);
@@ -104,7 +110,7 @@ int main()
 					outFile << "ID = " << outputInstructions[i]->instructionId << " add_d " << "F" << outputInstructions[i]->dest << ", F" << outputInstructions[i]->f_left_operand << ", F" << outputInstructions[i]->f_right_operand << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case add_i:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " add_i " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", " << outputInstructions[i]->immediate << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " add_i " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", " << outputInstructions[i]->immediate << "\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case sub:
 					outFile << "ID = " << outputInstructions[i]->instructionId << " sub " << "R" << outputInstructions[i]->dest << ", R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;

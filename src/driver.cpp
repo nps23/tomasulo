@@ -19,6 +19,7 @@
 #include "structures/functional_units.h"
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
+#include "structures/BranchPredictor.h"
 
 using namespace std;
 
@@ -27,8 +28,8 @@ extern CPUConfig config;
 extern RAT rat;
 extern CDB dataBus;
 extern AddReservationStation addRS;
-extern FPReservationStation fRs;
-extern ReorderBuffer rob2;
+extern FPReservationStation fRS;
+extern ReorderBuffer rob;
 extern intReg intRegFile;
 extern fpReg fpRegFile;
 extern cpuMemory mainMem;
@@ -39,10 +40,14 @@ extern cdb bus;
 extern ROM rom;
 extern IntRegisterAliasingTable intRat;
 extern FPRegisterAliasingTable fpRat;
+extern BranchPredictor branchPredictor;
 
 // Non-hardware bookkeeping units
 extern std::map<int, Instruction* > idMap;
 extern int numCycles;
+
+// Pipeline controllers
+extern bool stall_fetch;
 
 // Function prototypes
 void programFSM(Instruction& instr);
@@ -50,33 +55,45 @@ void PrintCPUConfig(const CPUConfig& config);
 
 void driver()
 {
-	// At the beginning of the simulation, file IO will be done first
-	cout << "All the vars actually are read in" << endl;
-	PrintCPUConfig(config);
-	cout << "Finished Configuration printing" << endl;
-
-	cout << "ROM Program memory set" << endl;
+	//PrintCPUConfig(config);
 	while (true) {
 
+		if (numCycles == 100)
+			break;
 		// ISSUE FETCH
-		if (!rom.pc->end)
+		if (!rom.pc->program_end && !stall_fetch)
 		{
 			IssueFetch(rom.pc);
 		}
+		
+		numCycles++;
 
 		// ISSUE DECODE
 		if (instBuff.inst.size() != 0)
 		{
 			auto& bufferHead = instBuff.inst[0];
-			Issue(bufferHead);
+			IssueDecode(bufferHead);
 		}
 
 		// ROB will be empty at the beginning of the program and end
 		// We still want to count a cycle
-		if (rob2.isEmpty())
+		if (rob.isEmpty())
 		{
 			if (numCycles > 0)
 			{
+				// if we stalled on a misbranch until the ROB was clear, resume fetching
+				if (stall_fetch)
+				{
+					for (auto& entry : intRat.table)
+					{
+						entry.is_mapped = false;
+					}
+					for (auto& entry : fpRat.table)
+					{
+						entry.is_mapped = false;
+					}
+					stall_fetch = false;
+				}
 				numCycles++;
 				break;
 			}
@@ -84,7 +101,8 @@ void driver()
 			continue;
 		}
 
-		for (auto instr : rob2.table)
+		// ISSUE EX, WRITEBACK, MEM, AND COMMIT
+		for (auto& instr : rob.table)
 		{
 			switch (instr->state)
 			{
@@ -95,16 +113,6 @@ void driver()
 				}
 				break;
 			case ex:
-				/*if (instr->ex_begin)
-				{
-					instr->ex_begin = false;
-					break;
-				}
-				else
-				{
-					Ex(instr);
-					break;
-				}*/
 				Ex(instr);
 				break;
 			case wb:
@@ -116,8 +124,7 @@ void driver()
 				break;
 			}
 		}
-		rob2.hasCommited = false;
+		rob.hasCommited = false;
 		numCycles++;
 	}
 }
-

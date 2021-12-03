@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <vector>
+#include <iostream>
 
 #include "central_data_bus.h"
 
@@ -18,7 +19,7 @@ void cdb::clear(Instruction* instr)
 {
 	if (buffer.size() == 0)
 	{
-		throw "Error! Trying to remove from an empty CDB buffer!";
+		throw std::runtime_error("Trying to remove element from an empty CDB");
 	}
 	buffer.erase(std::remove(buffer.begin(), buffer.end(), instr));
 }
