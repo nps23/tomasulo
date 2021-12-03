@@ -9,7 +9,7 @@ CPU simulation using Tomasulo's algorithm
 ```
 cmake . -G "Visual Studio 16 2019"
 ```
-3. Open the project by double clicking the generated **Tomasolu.sln** file.
+3. Open the project by double clicking the generated **Tomasulo.sln** file.
 4. Click the **Local Windows Debugger** button in the top right to build and run the project.
 
 Note: The project should be run from within the VS enviornment. Double clicking the exe file from the **Debug\** directory currently does not work.
@@ -24,7 +24,7 @@ cmake . -G "Unix Makefiles"
 4. Project should currently be attatched to a debugger. Run **lldb** followed by **run** from within the debugger to run the project
 
 
-### Linux (untested) (g++)
+### Linux (untested, g++)
 1. Clone the repository
 2. From the directory where the repository is cloned, run:
 ```
