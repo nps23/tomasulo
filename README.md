@@ -12,7 +12,7 @@ cmake . -G "Visual Studio 16 2019"
 3. Open the project by double clicking the generated **Tomasulo.sln** file.
 4. Click the **Local Windows Debugger** button in the top right to build and run the project.
 
-Note: The project should be run from within the VS enviornment. Double clicking the exe file from the **Debug\** directory currently does not work.
+Note: The project should be run from within the VS enviornment. Double clicking the exe file from the **Debug/** directory currently does not work.
 
 ### Mac (clang with LLBD)
 1. Clone the repository
