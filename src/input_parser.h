@@ -22,7 +22,7 @@ CPUConfig ParseInput(std::string& input_file)
 	while (!infile.eof())
 	{
 		infile >> line;
-		std::cout << "Line is: " << line << std::endl;
+		//std::cout << "Line is: " << line << std::endl;
 		// extract functional unit config options 
 		if (line[0] == 'f' && line[1] == 'u')
 		{
@@ -118,7 +118,7 @@ CPUConfig ParseInput(std::string& input_file)
 					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
 
 					inst.dest = dest;
-					inst.f_ls_register_operand = operand;
+					inst.r_ls_register_operand = operand;
 					inst.offset = offset;
 					std::cout << "Pushing instruction: " << inst.op_code
 						<< " into the config" << std::endl;
@@ -132,7 +132,7 @@ CPUConfig ParseInput(std::string& input_file)
 					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
 
 					inst.dest = dest;
-					inst.f_ls_register_operand = operand;
+					inst.r_ls_register_operand = operand;
 					inst.offset = offset;
 					std::cout << "Pushing instruction: " << inst.op_code
 						<< " into the config" << std::endl;
@@ -264,8 +264,16 @@ CPUConfig ParseInput(std::string& input_file)
 				infile >> address >> value;
 				config.memory[address] = value;
 			}
-		}
+		}	
 		
+		else if (line == "cycles_mem")
+		{
+			std::cout << "Adding the  cycles in mem as a seperate configuration option";
+			int cycles;
+			infile >> cycles;
+			config.cycles_mem = cycles;
+		}
+
 		if(infile.eof()){
 			std::cout << "end of input file reached" << std::endl;
 			break;

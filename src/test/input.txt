@@ -28,12 +28,16 @@ f_registers 2
 1 1.2
 2 2.4
 
-program 3
-add r1 r2 r3
-bne r7 r8 -2
+program 5
+ld r3 4(r0)
+add r4 r3 r1
+sd r4 4(r0)
+ld r4 4(r0)
 fin
 
 memory 3
 4 1
 8 2
 12 3.4
+
+cycles_mem 1

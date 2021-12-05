@@ -22,6 +22,7 @@
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
 #include "structures/BranchPredictor.h"
+#include "structures/load_store_queue.h"
 
 using namespace std;
 
@@ -45,6 +46,10 @@ ROM rom(config.program);
 IntRegisterAliasingTable intRat(config);
 FPRegisterAliasingTable fpRat(config);
 BranchPredictor branchPredictor;
+MemoryUnit memUnit(config.cycles_mem);
+LoadStoreQueue LSQueue(config.fu_load_store[0]);
+LoadStoreQueueAdder LSQueueAdder(config.fu_load_store[1]);
+
 
 // Non-hardware bookkeeping units
 std::map<int, Instruction* > idMap;
@@ -92,7 +97,7 @@ int main()
 					outFile << "ID = " << outputInstructions[i]->instructionId << " nop\t\t\t\t\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case ld:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " ld " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " ld " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(R" << outputInstructions[i]->r_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case sd:
 					outFile << "ID = " << outputInstructions[i]->instructionId << " sd " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
@@ -174,9 +179,7 @@ int main()
 		cout << "ERROR: FILE OPEN FAILURE" << endl;
 	}
 	outFile.close();
-
-	std::cout << intRat.table[3].value << std::endl;
-	std::cout << outputInstructions.size() << std::endl;
+	std::cout << "Number of instructions commited: " << outputInstructions.size() << std::endl;
 	
 	return 0;
 }
