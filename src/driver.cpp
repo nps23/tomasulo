@@ -58,8 +58,8 @@ void driver()
 	//PrintCPUConfig(config);
 	while (true) {
 
-		//if (numCycles == 100)
-			//break;
+		if (numCycles == 100)
+			break;
 		// ISSUE FETCH
 		if (!rom.pc->program_end && !stall_fetch)
 		{

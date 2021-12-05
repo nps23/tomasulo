@@ -721,6 +721,26 @@ bool Ex(Instruction* instruction)
 	{
 	case beq:
 	{
+		// if we missed a writeback, check the ROB
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
+
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -762,6 +782,25 @@ bool Ex(Instruction* instruction)
 		break;
 	case bne:
 	{
+		// if we missed a writeback, check the ROB
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -1479,6 +1518,7 @@ bool Commit(Instruction* instr)
 			outputInstructions.push_back(instr);
 		}
 	}
+		break;
 	case ld:
 	{
 		if (instr->commit_start_cycle == -1)
