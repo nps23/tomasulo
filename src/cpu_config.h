@@ -32,6 +32,6 @@ struct CPUConfig {
 	std::map<int, double> f_register_map;
 
 	std::deque<Instruction> program;
-	std::map<int, int> memory;
+	std::map<int, float> memory;
 
 };

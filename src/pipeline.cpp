@@ -49,7 +49,6 @@ Instruction* copyInstruction(const Instruction* source)
 	new_instr->offset = source->offset;
 	new_instr->r_ls_register_operand = source->r_ls_register_operand;
 	new_instr->immediate = source->immediate;
-	new_instr->r_ls_register_operand = source->r_ls_register_operand;
 	new_instr->f_ls_register_operand = source->f_ls_register_operand;
 	new_instr->dest = source->dest;
 	new_instr->result = source->result;
@@ -240,9 +239,9 @@ bool IssueDecode(Instruction* instr)
 		}
 
 		instBuff.clear(instr);
-		auto& reg_operand = intRat.table[instr->r_ls_register_operand];
+		auto& reg_operand = fpRat.table[instr->r_ls_register_operand];
 		auto& offest = instr->offset;
-		auto& dest = intRat.table[instr->dest];
+		auto& dest = fpRat.table[instr->dest];
 
 		if (!reg_operand.is_mapped)
 		{
@@ -1530,6 +1529,7 @@ bool Commit(Instruction* instr)
 		{
 			rob.hasCommited = true;
 			double result = instr->result;
+			fpRegFile.fpRegFile[instr->f_ls_register_operand] = result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
 			outputInstructions.push_back(instr);

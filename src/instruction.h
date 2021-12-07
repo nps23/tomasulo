@@ -44,7 +44,7 @@ struct Instruction {
 	// Load store queue and branch instructions
 	int offset{ -1 };
 	int immediate{ -1 };
-	int r_ls_register_operand{ -1 };
+	int r_ls_register_operand{ -1 };		
 	int f_ls_register_operand{ -1 };
 	// Shared instruction metadata
 	double result{ -1 };
