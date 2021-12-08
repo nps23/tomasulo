@@ -48,8 +48,8 @@ Instruction* copyInstruction(const Instruction* source)
 	new_instr->f_right_operand = source->f_right_operand;
 	new_instr->offset = source->offset;
 	new_instr->r_ls_register_operand = source->r_ls_register_operand;
-	new_instr->immediate = source->immediate;
 	new_instr->f_ls_register_operand = source->f_ls_register_operand;
+	new_instr->immediate = source->immediate;
 	new_instr->dest = source->dest;
 	new_instr->result = source->result;
 	new_instr->programLine = source->programLine;
@@ -96,6 +96,7 @@ void ResetPC(Instruction* instr)
 // Utility function to handle squashing all bad instrucitons after a mispredict
 void MispredictSquash(Instruction* instr)
 {
+	std::cout << "MISPREDICTED" << std::endl;
 	if (!instr->mispredict)
 	{ 
 		std::cout << "No mispredict! Are you sure you should be calling this fucntion?" << std::endl;
@@ -127,7 +128,7 @@ void MispredictSquash(Instruction* instr)
 	{
 		if (entry->instructionId > instr->instructionId) 
 		{
-			fRS.clear(instr);
+			fRS.clear(entry);
 			entry->state = stop;
 		}
 	}
@@ -239,9 +240,8 @@ bool IssueDecode(Instruction* instr)
 		}
 
 		instBuff.clear(instr);
-		auto& reg_operand = fpRat.table[instr->r_ls_register_operand];
-		auto& offest = instr->offset;
-		auto& dest = fpRat.table[instr->dest];
+		auto& reg_operand = intRat.table[instr->r_ls_register_operand];
+		auto& dest = fpRat.table[instr->f_ls_register_operand];
 
 		if (!reg_operand.is_mapped)
 		{
@@ -274,7 +274,7 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
-		if (LSQueue.IsFull() || addRS.isFull())
+		if (LSQueue.IsFull() || rob.isFull())
 		{
 			break;
 		}
@@ -282,7 +282,7 @@ bool IssueDecode(Instruction* instr)
 		instBuff.clear(instr);
 		auto& reg_operand = intRat.table[instr->r_ls_register_operand];
 		auto& offest = instr->offset;
-		auto& dest = intRat.table[instr->dest];
+		auto& source_value = fpRat.table[instr->f_ls_register_operand];
 
 		if (!reg_operand.is_mapped)
 		{
@@ -294,12 +294,23 @@ bool IssueDecode(Instruction* instr)
 			if (reg_operand.map_value)
 				instr->qj = reg_operand.map_value;
 		}
+		if (!source_value.is_mapped)
+		{
+			instr->vk = source_value.value;
+			instr->qk = 0;
+		}
+		else
+		{
+			if (source_value.map_value)
+			{
+				instr->qk = source_value.map_value;
+			}
+		}
+
 		// update the ROB, RS, and the RAT
 		instr->issue_end_cycle = numCycles;
 		LSQueue.Insert(instr);
 		rob.insert(instr);
-		dest.is_mapped = true;
-		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -1117,7 +1128,16 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && !LSQueueAdder.occupied)
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj == 0 && instruction->qk == 0 && !LSQueueAdder.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
 			LSQueueAdder.Dispatch(instruction);
@@ -1153,11 +1173,12 @@ bool Mem(Instruction* instruction)
 
 	if (memUnit.instr == instruction)
 	{
-		memUnit.Next();
+		float value = memUnit.Next();
 		if (!memUnit.occupied)
 		{
 			LSQueue.Clear(instruction);
 			instruction->state = commit;
+			instruction->result = value;
 			instruction->mem_end_cycle = numCycles;
 		}
 		return true;

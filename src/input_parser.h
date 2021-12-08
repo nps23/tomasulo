@@ -117,8 +117,8 @@ CPUConfig ParseInput(std::string& input_file)
 					int dest, operand, offset;
 					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
 
-					inst.dest = dest;
-					inst.f_ls_register_operand = operand;
+					inst.f_ls_register_operand = dest;
+					inst.r_ls_register_operand = operand;
 					inst.offset = offset;
 					std::cout << "Pushing instruction: " << inst.op_code
 						<< " into the config" << std::endl;
@@ -128,14 +128,15 @@ CPUConfig ParseInput(std::string& input_file)
 				else if (opcode == "sd") {
 					inst.op_code = sd;
 					char fpId, rId, paran;
-					int dest, operand, offset;
-					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
+					int source, operand, offset;
+					infile >> fpId >> source >> offset >> paran >> rId >> operand >> paran;
 
-					inst.dest = dest;
+					inst.f_ls_register_operand = source;
 					inst.r_ls_register_operand = operand;
 					inst.offset = offset;
 					std::cout << "Pushing instruction: " << inst.op_code
 						<< " into the config" << std::endl;
+					std::cout << inst.dest << " " << inst.offset << " " << operand << "\n";
 					config.program.push_back(inst);
 				}
 

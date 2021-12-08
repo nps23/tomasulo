@@ -77,7 +77,7 @@ int main()
 		output.tDiag[i][2] = outputInstructions[i]->issue_end_cycle;
 		output.tDiag[i][3] = outputInstructions[i]->ex_start_cycle;
 		output.tDiag[i][4] = outputInstructions[i]->ex_end_cycle;
-		if(outputInstructions[i]->op_code == ld){
+		if(outputInstructions[i]->op_code == ld || outputInstructions[i]->op_code == sd){
 			output.tDiag[i][5] = outputInstructions[i]->mem_start_cycle;
 			output.tDiag[i][6] = outputInstructions[i]->mem_end_cycle;
 		}
@@ -97,10 +97,10 @@ int main()
 					outFile << "ID = " << outputInstructions[i]->instructionId << " nop\t\t\t\t\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case ld:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " ld " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(R" << outputInstructions[i]->r_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " ld " << "F" << outputInstructions[i]->f_ls_register_operand << ", " << outputInstructions[i]->offset << "(R" << outputInstructions[i]->r_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << " " << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case sd:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " sd " << "F" << outputInstructions[i]->dest << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId << " sd " << "F" << outputInstructions[i]->f_ls_register_operand << ", " << outputInstructions[i]->offset << "(" << outputInstructions[i]->f_ls_register_operand << ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case beq:
 					outFile << "ID = " << outputInstructions[i]->instructionId << " beq " << "R" << outputInstructions[i]->r_left_operand << ", R" << outputInstructions[i]->r_right_operand << ", " << outputInstructions[i]->offset << "\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] << "\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] << "\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] << "\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;

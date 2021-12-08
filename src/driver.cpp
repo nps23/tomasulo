@@ -5,6 +5,8 @@
 #include <string>
 #include <queue>
 #include <deque>
+#include <chrono>
+#include <thread>
 
 #include "cpu_config.h"
 #include "dataHoldingStructures.h"
@@ -55,18 +57,26 @@ void PrintCPUConfig(const CPUConfig& config);
 
 void driver()
 {
-	//PrintCPUConfig(config);
 	while (true) {
 
+		// DEBUG
 		if (numCycles == 100)
 			break;
+		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		//for (int i = 0; i < 32; i++)
+		//{
+		//	std::cout << "R" << i << " " << intRegFile.intRegFile[i] << std::endl;
+		//}
+		std::cout << "Cycle: " << numCycles << std::endl;
+		std::cout << "R1: " << intRegFile.intRegFile[1] << std::endl;
+		std::cout << "R2: " << intRegFile.intRegFile[2] << std::endl;
 		// ISSUE FETCH
 		if (!rom.pc->program_end && !stall_fetch)
 		{
 			IssueFetch(rom.pc);
 		}
 		
-		numCycles++;
+		//numCycles++; this was to seperate out the fetch and decode time
 
 		// ISSUE DECODE
 		if (instBuff.inst.size() != 0)
@@ -106,7 +116,7 @@ void driver()
 		{
 			switch (instr->state)
 			{
-			case issue:
+			case issue:				// Shouldn't need this line, but will keep here just in case
 				if (instr->issued) 
 				{
 					instr->state = ex;
@@ -117,6 +127,7 @@ void driver()
 				break;
 			case mem:
 				Mem(instr);
+				break;
 			case wb:
 				WriteBack(instr);
 				bus.occupied = false;

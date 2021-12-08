@@ -37,16 +37,19 @@ LoadStoreQueueAdder::LoadStoreQueueAdder(int cycles_ex)
 	internalCycle = 0;
 	occupied = false;
 	instr = nullptr;
+	register_value = -1;				// The value the (integer) holds that 
 }
 
 int LoadStoreQueueAdder::Next()
 {
-	if (internalCycle == (cycleInEx - 1))
+	if (internalCycle == cycleInEx)
 	{
 		occupied = false;
 		instr = nullptr;
 		internalCycle = 0;
-		return register_value + offset;
+		int ret_val = register_value + offset;
+		register_value = -1;
+		return ret_val;
 	}
 	internalCycle++;
 	return -1;
@@ -55,6 +58,7 @@ int LoadStoreQueueAdder::Next()
 void LoadStoreQueueAdder::Dispatch(Instruction* instruction)
 {
 	instr = instruction;
+	register_value = instr->vj;
 	occupied = true;
 	op_code = instruction->op_code;
 }
@@ -92,7 +96,7 @@ float MemoryUnit::Next()
 		}
 		case sd:
 		{
-			mainMem.mainMemory[instr->address] = instr->result;
+			mainMem.mainMemory[instr->address] = instr->vk;
 			instr = nullptr;
 			return -1;
 		}
