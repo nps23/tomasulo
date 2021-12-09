@@ -22,7 +22,7 @@ CPUConfig ParseInput(std::string& input_file)
 	while (!infile.eof())
 	{
 		infile >> line;
-		std::cout << "Line is: " << line << std::endl;
+		std::cout << line << std::endl;
 		// extract functional unit config options 
 		if (line[0] == 'f' && line[1] == 'u')
 		{
@@ -117,8 +117,8 @@ CPUConfig ParseInput(std::string& input_file)
 					int dest, operand, offset;
 					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
 
-					inst.dest = dest;
-					inst.f_ls_register_operand = operand;
+					inst.f_ls_register_operand = dest;
+					inst.r_ls_register_operand = operand;
 					inst.offset = offset;
 					std::cout << "Pushing instruction: " << inst.op_code
 						<< " into the config" << std::endl;
@@ -128,14 +128,15 @@ CPUConfig ParseInput(std::string& input_file)
 				else if (opcode == "sd") {
 					inst.op_code = sd;
 					char fpId, rId, paran;
-					int dest, operand, offset;
-					infile >> fpId >> dest >> offset >> paran >> rId >> operand >> paran;
+					int source, operand, offset;
+					infile >> fpId >> source >> offset >> paran >> rId >> operand >> paran;
 
-					inst.dest = dest;
-					inst.f_ls_register_operand = operand;
+					inst.f_ls_register_operand = source;
+					inst.r_ls_register_operand = operand;
 					inst.offset = offset;
 					std::cout << "Pushing instruction: " << inst.op_code
 						<< " into the config" << std::endl;
+					std::cout << inst.dest << " " << inst.offset << " " << operand << "\n";
 					config.program.push_back(inst);
 				}
 
@@ -260,12 +261,21 @@ CPUConfig ParseInput(std::string& input_file)
 			infile >> num_cpu_lines;
 			for (int i = 0; i < num_cpu_lines; i++)
 			{
-				int address, value;
+				int address;
+				float value;
 				infile >> address >> value;
 				config.memory[address] = value;
 			}
-		}
+		}	
 		
+		else if (line == "cycles_mem")
+		{
+			std::cout << "Adding the  cycles in mem as a seperate configuration option";
+			int cycles;
+			infile >> cycles;
+			config.cycles_mem = cycles;
+		}
+
 		if(infile.eof()){
 			std::cout << "end of input file reached" << std::endl;
 			break;

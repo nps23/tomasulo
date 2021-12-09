@@ -42,7 +42,6 @@ public:
 	double left_operand;
 	double right_operand;
 	Instruction* instr;
-
 	void dispatch(Instruction* instr);
 	double next();
 	bool occupied;

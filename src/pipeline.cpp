@@ -7,6 +7,7 @@
 #include "structures/central_data_bus.h"
 #include "structures/RegisterAliasingTable.h"
 #include "structures/BranchPredictor.h"
+#include "structures/load_store_queue.h"
 
 extern AddReservationStation addRS;
 extern FPReservationStation fRS;
@@ -23,6 +24,9 @@ extern instructionBuffer instBuff;
 extern IntRegisterAliasingTable intRat;
 extern FPRegisterAliasingTable fpRat;
 extern BranchPredictor branchPredictor;
+extern LoadStoreQueue LSQueue;
+extern LoadStoreQueueAdder LSQueueAdder;
+extern MemoryUnit memUnit;
 
 // Non hardware bookeeping variables;
 extern std::map<int, Instruction* > idMap;
@@ -43,9 +47,9 @@ Instruction* copyInstruction(const Instruction* source)
 	new_instr->f_left_operand = source->f_left_operand;
 	new_instr->f_right_operand = source->f_right_operand;
 	new_instr->offset = source->offset;
-	new_instr->immediate = source->immediate;
 	new_instr->r_ls_register_operand = source->r_ls_register_operand;
 	new_instr->f_ls_register_operand = source->f_ls_register_operand;
+	new_instr->immediate = source->immediate;
 	new_instr->dest = source->dest;
 	new_instr->result = source->result;
 	new_instr->programLine = source->programLine;
@@ -92,6 +96,7 @@ void ResetPC(Instruction* instr)
 // Utility function to handle squashing all bad instrucitons after a mispredict
 void MispredictSquash(Instruction* instr)
 {
+	std::cout << "MISPREDICTED" << std::endl;
 	if (!instr->mispredict)
 	{ 
 		std::cout << "No mispredict! Are you sure you should be calling this fucntion?" << std::endl;
@@ -103,15 +108,17 @@ void MispredictSquash(Instruction* instr)
 	{
 		instBuff.inst.pop_back();
 	}
+	
 	// set the PC to the correct locaiton
 	if (instr->branch_false_positive)
 		rom.pc = instr->source_instruction + 1;
 	else if (instr->branch_false_negative)
 		rom.pc = instr->realized_instruction_target;
+	
 	// clear RS of incorrect instrutions past the branch
 	for (auto& entry : addRS.table) 
 	{
-		if (entry->instructionId > instr->instructionId)
+		if (entry->instructionId >= instr->instructionId)
 		{
 			addRS.clear(instr);
 			entry->state = stop;
@@ -119,9 +126,9 @@ void MispredictSquash(Instruction* instr)
 	}
 	for (auto& entry : fRS.table) 
 	{
-		if (entry->instructionId > instr->instructionId) 
+		if (entry->instructionId >= instr->instructionId) 
 		{
-			fRS.clear(instr);
+			fRS.clear(entry);
 			entry->state = stop;
 		}
 	}
@@ -130,7 +137,65 @@ void MispredictSquash(Instruction* instr)
 	{
 		if (entry->instructionId > instr->instructionId)
 		{
-			rob.clear(instr);
+			rob.clear(entry);
+			entry->state = stop;
+		}
+	}
+	// Sanitize the Load/Store queue
+	for (auto& entry : LSQueue.table)
+	{
+		if (entry->instructionId >= instr->instructionId)
+		{
+			LSQueue.Clear(entry);
+		}
+	}
+	
+	// Clear the function units of the bad instruction that were in the units (might not be necessary)
+	if (addFu.instr)
+	{
+		if (addFu.instr->instructionId >= instr->instructionId)
+		{
+			addFu.occupied = false;
+			addFu.instr = nullptr;
+			addFu.internalCycle = 0;
+		}
+	}
+	// TODO this will be unpipelined, change to for loop
+	if (fpFu.occupied)
+	{
+		if (fpFu.instr->instructionId >= instr->instructionId)
+		{
+			fpFu.occupied = false;
+			fpFu.instr = nullptr;
+			fpFu.internalCycle = 0;
+		}
+	}
+
+	if (fpMulFu.occupied)
+	{
+		if (fpMulFu.instr->instructionId >= instr->instructionId)
+		{
+			fpMulFu.occupied = false;
+			fpMulFu.instr = nullptr;
+			fpMulFu.internalCycle = 0;
+		}
+	}
+	if (LSQueueAdder.occupied)
+	{
+		if (LSQueueAdder.instr->instructionId >= instr->instructionId)
+		{
+			LSQueueAdder.occupied = false;
+			LSQueueAdder.instr = nullptr;
+			LSQueueAdder.internalCycle = 0;
+		}
+	}
+	if (memUnit.occupied)
+	{
+		if (memUnit.instr->instructionId >= instr->instructionId)
+		{
+			memUnit.occupied = false;
+			memUnit.instr = nullptr;
+			memUnit.internalCycle = 0;
 		}
 	}
 	stall_fetch = false;
@@ -149,7 +214,7 @@ bool IssueFetch(Instruction* instr)
 	int btb_index = (rom.pc->btb_index) % 8;
 	std::cout << "BTB INDEX: " << btb_index;
 	bool branch_taken = branchPredictor.table[btb_index].first;
-	std::cout << "BRANCH TAKEN: " << branch_taken << std::endl;;
+	std::cout << "\tBRANCH TAKEN: " << branch_taken << std::endl;;
 
 	if (branch_taken)
 	{
@@ -158,9 +223,11 @@ bool IssueFetch(Instruction* instr)
 		{
 			throw std::runtime_error("Trying to set the Program Counter to NULL!");
 		}
+		fetch_instr->btb_target_instruction = target_branch;
+		fetch_instr->source_instruction = rom.pc;
 		rom.pc = target_branch;
-		instr->triggered_branch = true;
-		instr->source_instruction = rom.pc;
+		fetch_instr->triggered_branch = true;
+		//instr->source_instruction = rom.pc;
 	}
 	else
 	{
@@ -194,6 +261,38 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
+		if (LSQueue.IsFull() || rob.isFull())
+		{
+			break;
+		}
+
+		instBuff.clear(instr);
+		auto& reg_operand = intRat.table[instr->r_ls_register_operand];
+		auto& dest = fpRat.table[instr->f_ls_register_operand];
+
+		if (!reg_operand.is_mapped)
+		{
+			instr->vj = reg_operand.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			if (reg_operand.map_value)
+				instr->qj = reg_operand.map_value;
+		}
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		LSQueue.Insert(instr);
+		rob.insert(instr);
+		dest.is_mapped = true;
+		dest.map_value = instr->instructionId;
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true; 
+		instr->issued = true;
+		instr->state = ex;
+		return true;
 	}
 		break;
 	case sd:
@@ -202,6 +301,50 @@ bool IssueDecode(Instruction* instr)
 		{
 			ResetPC(instr);
 		}
+		if (LSQueue.IsFull() || rob.isFull())
+		{
+			break;
+		}
+
+		instBuff.clear(instr);
+		auto& reg_operand = intRat.table[instr->r_ls_register_operand];
+		auto& offest = instr->offset;
+		auto& source_value = fpRat.table[instr->f_ls_register_operand];
+
+		if (!reg_operand.is_mapped)
+		{
+			instr->vj = reg_operand.value;
+			instr->qj = 0;
+		}
+		else
+		{
+			if (reg_operand.map_value)
+				instr->qj = reg_operand.map_value;
+		}
+		if (!source_value.is_mapped)
+		{
+			instr->vk = source_value.value;
+			instr->qk = 0;
+		}
+		else
+		{
+			if (source_value.map_value)
+			{
+				instr->qk = source_value.map_value;
+			}
+		}
+
+		// update the ROB, RS, and the RAT
+		instr->issue_end_cycle = numCycles;
+		LSQueue.Insert(instr);
+		rob.insert(instr);
+
+		// update the instructions ROB metadata
+		instr->instType = instr->op_code;
+		instr->rob_busy = true;
+		instr->issued = true;
+		instr->state = ex;
+		return true;
 	}
 		break;
 	case beq:
@@ -335,6 +478,7 @@ bool IssueDecode(Instruction* instr)
 		}
 		else
 		{
+			if (l_entry.map_value)
 			instr->qj = l_entry.map_value;
 		}
 		if (!r_entry.is_mapped)
@@ -614,6 +758,26 @@ bool Ex(Instruction* instruction)
 	{
 	case beq:
 	{
+		// if we missed a writeback, check the ROB
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
+
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -655,6 +819,25 @@ bool Ex(Instruction* instruction)
 		break;
 	case bne:
 	{
+		// if we missed a writeback, check the ROB
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -703,7 +886,28 @@ bool Ex(Instruction* instruction)
 		instruction->ex_end_cycle = numCycles;
 		break;
 	case add:
+	{
 		// TODO change to for loop to handle multiple function units
+		// if we missed a writeback, check the ROB
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
+
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			// start the ex timer
@@ -723,9 +927,19 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+	}
 		break;
 	case add_i:
 		// TODO change to for loop to handle multiple function units
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && !addFu.occupied)
 		{
 			// start the ex timer
@@ -748,6 +962,25 @@ bool Ex(Instruction* instruction)
 		break;
 	case sub:
 		// same as add
+		// if we missed a writeback, check the ROB
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -768,6 +1001,26 @@ bool Ex(Instruction* instruction)
 		}
 		break;
 	case add_d:
+	{
+		// if we missed a writeback, check the ROB
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -786,8 +1039,29 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+	}
 		break;
 	case sub_d:
+	{
+		// if we missed a writeback, wait for a commit
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -806,8 +1080,28 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+	}
 		break;
 	case mult_d:
+	{
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.occupied)
 		{
 			instruction->ex_start_cycle = numCycles;
@@ -826,10 +1120,78 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+	}
 		break;
 	case ld:
+	{
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
+		if (instruction->qj == 0 && !LSQueueAdder.occupied)
+		{
+			instruction->ex_start_cycle = numCycles;
+			LSQueueAdder.Dispatch(instruction);
+			return true;
+		}
+
+		else if (instruction == LSQueueAdder.instr)
+		{
+			int result = LSQueueAdder.Next();
+			if (!LSQueueAdder.occupied)
+			{
+				instruction->state = mem;
+				instruction->address = result;
+				instruction->ex_end_cycle = numCycles;
+			}
+			return true;
+		}
+	}
 		break;
 	case sd:
+	{
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
+		if (instruction->qk)
+		{
+			Instruction* qk_instr = idMap[instruction->qk];
+			if (qk_instr->state > wb)
+			{
+				instruction->qk = 0;
+				instruction->vk = qk_instr->result;
+			}
+		}
+		if (instruction->qj == 0 && instruction->qk == 0 && !LSQueueAdder.occupied)
+		{
+			instruction->ex_start_cycle = numCycles;
+			LSQueueAdder.Dispatch(instruction);
+			return true;
+		}
+
+		else if (instruction == LSQueueAdder.instr)
+		{
+			int result = LSQueueAdder.Next();
+			if (!LSQueueAdder.occupied)
+			{
+				instruction->state = mem;
+				instruction->address = result;
+				instruction->ex_end_cycle = numCycles;
+			}
+			return true;
+		}
+	}
 		break;
 	default:
 		break;
@@ -837,8 +1199,57 @@ bool Ex(Instruction* instruction)
 	return true;
 }
 
-bool Mem(Instruction* instr){
-	return true;
+bool Mem(Instruction* instruction)
+{
+	// Do we need to set a flag to handle a writeback on 1 cycle? Can  another instr go immediatley?
+	if (instruction->mem_start_cycle == -1)
+	{
+		instruction->mem_start_cycle = numCycles;
+	}
+
+	if (memUnit.instr == instruction)
+	{
+		float value = memUnit.Next();
+		if (!memUnit.occupied)
+		{
+			LSQueue.Clear(instruction);
+			instruction->state = commit;
+			instruction->result = value;
+			instruction->mem_end_cycle = numCycles;
+		}
+		return true;
+	}
+	// check the table to see if we have any outstanding stores
+	for (const auto& item : LSQueue.table)
+	{
+		if (item->op_code == sd && !item->memComplete && (item->instructionId < instruction->instructionId))
+		{
+			return false;
+		}
+	}
+	// check for a store forward
+	if (instruction->op_code == ld && memUnit.instr != instruction)
+	{
+		auto& val_iter = std::find(LSQueue.table.begin(), LSQueue.table.end(), instruction);
+		auto& start_iter = LSQueue.table.begin();
+		for (auto it = val_iter; it > start_iter; it--)
+		{
+			auto value = *it;
+			if (value->op_code == sd && value->memComplete)
+			{
+				// TODO forward from store needs to take a single cycle
+				instruction->result = value->result;
+				instruction->state = commit;
+				LSQueue.Clear(instruction);
+				instruction->mem_end_cycle = numCycles;
+				break;
+			}
+		}
+	}
+	if (!memUnit.occupied)
+	{
+		memUnit.Dispatch(instruction);
+	}
 }
 bool WriteBack(Instruction* instr)
 {
@@ -1163,6 +1574,42 @@ bool Commit(Instruction* instr)
 			outputInstructions.push_back(instr);
 		}
 	}
+		break;
+	case ld:
+	{
+		if (instr->commit_start_cycle == -1)
+		{
+			instr->commit_start_cycle = numCycles;
+			break;
+		}
+		if (instr == rob.table[0] && !rob.hasCommited)
+		{
+			rob.hasCommited = true;
+			double result = instr->result;
+			fpRegFile.fpRegFile[instr->f_ls_register_operand] = result;
+			instr->commit_end_cycle = numCycles;
+			rob.clear(instr);
+			outputInstructions.push_back(instr);
+		}
+	}
+		break;
+	case sd:
+	{
+		if (instr->commit_start_cycle == -1)
+		{
+			instr->commit_start_cycle = numCycles;
+			break;
+		}
+		if (instr == rob.table[0] && !rob.hasCommited)
+		{
+			rob.hasCommited = true;
+			double result = instr->result;
+			instr->commit_end_cycle = numCycles;
+			rob.clear(instr);
+			outputInstructions.push_back(instr);
+		}
+	}
+		break;
 	default:
 	{
 		throw std::runtime_error("NO COMMIT IMPLEMENTED FOR INSTRUCTION YET");

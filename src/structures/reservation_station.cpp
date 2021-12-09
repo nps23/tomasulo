@@ -59,5 +59,4 @@ int FPReservationStation::insert(Instruction* instr)
 void FPReservationStation::clear(Instruction* instruction)
 {
 	table.erase(std::remove(table.begin(), table.end(), instruction));
-
 }

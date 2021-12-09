@@ -17,7 +17,6 @@ void ReorderBuffer::insert(Instruction* instr)
 
 bool ReorderBuffer::isFull()
 {
-	std::cout << "The number of entries = " << entries << " The size of the table is: " << table.size() << std::endl;
 	return (entries == table.size());
 }
 

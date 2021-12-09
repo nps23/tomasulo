@@ -44,7 +44,7 @@ struct Instruction {
 	// Load store queue and branch instructions
 	int offset{ -1 };
 	int immediate{ -1 };
-	int r_ls_register_operand{ -1 };
+	int r_ls_register_operand{ -1 };		
 	int f_ls_register_operand{ -1 };
 	// Shared instruction metadata
 	double result{ -1 };
@@ -52,16 +52,31 @@ struct Instruction {
 
 	// ROB fields
 	int instType{ -1 };
-	double value{ -1 };
+	double value{ -1 };										// This will be the same field used for loads and stores as well
 	bool rob_busy{ false };
 
 	// RS fields
 	double vj{ -1 };
 	double vk{ -1 };
-	int qj{ -1 };  // instructions which will show 
+	int qj{ -1 };											// instructions which will show 
 	int qk{ -1 };
 	bool rs_busy{ false };
 	int dest{ -1 };
+
+	// BRANCH UNIT 
+	int btb_index{ -1 };
+	bool triggered_branch{ false };
+	Instruction* source_instruction{ nullptr };				// point to the sourc instruction 
+	Instruction* realized_instruction_target{ nullptr };	// resolved in the IssueDecode stage
+	Instruction* btb_target_instruction{ nullptr };
+	bool mispredict{ false };
+	bool branch_false_positive{ false };
+	bool branch_false_negative{ false };
+
+	// LOAD STORE QUEUE
+	int address{ -1 };
+	double store_value{ -1 };
+	bool memComplete{ false };
 
 	//CDB fields
 	bool occupying_bus{ false };
@@ -77,16 +92,6 @@ struct Instruction {
 	int writeback_end_cycle{ -1 };
 	int commit_start_cycle{ -1 };
 	int commit_end_cycle{ -1 };
-
-	// BRANCH UNIT 
-	int btb_index{ -1 };
-	bool triggered_branch{ false };
-	Instruction* source_instruction{ nullptr };				// point to the sourc instruction 
-	Instruction* realized_instruction_target{ nullptr };	// resolved in the IssueDecode stage
-	Instruction* btb_target_instruction{ nullptr };
-	bool mispredict{ false };
-	bool branch_false_positive{ false };
-	bool branch_false_negative{ false };
 
 	// PIPELINE FLAGS
 	bool just_fetched{ false };

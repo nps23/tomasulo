@@ -266,7 +266,6 @@ class ROM
 		Instruction* pc;
 		ROM(deque<Instruction> iBuff){
 			for(unsigned int i = 0; i < iBuff.size(); i++){
-				std::cout << "Pushing instruciton back" << std::endl;
 				program.push_back(iBuff[i]);
 			}
 			if (iBuff.size() != 0)
