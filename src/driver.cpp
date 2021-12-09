@@ -60,9 +60,9 @@ void driver()
 	while (true) {
 
 		// DEBUG
-		if (numCycles == 100)
+		if (numCycles == 10000)
 			break;
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		//for (int i = 0; i < 32; i++)
 		//{
 		//	std::cout << "R" << i << " " << intRegFile.intRegFile[i] << std::endl;

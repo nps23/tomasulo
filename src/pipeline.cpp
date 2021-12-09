@@ -118,7 +118,7 @@ void MispredictSquash(Instruction* instr)
 	// clear RS of incorrect instrutions past the branch
 	for (auto& entry : addRS.table) 
 	{
-		if (entry->instructionId > instr->instructionId)
+		if (entry->instructionId >= instr->instructionId)
 		{
 			addRS.clear(instr);
 			entry->state = stop;
@@ -126,7 +126,7 @@ void MispredictSquash(Instruction* instr)
 	}
 	for (auto& entry : fRS.table) 
 	{
-		if (entry->instructionId > instr->instructionId) 
+		if (entry->instructionId >= instr->instructionId) 
 		{
 			fRS.clear(entry);
 			entry->state = stop;
@@ -138,12 +138,13 @@ void MispredictSquash(Instruction* instr)
 		if (entry->instructionId > instr->instructionId)
 		{
 			rob.clear(entry);
+			entry->state = stop;
 		}
 	}
 	// Sanitize the Load/Store queue
 	for (auto& entry : LSQueue.table)
 	{
-		if (entry->instructionId > instr->instructionId)
+		if (entry->instructionId >= instr->instructionId)
 		{
 			LSQueue.Clear(entry);
 		}
@@ -152,7 +153,7 @@ void MispredictSquash(Instruction* instr)
 	// Clear the function units of the bad instruction that were in the units (might not be necessary)
 	if (addFu.instr)
 	{
-		if (addFu.instr->instructionId > instr->instructionId)
+		if (addFu.instr->instructionId >= instr->instructionId)
 		{
 			addFu.occupied = false;
 			addFu.instr = nullptr;
@@ -162,16 +163,40 @@ void MispredictSquash(Instruction* instr)
 	// TODO this will be unpipelined, change to for loop
 	if (fpFu.occupied)
 	{
-		fpFu.occupied = false;
-		fpFu.instr = nullptr;
-		fpFu.internalCycle = 0;
+		if (fpFu.instr->instructionId >= instr->instructionId)
+		{
+			fpFu.occupied = false;
+			fpFu.instr = nullptr;
+			fpFu.internalCycle = 0;
+		}
 	}
 
 	if (fpMulFu.occupied)
 	{
-		fpMulFu.occupied = false;
-		fpMulFu.instr = nullptr;
-		fpMulFu.internalCycle = 0;
+		if (fpMulFu.instr->instructionId >= instr->instructionId)
+		{
+			fpMulFu.occupied = false;
+			fpMulFu.instr = nullptr;
+			fpMulFu.internalCycle = 0;
+		}
+	}
+	if (LSQueueAdder.occupied)
+	{
+		if (LSQueueAdder.instr->instructionId >= instr->instructionId)
+		{
+			LSQueueAdder.occupied = false;
+			LSQueueAdder.instr = nullptr;
+			LSQueueAdder.internalCycle = 0;
+		}
+	}
+	if (memUnit.occupied)
+	{
+		if (memUnit.instr->instructionId >= instr->instructionId)
+		{
+			memUnit.occupied = false;
+			memUnit.instr = nullptr;
+			memUnit.internalCycle = 0;
+		}
 	}
 	stall_fetch = false;
 }
@@ -198,9 +223,11 @@ bool IssueFetch(Instruction* instr)
 		{
 			throw std::runtime_error("Trying to set the Program Counter to NULL!");
 		}
+		fetch_instr->btb_target_instruction = target_branch;
+		fetch_instr->source_instruction = rom.pc;
 		rom.pc = target_branch;
-		instr->triggered_branch = true;
-		instr->source_instruction = rom.pc;
+		fetch_instr->triggered_branch = true;
+		//instr->source_instruction = rom.pc;
 	}
 	else
 	{
@@ -904,6 +931,15 @@ bool Ex(Instruction* instruction)
 		break;
 	case add_i:
 		// TODO change to for loop to handle multiple function units
+		if (instruction->qj)
+		{
+			Instruction* qj_instr = idMap[instruction->qj];
+			if (qj_instr->state > wb)
+			{
+				instruction->qj = 0;
+				instruction->vj = qj_instr->result;
+			}
+		}
 		if (instruction->qj == 0 && !addFu.occupied)
 		{
 			// start the ex timer
