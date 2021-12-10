@@ -112,7 +112,7 @@ int main()
 				case sd:
 					outFile << "ID = " << outputInstructions[i]->instructionId << " sd " << "F" << outputInstructions[i]->f_ls_register_operand 
 						<< ", " << outputInstructions[i]->offset << "(R" << outputInstructions[i]->r_ls_register_operand 
-						<< ")\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] 
+						<< ") \t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] 
 						<< " \t\t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4] 
 						<< " \t\t\t" << output.tDiag[i][5] << "-" << output.tDiag[i][6] 
 						<< " \t\t\t\t\t\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;

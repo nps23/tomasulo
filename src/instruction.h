@@ -75,8 +75,7 @@ struct Instruction {
 
 	// LOAD STORE QUEUE
 	int address{ -1 };
-	double store_value{ -1 };
-	bool memComplete{ false };
+	bool recieving_forward{ false };
 
 	//CDB fields
 	bool occupying_bus{ false };
