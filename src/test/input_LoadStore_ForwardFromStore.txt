@@ -1,41 +1,43 @@
 fu_integer_adder
-2 1 1
+4 1 1
 
 fu_fp_adder
-1 10 2 
+3 4 1 
 
 fu_fp_mult
-2 10 1
+2 15 1
 
 fu_load_store
-1 1 1
+5 1 1
 
 rob_entries
-5
+64
 
 cdb_buffer_entries
 1
 
-r_registers 2
+r_registers 3
 1 1
 2 2
 5 5
 
-f_registers 2
+f_registers 3
 1 1.5
 2 2.4
 3 0
 
 program 5
-ld F3, 4(R0)
-add F4, F3, F1
-sd F4, 4(R0)
-nop
-nop
-nop
-ld F4, 4(R0)
+ld f3 4(r0)
+add_d f4 f3 f1
+sd f4 4(r0)
+ld f4 4(r0)
+fin
 
-memory 3
-4 1
-8 2
-12 3.4
+memory 5
+4 3.0
+8 2.0
+12 6.0
+28 5.0
+32 4.0
+
+cycles_mem 5

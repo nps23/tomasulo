@@ -58,6 +58,7 @@ int LoadStoreQueueAdder::Next()
 void LoadStoreQueueAdder::Dispatch(Instruction* instruction)
 {
 	instr = instruction;
+	offset = instr->offset;
 	register_value = instr->vj;
 	occupied = true;
 	op_code = instruction->op_code;

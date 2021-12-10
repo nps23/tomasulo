@@ -1212,7 +1212,10 @@ bool Mem(Instruction* instruction)
 		float value = memUnit.Next();
 		if (!memUnit.occupied)
 		{
-			LSQueue.Clear(instruction);
+			if (instruction->op_code == ld)
+			{
+				LSQueue.Clear(instruction);
+			}
 			instruction->state = commit;
 			instruction->result = value;
 			instruction->mem_end_cycle = numCycles;
@@ -1222,7 +1225,7 @@ bool Mem(Instruction* instruction)
 	// check the table to see if we have any outstanding stores
 	for (const auto& item : LSQueue.table)
 	{
-		if (item->op_code == sd && !item->memComplete && (item->instructionId < instruction->instructionId))
+		if (item->op_code == sd && (item->mem_end_cycle == -1) && (item->instructionId < instruction->instructionId))
 		{
 			return false;
 		}
@@ -1230,21 +1233,23 @@ bool Mem(Instruction* instruction)
 	// check for a store forward
 	if (instruction->op_code == ld && memUnit.instr != instruction)
 	{
-		auto& val_iter = std::find(LSQueue.table.begin(), LSQueue.table.end(), instruction);
-		auto& start_iter = LSQueue.table.begin();
-		for (auto it = val_iter; it > start_iter; it--)
+		for (const auto& item : LSQueue.table)
 		{
-			auto value = *it;
-			if (value->op_code == sd && value->memComplete)
+			if (item->instructionId < instruction->instructionId && item->op_code == sd 
+				&& item->mem_end_cycle != -1 && item->address == instruction->address && !instruction->recieving_forward)
 			{
-				// TODO forward from store needs to take a single cycle
-				instruction->result = value->result;
-				instruction->state = commit;
-				LSQueue.Clear(instruction);
-				instruction->mem_end_cycle = numCycles;
-				break;
+				instruction->result = item->result;
+				instruction->recieving_forward = true;
+				return true;
 			}
 		}
+	}
+	if (instruction->recieving_forward)
+	{
+		instruction->state = commit;
+		LSQueue.Clear(instruction);
+		instruction->mem_end_cycle = numCycles;
+		return true;
 	}
 	if (!memUnit.occupied)
 	{
@@ -1606,6 +1611,7 @@ bool Commit(Instruction* instr)
 			double result = instr->result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
+			LSQueue.Clear(instr);
 			outputInstructions.push_back(instr);
 		}
 	}
