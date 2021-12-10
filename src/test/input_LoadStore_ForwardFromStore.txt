@@ -16,26 +16,26 @@ rob_entries
 cdb_buffer_entries
 1
 
-r_registers 2
+r_registers 3
 1 1
 2 2
 5 5
 
-f_registers 2
+f_registers 3
 1 1.5
 2 2.4
 3 0
 
-program 5
+program 4
 ld F3, 4(R0)
 add F4, F3, F1
 sd F4, 4(R0)
-nop
-nop
-nop
 ld F4, 4(R0)
+fin
 
 memory 3
 4 1
 8 2
 12 3.4
+
+cycles_mem 5

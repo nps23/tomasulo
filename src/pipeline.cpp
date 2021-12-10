@@ -1222,7 +1222,7 @@ bool Mem(Instruction* instruction)
 	// check the table to see if we have any outstanding stores
 	for (const auto& item : LSQueue.table)
 	{
-		if (item->op_code == sd && !item->memComplete && (item->instructionId < instruction->instructionId))
+		if (item->op_code == sd && (item->mem_end_cycle == -1) && (item->instructionId < instruction->instructionId))
 		{
 			return false;
 		}

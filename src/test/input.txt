@@ -16,22 +16,21 @@ rob_entries
 cdb_buffer_entries
 1
 
-r_registers 2
-1 12
-2 32
+r_registers 3
+1 1
+2 2
+5 5
 
-f_registers 1
-20 3.0
+f_registers 3
+1 1.5
+2 2.4
+3 0
 
-program 9
-ld f2 0(r1)
-mult_d f4 f2 f20
-ld f6 0(r2)
-add_d f6 f4 f6
-sd f6 0(r2)
-add_i r1 r1 -4
-add_i r2 r2 -4
-bne r1 r0 -8
+program 5
+ld f3 4(r0)
+add_d f4 f3 f1
+sd f4 4(r0)
+ld f4 4(r0)
 fin
 
 memory 5
