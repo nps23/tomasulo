@@ -129,8 +129,10 @@ void driver()
 				Mem(instr);
 				break;
 			case wb:
+			{
 				WriteBack(instr);
 				bus.occupied = false;
+			}
 				break;
 			case commit:
 				Commit(instr);
