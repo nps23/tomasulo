@@ -227,7 +227,6 @@ bool IssueFetch(Instruction* instr)
 		fetch_instr->source_instruction = rom.pc;
 		rom.pc = target_branch;
 		fetch_instr->triggered_branch = true;
-		//instr->source_instruction = rom.pc;
 	}
 	else
 	{
@@ -366,7 +365,6 @@ bool IssueDecode(Instruction* instr)
 
 		auto& l_entry = intRat.table[instr->r_left_operand];
 		auto& r_entry = intRat.table[instr->r_right_operand];
-		auto& dest = intRat.table[instr->dest];
 
 		if (!l_entry.is_mapped)
 		{
@@ -390,8 +388,6 @@ bool IssueDecode(Instruction* instr)
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
-		dest.is_mapped = true;
-		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -420,7 +416,6 @@ bool IssueDecode(Instruction* instr)
 
 		auto& l_entry = intRat.table[instr->r_left_operand];
 		auto& r_entry = intRat.table[instr->r_right_operand];
-		auto& dest = intRat.table[instr->dest];
 
 		if (!l_entry.is_mapped)
 		{
@@ -444,8 +439,6 @@ bool IssueDecode(Instruction* instr)
 		instr->issue_end_cycle = numCycles;
 		addRS.insert(instr);
 		rob.insert(instr);
-		dest.is_mapped = true;
-		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
 		instr->instType = instr->op_code;
@@ -566,7 +559,6 @@ bool IssueDecode(Instruction* instr)
 
 		instBuff.clear(instr);
 		auto& l_entry = intRat.table[instr->r_left_operand];
-		auto& r_entry = intRat.table[instr->r_right_operand];
 		auto& dest = intRat.table[instr->dest];
 
 		if (!l_entry.is_mapped)
@@ -1384,6 +1376,19 @@ bool WriteBack(Instruction* instr)
 						instruction->vk = instr->result;
 					}
 				}
+				for (auto& instruction : rob.table)
+				{
+					if (instruction->qj == instr->instructionId)
+					{
+						instruction->qj = 0;
+						instruction->vj = instr->result;
+					}
+					if (instruction->qk == instruction->instructionId)
+					{
+						instruction->qk = 0;
+						instruction->vk = instr->result;
+					}
+				}
 
 
 				instr->writeback_end_cycle = numCycles;
@@ -1428,7 +1433,6 @@ bool Commit(Instruction* instr)
 			int result = instr->result;
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
-			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
@@ -1450,7 +1454,6 @@ bool Commit(Instruction* instr)
 			int result = instr->result;
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
-			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
@@ -1472,7 +1475,6 @@ bool Commit(Instruction* instr)
 			int result = instr->result;
 			int index = instr->dest;
 			intRegFile.intRegFile[index] = result;
-			intRat.table[index].is_mapped = false;
 			intRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
@@ -1494,7 +1496,6 @@ bool Commit(Instruction* instr)
 			double result = instr->result;
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
-			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
@@ -1516,7 +1517,6 @@ bool Commit(Instruction* instr)
 			double result = instr->result;
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
-			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
@@ -1538,7 +1538,6 @@ bool Commit(Instruction* instr)
 			double result = instr->result;
 			int index = instr->dest;
 			fpRegFile.fpRegFile[index] = result;
-			fpRat.table[index].is_mapped = false;
 			fpRat.table[index].value = result;
 			instr->commit_end_cycle = numCycles;
 			rob.clear(instr);
@@ -1565,9 +1564,9 @@ bool Commit(Instruction* instr)
 		break;
 	case beq:
 	{
-		if (instr->commit_begin)
+		if (instr->commit_end_cycle == -1)
 		{
-			instr->commit_begin = false;
+			instr->commit_end_cycle = false;
 			instr->commit_start_cycle = numCycles;
 		}
 		if (instr == rob.table[0] && !rob.hasCommited)
