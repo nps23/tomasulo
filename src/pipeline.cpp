@@ -224,9 +224,8 @@ bool IssueFetch(Instruction* instr)
 bool IssueDecode(Instruction* instr)
 {
 	// Check the type of the instruction
-	if (instr->just_fetched)
+	if (instr->issue_start_cycle == numCycles)
 	{
-		instr->just_fetched = false;
 		return false;
 	}
 	switch (instr->op_code)
@@ -698,16 +697,19 @@ bool IssueDecode(Instruction* instr)
 bool Ex(Instruction* instruction)
 {
 	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
+	if (instruction->issue_end_cycle == numCycles)
+	{
+		return false;
+	}
+	else if (instruction->ex_start_cycle == -1)
+	{
+		instruction->ex_start_cycle = numCycles;
+	}
 	switch (instruction->op_code)
 	{
 	case beq:
 	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -768,11 +770,6 @@ bool Ex(Instruction* instruction)
 	case bne:
 	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -841,11 +838,6 @@ bool Ex(Instruction* instruction)
 	{
 		// TODO change to for loop to handle multiple function units
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -920,11 +912,6 @@ bool Ex(Instruction* instruction)
 	case sub:
 	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1011,11 +998,6 @@ bool Ex(Instruction* instruction)
 	case sub_d:
 	{
 		// if we missed a writeback, wait for a commit
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1055,11 +1037,6 @@ bool Ex(Instruction* instruction)
 		break;
 	case mult_d:
 	{
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1099,11 +1076,6 @@ bool Ex(Instruction* instruction)
 		break;
 	case ld:
 	{
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qj)
 		{
 			Instruction* qj_instr = idMap[instruction->qj];
@@ -1134,11 +1106,6 @@ bool Ex(Instruction* instruction)
 		break;
 	case sd:
 	{
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qj)
 		{
 			Instruction* qj_instr = idMap[instruction->qj];
