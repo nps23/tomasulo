@@ -239,6 +239,11 @@ bool IssueFetch(Instruction* instr)
 bool IssueDecode(Instruction* instr)
 {
 	// Check the type of the instruction
+	if (instr->just_fetched)
+	{
+		instr->just_fetched = false;
+		return false;
+	}
 	switch (instr->op_code)
 	{
 	case nop:
@@ -751,6 +756,11 @@ bool Ex(Instruction* instruction)
 	case beq:
 	{
 		// if we missed a writeback, check the ROB
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle;
+			return true;
+		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -772,7 +782,6 @@ bool Ex(Instruction* instruction)
 
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
 			return true;
 		}
@@ -812,6 +821,11 @@ bool Ex(Instruction* instruction)
 	case bne:
 	{
 		// if we missed a writeback, check the ROB
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -832,7 +846,6 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
 			return true;
 		}
@@ -881,6 +894,11 @@ bool Ex(Instruction* instruction)
 	{
 		// TODO change to for loop to handle multiple function units
 		// if we missed a writeback, check the ROB
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -903,7 +921,6 @@ bool Ex(Instruction* instruction)
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			// start the ex timer
-			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
 			return true;
 		}
@@ -922,7 +939,7 @@ bool Ex(Instruction* instruction)
 	}
 		break;
 	case add_i:
-		// TODO change to for loop to handle multiple function units
+	{
 		if (instruction->qj)
 		{
 			Instruction* qj_instr = idMap[instruction->qj];
@@ -951,10 +968,16 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+	}
 		break;
 	case sub:
 		// same as add
 		// if we missed a writeback, check the ROB
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -975,7 +998,6 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
 			return true;
 		}
@@ -995,6 +1017,11 @@ bool Ex(Instruction* instruction)
 	case add_d:
 	{
 		// if we missed a writeback, check the ROB
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1015,7 +1042,6 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
 			return true;
 		}
@@ -1036,6 +1062,11 @@ bool Ex(Instruction* instruction)
 	case sub_d:
 	{
 		// if we missed a writeback, wait for a commit
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1056,7 +1087,6 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
 			return true;
 		}
@@ -1076,6 +1106,11 @@ bool Ex(Instruction* instruction)
 		break;
 	case mult_d:
 	{
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1096,7 +1131,6 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			fpMulFu.dispatch(instruction);
 			return true;
 		}
@@ -1116,6 +1150,11 @@ bool Ex(Instruction* instruction)
 		break;
 	case ld:
 	{
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qj)
 		{
 			Instruction* qj_instr = idMap[instruction->qj];
@@ -1127,7 +1166,6 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && !LSQueueAdder.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			LSQueueAdder.Dispatch(instruction);
 			return true;
 		}
@@ -1147,6 +1185,11 @@ bool Ex(Instruction* instruction)
 		break;
 	case sd:
 	{
+		if (instruction->ex_start_cycle == -1)
+		{
+			instruction->ex_start_cycle = numCycles + 1;
+			return true;
+		}
 		if (instruction->qj)
 		{
 			Instruction* qj_instr = idMap[instruction->qj];
@@ -1167,7 +1210,6 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !LSQueueAdder.occupied)
 		{
-			instruction->ex_start_cycle = numCycles;
 			LSQueueAdder.Dispatch(instruction);
 			return true;
 		}
