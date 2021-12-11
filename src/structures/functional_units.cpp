@@ -69,74 +69,78 @@ void AddFunctinalUnit::dispatch(Instruction* instruction)
 
 FPAddFunctionalUnit::FPAddFunctionalUnit(int cycles_ex)
 {
-	cycleInEx = cycles_ex-1;
-	internalCycle = 0;
-	instr = nullptr;
-	occupied = false;
+	cycleInEx = cycles_ex - 1; // starting from a zero index thing
+	instruction_dispatched_on_current_cycle = false;
+	fp_instructions.resize(0);
 }
 
-double FPAddFunctionalUnit::next()
+void FPAddFunctionalUnit::Clear(Instruction* instr)
 {
-	if (internalCycle == (cycleInEx-1))
+	fp_instructions.erase(std::remove(fp_instructions.begin(), fp_instructions.end(), instr));
+}
+
+double FPAddFunctionalUnit::next(Instruction* input)
+{
+	if (input->internal_fp_cycle == cycleInEx)
 	{
-		occupied = false;
-		instr = nullptr;
-		internalCycle = 0;
-		switch (op_code)
+		input->fp_unit_complete = true;
+		input->occupying_fp_unit = false;
+		Clear(input);
+		switch (input->op_code)
 		{
 		case add_d:
-			return left_operand + right_operand;
+			return input->vj + input->vj;
 		case sub_d:
-			return left_operand - right_operand;
-		case mult_d:
-			throw std::runtime_error("Trying to pass mult into the functional unit");
+			input->vj - input->vk;
 		default:
-			throw std::runtime_error("Tried passing a non FP instruction into the FP unit");
+			throw std::runtime_error("Instuction should not be going into the FP add function unit!");
 		}
 	}
-	internalCycle++;
+	input->internal_fp_cycle++;
 	return -1;
 }
 
 void FPAddFunctionalUnit::dispatch(Instruction* instruction)
 {
-	instr = instruction;
-	occupied = true;
-	op_code = instruction->op_code;
-	left_operand = instruction->vj;
-	right_operand = instruction->vk;
+	instruction->occupying_fp_unit = true;
+	instruction_dispatched_on_current_cycle = true;
+	fp_instructions.push_back(instruction);
 }
 
 FPMultFunctionalUnit::FPMultFunctionalUnit(int cycles_ex)
 {
 	cycleInEx = cycles_ex - 1;
-	internalCycle = 0;
-	occupied = false;
-	instr = nullptr;
+	instruction_dispatched_on_current_cycle = false;
+	fp_instructions.resize(0);
 }
 
 void FPMultFunctionalUnit::dispatch(Instruction* instruction)
 {
-	instr = instruction;
-	occupied = true;
-	op_code = instruction->op_code;
-	left_operand = instruction->vj;
-	right_operand = instruction->vk;
+	instruction->occupying_fp_unit = true;
+	instruction_dispatched_on_current_cycle = true;
+	fp_instructions.push_back(instruction);
 }
 
-double FPMultFunctionalUnit::next()
+void FPMultFunctionalUnit::Clear(Instruction* instr)
 {
-	if (internalCycle == (cycleInEx-1))
+	fp_instructions.erase(std::remove(fp_instructions.begin(), fp_instructions.end(), instr));
+}
+
+double FPMultFunctionalUnit::next(Instruction* input)
+{
+	if (input->internal_fp_cycle == cycleInEx)
 	{
-		occupied = false;
-		instr = nullptr;
-		internalCycle = 0;
-		switch (op_code)
+		input->fp_unit_complete = true;
+		input->occupying_fp_unit = false;
+		Clear(input);
+		switch (input->op_code)
 		{
 		case mult_d:
-			return right_operand * left_operand;
+			return input->vj + input->vj;
+		default:
+			throw std::runtime_error("Instuction should not be going into the FP mult function unit!");
 		}
 	}
-	internalCycle++;
+	input->internal_fp_cycle++;
 	return -1;
 }

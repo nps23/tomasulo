@@ -38,6 +38,7 @@ extern cpuMemory mainMem;
 extern instructionBuffer instBuff;
 extern AddFunctinalUnit addFu;
 extern FPAddFunctionalUnit fpFu;
+extern FPMultFunctionalUnit fpMulFu;
 extern cdb bus;
 extern ROM rom;
 extern IntRegisterAliasingTable intRat;
@@ -133,6 +134,8 @@ void driver()
 				break;
 			}
 		}
+		fpFu.instruction_dispatched_on_current_cycle = false;
+		fpMulFu.instruction_dispatched_on_current_cycle = false;
 		rob.hasCommited = false;
 		numCycles++;
 	}

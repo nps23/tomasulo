@@ -92,4 +92,7 @@ struct Instruction {
 	bool commit_begin{ true };
 
 	// FUNCTIONAL UNIT FLAGS -- USED TO PIPELINE THE FLOATING POINT UNITS
+	int internal_fp_cycle{ -1 };
+	bool fp_unit_complete{ false };
+	bool occupying_fp_unit{ false };
 };

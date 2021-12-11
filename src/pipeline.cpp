@@ -160,25 +160,11 @@ void MispredictSquash(Instruction* instr)
 		}
 	}
 	// TODO this will be unpipelined, change to for loop
-	if (fpFu.occupied)
+	if (instr->occupying_fp_unit)
 	{
-		if (fpFu.instr->instructionId >= instr->instructionId)
-		{
-			fpFu.occupied = false;
-			fpFu.instr = nullptr;
-			fpFu.internalCycle = 0;
-		}
+		fpFu.Clear(instr);
 	}
 
-	if (fpMulFu.occupied)
-	{
-		if (fpMulFu.instr->instructionId >= instr->instructionId)
-		{
-			fpMulFu.occupied = false;
-			fpMulFu.instr = nullptr;
-			fpMulFu.internalCycle = 0;
-		}
-	}
 	if (LSQueueAdder.occupied)
 	{
 		if (LSQueueAdder.instr->instructionId >= instr->instructionId)
@@ -932,7 +918,7 @@ bool Ex(Instruction* instruction)
 	}
 		break;
 	case sub:
-		// same as add
+	{
 		// if we missed a writeback, check the ROB
 		if (instruction->ex_start_cycle == -1)
 		{
@@ -974,6 +960,7 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+	}
 		break;
 	case add_d:
 	{
@@ -1001,16 +988,17 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
+			fpFu.instruction_dispatched_on_current_cycle = true;
 			fpFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (instruction == fpFu.instr)
+		else if (instruction->occupying_fp_unit)
 		{
-			double result = fpFu.next();
-			if (!fpFu.occupied)
+			double result = fpFu.next(instruction);
+			if (!instruction->occupying_fp_unit)
 			{
 				instruction->state = wb;
 				instruction->result = result;
@@ -1046,16 +1034,16 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
 			fpFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (instruction == fpFu.instr)
+		else if (instruction->occupying_fp_unit)
 		{
-			double result = fpFu.next();
-			if (!fpFu.occupied)
+			double result = fpFu.next(instruction);
+			if (!instruction->occupying_fp_unit)
 			{
 				instruction->state = wb;
 				instruction->result = result;
@@ -1090,16 +1078,16 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
 			fpMulFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (instruction == fpMulFu.instr)
+		else if (instruction->occupying_fp_unit)
 		{
-			double result = fpMulFu.next();
-			if (!fpMulFu.occupied)
+			double result = fpMulFu.next(instruction);
+			if (!instruction->occupying_fp_unit)
 			{
 				instruction->state = wb;
 				instruction->result = result;
