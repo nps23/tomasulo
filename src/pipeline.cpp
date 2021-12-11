@@ -1287,9 +1287,8 @@ bool WriteBack(Instruction* instr)
 
 		default:  // should work for add, add_d, add_i sub, sub_d, mult_d
 		{
-			if (instr->writeback_begin)
+			if (instr->writeback_start_cycle == -1)
 			{
-				instr->writeback_begin = false;
 				instr->writeback_start_cycle = numCycles;
 			}
 			if (!bus.occupied)

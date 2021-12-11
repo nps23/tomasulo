@@ -126,7 +126,6 @@ void driver()
 			case wb:
 			{
 				WriteBack(instr);
-				bus.occupied = false;
 			}
 				break;
 			case commit:
@@ -137,6 +136,7 @@ void driver()
 		fpFu.instruction_dispatched_on_current_cycle = false;
 		fpMulFu.instruction_dispatched_on_current_cycle = false;
 		rob.hasCommited = false;
+		bus.occupied = false;
 		numCycles++;
 	}
 }
