@@ -89,9 +89,9 @@ double FPAddFunctionalUnit::next(Instruction* input)
 		switch (input->op_code)
 		{
 		case add_d:
-			return input->vj + input->vj;
+			return input->vj + input->vk;
 		case sub_d:
-			input->vj - input->vk;
+			return input->vj - input->vk;
 		default:
 			throw std::runtime_error("Instuction should not be going into the FP add function unit!");
 		}
@@ -136,7 +136,7 @@ double FPMultFunctionalUnit::next(Instruction* input)
 		switch (input->op_code)
 		{
 		case mult_d:
-			return input->vj + input->vj;
+			return input->vj * input->vk;
 		default:
 			throw std::runtime_error("Instuction should not be going into the FP mult function unit!");
 		}
