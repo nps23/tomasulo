@@ -116,12 +116,6 @@ void driver()
 		{
 			switch (instr->state)
 			{
-			case issue:				// Shouldn't need this line, but will keep here just in case
-				if (instr->issued) 
-				{
-					instr->state = ex;
-				}
-				break;
 			case ex:
 				Ex(instr);
 				break;

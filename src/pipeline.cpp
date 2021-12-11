@@ -52,7 +52,6 @@ Instruction* copyInstruction(const Instruction* source)
 	new_instr->immediate = source->immediate;
 	new_instr->dest = source->dest;
 	new_instr->result = source->result;
-	new_instr->programLine = source->programLine;
 	new_instr->btb_index = source->btb_index;
 	new_instr->source_instruction = rom.pc;
 
@@ -253,7 +252,6 @@ bool IssueDecode(Instruction* instr)
 			break;
 		}
 		rob.insert(instr);
-		instr->rob_busy = true;
 		instr->issue_start_cycle = numCycles;
 		instr->issue_end_cycle = numCycles;
 		instr->state = ex;
@@ -292,9 +290,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true; 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -344,9 +339,6 @@ bool IssueDecode(Instruction* instr)
 		rob.insert(instr);
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -395,10 +387,6 @@ bool IssueDecode(Instruction* instr)
 		rob.insert(instr);
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -446,10 +434,6 @@ bool IssueDecode(Instruction* instr)
 		rob.insert(instr);
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -496,10 +480,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -544,10 +524,6 @@ bool IssueDecode(Instruction* instr)
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -587,10 +563,7 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
+		instr->state = ex;
 		return true;
 	}
 	case mult_d:
@@ -635,10 +608,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -684,10 +653,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -733,10 +698,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -1452,14 +1413,6 @@ bool Commit(Instruction* instr)
 	switch (instr->op_code)
 	{
 	case nop:
-		if (((*rob.table.front()).state == commit) && ((*rob.table.front()).programLine == instr->programLine))
-		{
-			instr->state = null;
-			rob.clear(instr);
-			instr->commit_start_cycle = numCycles;
-			instr->commit_end_cycle = numCycles;
-			outputInstructions.push_back(instr);
-		}
 		break;
 	case add:
 	{
