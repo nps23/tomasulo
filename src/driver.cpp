@@ -61,7 +61,7 @@ void driver()
 	while (true) {
 
 		// DEBUG
-		if (numCycles == 10000)
+		if (numCycles == 1000)
 			break;
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		//for (int i = 0; i < 32; i++)

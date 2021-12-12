@@ -6,7 +6,7 @@
 #include "cpu_config.h"
 #include "instruction.h"
 
-std::string input_file = "src/test/input_LoadStore.txt";
+std::string input_file = "src/test/input.txt";
 
 //parse an input file and return a CPU config struct
 CPUConfig ParseInput(std::string& input_file)
