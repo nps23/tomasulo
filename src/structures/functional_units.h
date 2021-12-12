@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "../instruction.h"
 
 class AddFunctinalUnit
@@ -21,29 +23,23 @@ public:
 class FPAddFunctionalUnit
 {
 public:
-	int internalCycle;
 	int cycleInEx;
-	int op_code;
-	double left_operand;
-	double right_operand;
-	Instruction* instr;
 	void dispatch(Instruction* instr);
-	double next();
-	bool occupied;
+	double next(Instruction* input);
 	FPAddFunctionalUnit(int cycles_ex);
+	bool instruction_dispatched_on_current_cycle;
+	std::vector<Instruction*> fp_instructions;
+	void Clear(Instruction* instr);
 };
 
 class FPMultFunctionalUnit
 {
 public:
-	int internalCycle;
 	int cycleInEx;
-	int op_code;
-	double left_operand;
-	double right_operand;
-	Instruction* instr;
 	void dispatch(Instruction* instr);
-	double next();
-	bool occupied;
+	double next(Instruction* input);
 	FPMultFunctionalUnit(int cycles_ex);
+	bool instruction_dispatched_on_current_cycle;
+	std::vector<Instruction*> fp_instructions;
+	void Clear(Instruction* instr);
 };

@@ -52,7 +52,6 @@ Instruction* copyInstruction(const Instruction* source)
 	new_instr->immediate = source->immediate;
 	new_instr->dest = source->dest;
 	new_instr->result = source->result;
-	new_instr->programLine = source->programLine;
 	new_instr->btb_index = source->btb_index;
 	new_instr->source_instruction = rom.pc;
 
@@ -161,25 +160,11 @@ void MispredictSquash(Instruction* instr)
 		}
 	}
 	// TODO this will be unpipelined, change to for loop
-	if (fpFu.occupied)
+	if (instr->occupying_fp_unit)
 	{
-		if (fpFu.instr->instructionId >= instr->instructionId)
-		{
-			fpFu.occupied = false;
-			fpFu.instr = nullptr;
-			fpFu.internalCycle = 0;
-		}
+		fpFu.Clear(instr);
 	}
 
-	if (fpMulFu.occupied)
-	{
-		if (fpMulFu.instr->instructionId >= instr->instructionId)
-		{
-			fpMulFu.occupied = false;
-			fpMulFu.instr = nullptr;
-			fpMulFu.internalCycle = 0;
-		}
-	}
 	if (LSQueueAdder.occupied)
 	{
 		if (LSQueueAdder.instr->instructionId >= instr->instructionId)
@@ -239,9 +224,8 @@ bool IssueFetch(Instruction* instr)
 bool IssueDecode(Instruction* instr)
 {
 	// Check the type of the instruction
-	if (instr->just_fetched)
+	if (instr->issue_start_cycle == numCycles)
 	{
-		instr->just_fetched = false;
 		return false;
 	}
 	switch (instr->op_code)
@@ -252,9 +236,8 @@ bool IssueDecode(Instruction* instr)
 		{
 			break;
 		}
+		instBuff.clear(instr);
 		rob.insert(instr);
-		instr->rob_busy = true;
-		instr->issue_start_cycle = numCycles;
 		instr->issue_end_cycle = numCycles;
 		instr->state = ex;
 	}
@@ -292,9 +275,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true; 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -344,9 +324,6 @@ bool IssueDecode(Instruction* instr)
 		rob.insert(instr);
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -395,10 +372,6 @@ bool IssueDecode(Instruction* instr)
 		rob.insert(instr);
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -446,10 +419,6 @@ bool IssueDecode(Instruction* instr)
 		rob.insert(instr);
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -496,10 +465,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -544,10 +509,6 @@ bool IssueDecode(Instruction* instr)
 		dest.is_mapped = true;
 		dest.value = instr->instructionId;
 
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -587,10 +548,7 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
+		instr->state = ex;
 		return true;
 	}
 	case mult_d:
@@ -635,10 +593,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -684,10 +638,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -733,10 +683,6 @@ bool IssueDecode(Instruction* instr)
 		dest.map_value = instr->instructionId;
 
 		// update the instructions ROB metadata
-		instr->instType = instr->op_code;
-		instr->rob_busy = true;
-		// Setting the ex state is handled in the driver function in order to avoid a timing error. 
-		instr->issued = true;
 		instr->state = ex;
 		return true;
 	}
@@ -751,16 +697,19 @@ bool IssueDecode(Instruction* instr)
 bool Ex(Instruction* instruction)
 {
 	// in the driver function, we call this on every instruction in all Reservation Stations/ROB
+	if (instruction->issue_end_cycle == numCycles)
+	{
+		return false;
+	}
+	else if (instruction->ex_start_cycle == -1)
+	{
+		instruction->ex_start_cycle = numCycles;
+	}
 	switch (instruction->op_code)
 	{
 	case beq:
 	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -821,11 +770,6 @@ bool Ex(Instruction* instruction)
 	case bne:
 	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -885,20 +829,15 @@ bool Ex(Instruction* instruction)
 	}
 		break;
 	case nop:
-		std::cout << "WARNING: Processing a NOP instruction with outdated logic" << std::endl;
+	{
 		instruction->state = wb;
-		instruction->ex_start_cycle = numCycles;
 		instruction->ex_end_cycle = numCycles;
+	}
 		break;
 	case add:
 	{
 		// TODO change to for loop to handle multiple function units
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -952,7 +891,6 @@ bool Ex(Instruction* instruction)
 		if (instruction->qj == 0 && !addFu.occupied)
 		{
 			// start the ex timer
-			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
 			return true;
 		}
@@ -971,13 +909,8 @@ bool Ex(Instruction* instruction)
 	}
 		break;
 	case sub:
-		// same as add
+	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1013,15 +946,11 @@ bool Ex(Instruction* instruction)
 			}
 			return true;
 		}
+	}
 		break;
 	case add_d:
 	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1040,16 +969,17 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
+			fpFu.instruction_dispatched_on_current_cycle = true;
 			fpFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (instruction == fpFu.instr)
+		else if (instruction->occupying_fp_unit)
 		{
-			double result = fpFu.next();
-			if (!fpFu.occupied)
+			double result = fpFu.next(instruction);
+			if (!instruction->occupying_fp_unit)
 			{
 				instruction->state = wb;
 				instruction->result = result;
@@ -1062,11 +992,6 @@ bool Ex(Instruction* instruction)
 	case sub_d:
 	{
 		// if we missed a writeback, wait for a commit
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1085,16 +1010,16 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
 			fpFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (instruction == fpFu.instr)
+		else if (instruction->occupying_fp_unit)
 		{
-			double result = fpFu.next();
-			if (!fpFu.occupied)
+			double result = fpFu.next(instruction);
+			if (!instruction->occupying_fp_unit)
 			{
 				instruction->state = wb;
 				instruction->result = result;
@@ -1106,11 +1031,6 @@ bool Ex(Instruction* instruction)
 		break;
 	case mult_d:
 	{
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1129,16 +1049,16 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.occupied)
+		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
 			fpMulFu.dispatch(instruction);
 			return true;
 		}
 
-		else if (instruction == fpMulFu.instr)
+		else if (instruction->occupying_fp_unit)
 		{
-			double result = fpMulFu.next();
-			if (!fpMulFu.occupied)
+			double result = fpMulFu.next(instruction);
+			if (!instruction->occupying_fp_unit)
 			{
 				instruction->state = wb;
 				instruction->result = result;
@@ -1150,11 +1070,6 @@ bool Ex(Instruction* instruction)
 		break;
 	case ld:
 	{
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qj)
 		{
 			Instruction* qj_instr = idMap[instruction->qj];
@@ -1185,11 +1100,6 @@ bool Ex(Instruction* instruction)
 		break;
 	case sd:
 	{
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qj)
 		{
 			Instruction* qj_instr = idMap[instruction->qj];
@@ -1236,11 +1146,14 @@ bool Ex(Instruction* instruction)
 bool Mem(Instruction* instruction)
 {
 	// Do we need to set a flag to handle a writeback on 1 cycle? Can  another instr go immediatley?
+	if (instruction->ex_end_cycle == numCycles)
+	{
+		return false;
+	}
 	if (instruction->mem_start_cycle == -1)
 	{
 		instruction->mem_start_cycle = numCycles;
 	}
-
 	if (memUnit.instr == instruction)
 	{
 		float value = memUnit.Next();
@@ -1292,15 +1205,30 @@ bool Mem(Instruction* instruction)
 }
 bool WriteBack(Instruction* instr)
 {
+	if (instr->ex_end_cycle == numCycles)
+	{
+		return false;
+	}
+	else if (instr->writeback_start_cycle == -1)
+	{
+		instr->writeback_start_cycle = numCycles;
+	}
 	switch(instr->op_code)
 	{
 		case nop:
 		{
+			if (!bus.occupied)
+			{
+				bus.occupied = true;
+			}
+			else
+			{
+				bus.insert(instr);
+			}
 			instr->state = commit;
-			instr->writeback_start_cycle = numCycles;
 			instr->writeback_end_cycle = numCycles;
-			break;
 		}
+			break;
 		case ld:
 			break;
 		case sd:
@@ -1371,11 +1299,6 @@ bool WriteBack(Instruction* instr)
 
 		default:  // should work for add, add_d, add_i sub, sub_d, mult_d
 		{
-			if (instr->writeback_begin)
-			{
-				instr->writeback_begin = false;
-				instr->writeback_start_cycle = numCycles;
-			}
 			if (!bus.occupied)
 			{
 				if (instr->op_code == add || instr->op_code == add_i || instr->op_code == sub)
@@ -1449,25 +1372,31 @@ bool WriteBack(Instruction* instr)
 // this should be called once per cycle on the head of the ROB
 bool Commit(Instruction* instr)
 {
+	if (instr->writeback_end_cycle == numCycles)
+	{
+		return false;
+	}
+	else if (instr->commit_start_cycle == -1)
+	{
+		instr->commit_start_cycle = numCycles;
+	}
 	switch (instr->op_code)
 	{
 	case nop:
-		if (((*rob.table.front()).state == commit) && ((*rob.table.front()).programLine == instr->programLine))
+	{
+
+		if (instr == rob.table[0] && !rob.hasCommited)
 		{
-			instr->state = null;
-			rob.clear(instr);
-			instr->commit_start_cycle = numCycles;
 			instr->commit_end_cycle = numCycles;
+			rob.hasCommited = true;
+			rob.clear(instr);
 			outputInstructions.push_back(instr);
 		}
+		std::cout << "NOP PROGRESSED INTO THE COMMIT STAGE";
+	}
 		break;
 	case add:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
 
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
@@ -1484,12 +1413,6 @@ bool Commit(Instruction* instr)
 	}
 	case add_i:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1505,12 +1428,6 @@ bool Commit(Instruction* instr)
 	}
 	case sub:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1526,12 +1443,6 @@ bool Commit(Instruction* instr)
 	}
 	case mult_d:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1547,12 +1458,6 @@ bool Commit(Instruction* instr)
 	}
 	case add_d:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1568,12 +1473,6 @@ bool Commit(Instruction* instr)
 	}
 	case sub_d:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1589,11 +1488,6 @@ bool Commit(Instruction* instr)
 	}
 	case bne:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1606,11 +1500,6 @@ bool Commit(Instruction* instr)
 		break;
 	case beq:
 	{
-		if (instr->commit_end_cycle == -1)
-		{
-			instr->commit_end_cycle = false;
-			instr->commit_start_cycle = numCycles;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1623,11 +1512,6 @@ bool Commit(Instruction* instr)
 		break;
 	case ld:
 	{
-		if (instr->commit_start_cycle == -1)
-		{
-			instr->commit_start_cycle = numCycles;
-			break;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1641,11 +1525,6 @@ bool Commit(Instruction* instr)
 		break;
 	case sd:
 	{
-		if (instr->commit_start_cycle == -1)
-		{
-			instr->commit_start_cycle = numCycles;
-			break;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;

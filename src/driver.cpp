@@ -38,6 +38,7 @@ extern cpuMemory mainMem;
 extern instructionBuffer instBuff;
 extern AddFunctinalUnit addFu;
 extern FPAddFunctionalUnit fpFu;
+extern FPMultFunctionalUnit fpMulFu;
 extern cdb bus;
 extern ROM rom;
 extern IntRegisterAliasingTable intRat;
@@ -60,7 +61,7 @@ void driver()
 	while (true) {
 
 		// DEBUG
-		if (numCycles == 10000)
+		if (numCycles == 1000)
 			break;
 		//std::this_thread::sleep_for(std::chrono::milliseconds(100));
 		//for (int i = 0; i < 32; i++)
@@ -116,12 +117,6 @@ void driver()
 		{
 			switch (instr->state)
 			{
-			case issue:				// Shouldn't need this line, but will keep here just in case
-				if (instr->issued) 
-				{
-					instr->state = ex;
-				}
-				break;
 			case ex:
 				Ex(instr);
 				break;
@@ -131,7 +126,6 @@ void driver()
 			case wb:
 			{
 				WriteBack(instr);
-				bus.occupied = false;
 			}
 				break;
 			case commit:
@@ -139,7 +133,10 @@ void driver()
 				break;
 			}
 		}
+		fpFu.instruction_dispatched_on_current_cycle = false;
+		fpMulFu.instruction_dispatched_on_current_cycle = false;
 		rob.hasCommited = false;
+		bus.occupied = false;
 		numCycles++;
 	}
 }

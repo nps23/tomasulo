@@ -48,12 +48,6 @@ struct Instruction {
 	int f_ls_register_operand{ -1 };
 	// Shared instruction metadata
 	double result{ -1 };
-	int programLine{ -1 };
-
-	// ROB fields
-	int instType{ -1 };
-	double value{ -1 };										// This will be the same field used for loads and stores as well
-	bool rob_busy{ false };
 
 	// RS fields
 	double vj{ -1 };
@@ -96,14 +90,9 @@ struct Instruction {
 	bool just_fetched{ false };
 	bool writeback_begin{ true };;
 	bool commit_begin{ true };
-	bool ex_begin{ true };
-	bool issued{ false };
 
-	// FUNCTIONAL UNIT FLAGS
-	bool occupying_floating_point_add_unit{ false };
-	int floating_point_add_unit_cycle{ -1 };
-	bool occupying_floating_point_mult_unit{ false };
-	int floating_point_mult_unit_cycle{ -1 };
-	bool occuping_integer_add_unit{ false };
-	int integer_add_unit_cycle{ -1 };
+	// FUNCTIONAL UNIT FLAGS -- USED TO PIPELINE THE FLOATING POINT UNITS
+	int internal_fp_cycle{ -1 };
+	bool fp_unit_complete{ false };
+	bool occupying_fp_unit{ false };
 };
