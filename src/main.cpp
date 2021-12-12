@@ -94,12 +94,11 @@ int main()
 		for(unsigned int i = 0; i < outputInstructions.size(); i++){
 			switch(outputInstructions[i]->op_code){
 				case nop:
-					outFile << "ID = " << outputInstructions[i]->instructionId << " nop\t\t\t\t\t\t\t" 
-						<< output.tDiag[i][1] << "-" << output.tDiag[i][2] << " \t\t" 
-						<< output.tDiag[i][3] << "-" << output.tDiag[i][4] << "\t\t" << output.tDiag[i][5] 
-						<< "-" << output.tDiag[i][6] << "\t\t" << output.tDiag[i][7] 
-						<< "-" << output.tDiag[i][8] << "\t\t" 
-						<< output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
+					outFile << "ID = " << outputInstructions[i]->instructionId 
+						<< " nop\t\t\t\t" << output.tDiag[i][1] << "-" << output.tDiag[i][2] 
+						<< " \t\t" << output.tDiag[i][3] << "-" << output.tDiag[i][4]
+						<< "\t\t\t\t\t\t\t" << output.tDiag[i][7] << "-" << output.tDiag[i][8] 
+						<< "\t\t\t" << output.tDiag[i][9] << "-" << output.tDiag[i][10] << endl;
 					break;
 				case ld:
 					outFile << "ID = " << outputInstructions[i]->instructionId << " ld " << "F" << outputInstructions[i]->f_ls_register_operand 

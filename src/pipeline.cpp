@@ -236,8 +236,8 @@ bool IssueDecode(Instruction* instr)
 		{
 			break;
 		}
+		instBuff.clear(instr);
 		rob.insert(instr);
-		instr->issue_start_cycle = numCycles;
 		instr->issue_end_cycle = numCycles;
 		instr->state = ex;
 	}
@@ -829,10 +829,10 @@ bool Ex(Instruction* instruction)
 	}
 		break;
 	case nop:
-		std::cout << "WARNING: Processing a NOP instruction with outdated logic" << std::endl;
+	{
 		instruction->state = wb;
-		instruction->ex_start_cycle = numCycles;
 		instruction->ex_end_cycle = numCycles;
+	}
 		break;
 	case add:
 	{
@@ -891,7 +891,6 @@ bool Ex(Instruction* instruction)
 		if (instruction->qj == 0 && !addFu.occupied)
 		{
 			// start the ex timer
-			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
 			return true;
 		}
@@ -952,11 +951,6 @@ bool Ex(Instruction* instruction)
 	case add_d:
 	{
 		// if we missed a writeback, check the ROB
-		if (instruction->ex_start_cycle == -1)
-		{
-			instruction->ex_start_cycle = numCycles + 1;
-			return true;
-		}
 		if (instruction->qk)
 		{
 			Instruction* qk_instr = idMap[instruction->qk];
@@ -1152,11 +1146,14 @@ bool Ex(Instruction* instruction)
 bool Mem(Instruction* instruction)
 {
 	// Do we need to set a flag to handle a writeback on 1 cycle? Can  another instr go immediatley?
+	if (instruction->ex_end_cycle == numCycles)
+	{
+		return false;
+	}
 	if (instruction->mem_start_cycle == -1)
 	{
 		instruction->mem_start_cycle = numCycles;
 	}
-
 	if (memUnit.instr == instruction)
 	{
 		float value = memUnit.Next();
@@ -1208,15 +1205,30 @@ bool Mem(Instruction* instruction)
 }
 bool WriteBack(Instruction* instr)
 {
+	if (instr->ex_end_cycle == numCycles)
+	{
+		return false;
+	}
+	else if (instr->writeback_start_cycle == -1)
+	{
+		instr->writeback_start_cycle = numCycles;
+	}
 	switch(instr->op_code)
 	{
 		case nop:
 		{
+			if (!bus.occupied)
+			{
+				bus.occupied = true;
+			}
+			else
+			{
+				bus.insert(instr);
+			}
 			instr->state = commit;
-			instr->writeback_start_cycle = numCycles;
 			instr->writeback_end_cycle = numCycles;
-			break;
 		}
+			break;
 		case ld:
 			break;
 		case sd:
@@ -1287,10 +1299,6 @@ bool WriteBack(Instruction* instr)
 
 		default:  // should work for add, add_d, add_i sub, sub_d, mult_d
 		{
-			if (instr->writeback_start_cycle == -1)
-			{
-				instr->writeback_start_cycle = numCycles;
-			}
 			if (!bus.occupied)
 			{
 				if (instr->op_code == add || instr->op_code == add_i || instr->op_code == sub)
@@ -1364,17 +1372,31 @@ bool WriteBack(Instruction* instr)
 // this should be called once per cycle on the head of the ROB
 bool Commit(Instruction* instr)
 {
+	if (instr->writeback_end_cycle == numCycles)
+	{
+		return false;
+	}
+	else if (instr->commit_start_cycle == -1)
+	{
+		instr->commit_start_cycle = numCycles;
+	}
 	switch (instr->op_code)
 	{
 	case nop:
+	{
+
+		if (instr == rob.table[0] && !rob.hasCommited)
+		{
+			instr->commit_end_cycle = numCycles;
+			rob.hasCommited = true;
+			rob.clear(instr);
+			outputInstructions.push_back(instr);
+		}
+		std::cout << "NOP PROGRESSED INTO THE COMMIT STAGE";
+	}
 		break;
 	case add:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
 
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
@@ -1391,12 +1413,6 @@ bool Commit(Instruction* instr)
 	}
 	case add_i:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1412,12 +1428,6 @@ bool Commit(Instruction* instr)
 	}
 	case sub:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1433,12 +1443,6 @@ bool Commit(Instruction* instr)
 	}
 	case mult_d:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1454,12 +1458,6 @@ bool Commit(Instruction* instr)
 	}
 	case add_d:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1475,12 +1473,6 @@ bool Commit(Instruction* instr)
 	}
 	case sub_d:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
-
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1496,11 +1488,6 @@ bool Commit(Instruction* instr)
 	}
 	case bne:
 	{
-		if (instr->commit_begin)
-		{
-			instr->commit_begin = false;
-			instr->commit_start_cycle = numCycles;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1513,11 +1500,6 @@ bool Commit(Instruction* instr)
 		break;
 	case beq:
 	{
-		if (instr->commit_end_cycle == -1)
-		{
-			instr->commit_end_cycle = false;
-			instr->commit_start_cycle = numCycles;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1530,11 +1512,6 @@ bool Commit(Instruction* instr)
 		break;
 	case ld:
 	{
-		if (instr->commit_start_cycle == -1)
-		{
-			instr->commit_start_cycle = numCycles;
-			break;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
@@ -1548,11 +1525,6 @@ bool Commit(Instruction* instr)
 		break;
 	case sd:
 	{
-		if (instr->commit_start_cycle == -1)
-		{
-			instr->commit_start_cycle = numCycles;
-			break;
-		}
 		if (instr == rob.table[0] && !rob.hasCommited)
 		{
 			rob.hasCommited = true;
