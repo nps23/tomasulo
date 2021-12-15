@@ -23,16 +23,19 @@ r_registers 2
 f_registers 1
 20 3.0
 
-program 10
-ld f2 0(r1)
-mult_d f4 f2 f20
-ld f6 0(r2)
-add_d f6 f4 f6
-sd f6 0(r2)
-add_i r1 r1 -4
-add_i r2 r2 -4
-bne r1 r0 -8
-nop
+program 13
+add_i r2 r0 -2
+add_i r3 r0 4
+add_i r2 r2 2
+ld f1 0(r1)
+beq r2 r0 5
+add_i r3 r3 4
+add_i r2 r2 8
+mult_d f3 f2 f1
+add r2 r2 r2
+add r1 r1 r1
+add r1 r1 r1
+add r1 r1 r1
 fin
 
 memory 5

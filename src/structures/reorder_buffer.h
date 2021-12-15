@@ -1,6 +1,7 @@
 #pragma once
 
 #include <deque>
+#include <vector>
 
 #include "../instruction.h"
 
@@ -9,11 +10,10 @@ class ReorderBuffer
 public:
 	int entries;
 	bool hasCommited{ false };
-	std::deque<Instruction*> table;
+	std::vector<Instruction*> table;
 
 	ReorderBuffer(int robEntries);
 	void insert(Instruction* instr);
-	void pop();
 	void clear(Instruction* instr);
 	bool isFull();
 	bool isEmpty();

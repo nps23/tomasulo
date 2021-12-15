@@ -115,39 +115,81 @@ void MispredictSquash(Instruction* instr)
 		rom.pc = instr->realized_instruction_target;
 	
 	// clear RS of incorrect instrutions past the branch
-	for (auto& entry : addRS.table) 
+	std::vector <Instruction*>::iterator addRs_iter;
+	for (addRs_iter = addRS.table.begin(); addRs_iter != addRS.table.end(); )
 	{
-		if (entry->instructionId >= instr->instructionId)
+		if ((*addRs_iter)->instructionId > instr->instructionId)
 		{
-			addRS.clear(instr);
-			entry->state = stop;
+			(*addRs_iter)->state = stop;
+			addRs_iter = addRS.table.erase(addRs_iter);
 		}
+		else
+			addRs_iter++;
 	}
-	for (auto& entry : fRS.table) 
+	//for (auto& entry : addRS.table) 
+	//{
+	//	if (entry->instructionId >= instr->instructionId)
+	//	{
+	//		addRS.clear(entry);
+	//		entry->state = stop;
+	//	}
+	//}
+
+	std::vector <Instruction*>::iterator fRS_iter;
+	for (fRS_iter = fRS.table.begin(); fRS_iter != fRS.table.end(); )
 	{
-		if (entry->instructionId >= instr->instructionId) 
+		if ((*fRS_iter)->instructionId > instr->instructionId)
 		{
-			fRS.clear(entry);
-			entry->state = stop;
+			(*fRS_iter)->state = stop;
+			fRS_iter = fRS.table.erase(fRS_iter);
 		}
+		else
+			fRS_iter++;
 	}
+	//for (auto& entry : fRS.table) 
+	//{
+	//	if (entry->instructionId >= instr->instructionId) 
+	//	{
+	//		fRS.clear(entry);
+	//		entry->state = stop;
+	//	}
+	//}
 	// Clear ROB entries
-	for (auto& entry : rob.table)
+	std::vector <Instruction*>::iterator rob_iter;
+	for (rob_iter = rob.table.begin(); rob_iter != rob.table.end(); )
 	{
-		if (entry->instructionId > instr->instructionId)
+		if ((*rob_iter)->instructionId > instr->instructionId)
 		{
-			rob.clear(entry);
-			entry->state = stop;
+			(*rob_iter)->state = stop;
+			rob_iter = rob.table.erase(rob_iter);
 		}
+		else
+			rob_iter++;
 	}
+	//for (auto& entry : rob.table)
+	//{
+	//	if (entry->instructionId > instr->instructionId)
+	//	{
+	//		rob.clear(entry);
+	//		entry->state = stop;
+	//	}
+	//}
 	// Sanitize the Load/Store queue
-	for (auto& entry : LSQueue.table)
+	std::vector <Instruction*>::iterator ls_iter;
+	for (ls_iter = LSQueue.table.begin(); ls_iter != LSQueue.table.end(); )
 	{
-		if (entry->instructionId >= instr->instructionId)
-		{
-			LSQueue.Clear(entry);
-		}
+		if ((*ls_iter)->instructionId > instr->instructionId)
+			ls_iter = LSQueue.table.erase(ls_iter);
+		else
+			ls_iter++;
 	}
+	//for (auto& entry : LSQueue.table)
+	//{
+	//	if (entry->instructionId >= instr->instructionId)
+	//	{
+	//		LSQueue.Clear(entry);
+	//	}
+	//}
 	
 	// Clear the function units of the bad instruction that were in the units (might not be necessary)
 	if (addFu.instr)
@@ -752,6 +794,7 @@ bool Ex(Instruction* instruction)
 					{
 						instruction->mispredict = true;
 						instruction->branch_false_negative = true;
+						stall_fetch = true;
 					}
 				}
 				else if (instruction->result == 0)
@@ -761,6 +804,7 @@ bool Ex(Instruction* instruction)
 					{
 						instruction->mispredict = true;
 						instruction->branch_false_positive = true;
+						stall_fetch = true;
 					}
 				}
 			}
@@ -1250,7 +1294,6 @@ bool WriteBack(Instruction* instr)
 				bus.occupied = true;
 				instr->writeback_end_cycle = numCycles;
 				instr->state = commit;
-				instr->commit_start_cycle = numCycles + 1;
 			}
 			else
 			{

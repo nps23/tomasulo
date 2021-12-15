@@ -25,10 +25,6 @@ bool ReorderBuffer::isEmpty()
 	return table.empty();
 }
 
-void ReorderBuffer::pop()
-{
-	table.pop_front();
-}
 
 void ReorderBuffer::clear(Instruction* instr)
 {

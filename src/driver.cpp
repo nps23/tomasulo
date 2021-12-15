@@ -126,6 +126,7 @@ void driver()
 			case wb:
 			{
 				WriteBack(instr);
+				break;
 			}
 				break;
 			case commit:
