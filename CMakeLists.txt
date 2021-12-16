@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(Tomasulo)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std:=c++17")
 set (source_dir "${PROJECT_SOURCE_DIR}/src")
 message("The source dir is: ${PROJECT_SOURCE_DIR}")
 
