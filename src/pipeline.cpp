@@ -697,6 +697,10 @@ bool Ex(Instruction* instruction)
 	{
 		return false;
 	}
+	if (instruction->op_code == nop)
+	{
+		instruction->ex_start_cycle = numCycles;
+	}
 	switch (instruction->op_code)
 	{
 	case beq:
@@ -1354,6 +1358,10 @@ bool Commit(Instruction* instr)
 	if (instr->writeback_end_cycle == numCycles || instr->mem_end_cycle == numCycles)
 	{
 		instr->commit_start_cycle = numCycles + 1;
+	}
+	if (instr->op_code == nop)
+	{
+		instr->commit_start_cycle = numCycles;
 	}
 	else
 		instr->commit_start_cycle = numCycles;
