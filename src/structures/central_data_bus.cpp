@@ -21,7 +21,7 @@ void cdb::clear(Instruction* instr)
 	{
 		throw std::runtime_error("Trying to remove element from an empty CDB");
 	}
-	buffer.erase(std::remove(buffer.begin(), buffer.end(), instr));
+	buffer.erase(std::remove(buffer.begin(), buffer.end(), instr), buffer.end());
 }
 
 void cdb::insert(Instruction* instr)

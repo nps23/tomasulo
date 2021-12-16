@@ -124,9 +124,7 @@ void driver()
 				Mem(instr);
 				break;
 			case wb:
-			{
 				WriteBack(instr);
-			}
 				break;
 			case commit:
 				Commit(instr);

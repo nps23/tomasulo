@@ -224,10 +224,6 @@ bool IssueFetch(Instruction* instr)
 bool IssueDecode(Instruction* instr)
 {
 	// Check the type of the instruction
-	if (instr->issue_start_cycle == numCycles)
-	{
-		return false;
-	}
 	switch (instr->op_code)
 	{
 	case nop:
@@ -701,10 +697,6 @@ bool Ex(Instruction* instruction)
 	{
 		return false;
 	}
-	else if (instruction->ex_start_cycle == -1)
-	{
-		instruction->ex_start_cycle = numCycles;
-	}
 	switch (instruction->op_code)
 	{
 	case beq:
@@ -731,10 +723,11 @@ bool Ex(Instruction* instruction)
 
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
+			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			return true;
 		}
-		else if (instruction == addFu.instr)
+
+		if (instruction == addFu.instr)
 		{
 			int result = addFu.next();
 			if (!addFu.occupied)
@@ -790,10 +783,10 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
+			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			return true;
 		}
-		else if (instruction == addFu.instr)
+		if (instruction == addFu.instr)
 		{
 			int result = addFu.next();
 			if (!addFu.occupied)
@@ -860,11 +853,11 @@ bool Ex(Instruction* instruction)
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
 			// start the ex timer
+			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			return true;
 		}
 		// instruction is already issued, just cycle the FU
-		else if (instruction == addFu.instr)
+		if (instruction == addFu.instr)
 		{
 			int result = addFu.next();
 			if (!addFu.occupied)
@@ -891,11 +884,11 @@ bool Ex(Instruction* instruction)
 		if (instruction->qj == 0 && !addFu.occupied)
 		{
 			// start the ex timer
+			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			return true;
 		}
 		// instruction is already issued, just cycle the FU
-		else if (instruction == addFu.instr)
+		if (instruction == addFu.instr)
 		{
 			int result = addFu.next();
 			if (!addFu.occupied)
@@ -931,11 +924,11 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !addFu.occupied)
 		{
+			instruction->ex_start_cycle = numCycles;
 			addFu.dispatch(instruction);
-			return true;
 		}
 
-		else if (instruction == addFu.instr)
+		if (instruction == addFu.instr)
 		{
 			int result = addFu.next();
 			if (!addFu.occupied)
@@ -972,11 +965,11 @@ bool Ex(Instruction* instruction)
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
 			fpFu.instruction_dispatched_on_current_cycle = true;
+			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
-			return true;
 		}
 
-		else if (instruction->occupying_fp_unit)
+		if (instruction->occupying_fp_unit)
 		{
 			double result = fpFu.next(instruction);
 			if (!instruction->occupying_fp_unit)
@@ -1012,11 +1005,11 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !fpFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
 		{
+			instruction->ex_start_cycle = numCycles;
 			fpFu.dispatch(instruction);
-			return true;
 		}
 
-		else if (instruction->occupying_fp_unit)
+		if (instruction->occupying_fp_unit)
 		{
 			double result = fpFu.next(instruction);
 			if (!instruction->occupying_fp_unit)
@@ -1049,13 +1042,13 @@ bool Ex(Instruction* instruction)
 				instruction->vj = qj_instr->result;
 			}
 		}
-		if (instruction->qj == 0 && instruction->qk == 0 && !fpMulFu.instruction_dispatched_on_current_cycle && !instruction->occupying_fp_unit)
+		if (instruction->qj == 0 && instruction->qk == 0 && !instruction->occupying_fp_unit)
 		{
+			instruction->ex_start_cycle = numCycles;
 			fpMulFu.dispatch(instruction);
-			return true;
 		}
 
-		else if (instruction->occupying_fp_unit)
+		if (instruction->occupying_fp_unit)
 		{
 			double result = fpMulFu.next(instruction);
 			if (!instruction->occupying_fp_unit)
@@ -1081,11 +1074,11 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && !LSQueueAdder.occupied)
 		{
+			instruction->ex_start_cycle = numCycles;
 			LSQueueAdder.Dispatch(instruction);
-			return true;
 		}
 
-		else if (instruction == LSQueueAdder.instr)
+		if (instruction == LSQueueAdder.instr)
 		{
 			int result = LSQueueAdder.Next();
 			if (!LSQueueAdder.occupied)
@@ -1120,11 +1113,11 @@ bool Ex(Instruction* instruction)
 		}
 		if (instruction->qj == 0 && instruction->qk == 0 && !LSQueueAdder.occupied)
 		{
+			instruction->ex_start_cycle = numCycles;
 			LSQueueAdder.Dispatch(instruction);
-			return true;
 		}
 
-		else if (instruction == LSQueueAdder.instr)
+		if (instruction == LSQueueAdder.instr)
 		{
 			int result = LSQueueAdder.Next();
 			if (!LSQueueAdder.occupied)
@@ -1146,14 +1139,10 @@ bool Ex(Instruction* instruction)
 bool Mem(Instruction* instruction)
 {
 	// Do we need to set a flag to handle a writeback on 1 cycle? Can  another instr go immediatley?
-	if (instruction->ex_end_cycle == numCycles)
-	{
-		return false;
-	}
-	if (instruction->mem_start_cycle == -1)
-	{
-		instruction->mem_start_cycle = numCycles;
-	}
+	//if (instruction->mem_start_cycle == -1)
+	//{
+	//	instruction->mem_start_cycle = numCycles;
+	//}
 	if (memUnit.instr == instruction)
 	{
 		float value = memUnit.Next();
@@ -1200,6 +1189,7 @@ bool Mem(Instruction* instruction)
 	}
 	if (!memUnit.occupied)
 	{
+		instruction->mem_start_cycle = numCycles;
 		memUnit.Dispatch(instruction);
 	}
 }
@@ -1207,12 +1197,10 @@ bool WriteBack(Instruction* instr)
 {
 	if (instr->ex_end_cycle == numCycles)
 	{
-		return false;
+		instr->writeback_start_cycle = numCycles + 1;
 	}
-	else if (instr->writeback_start_cycle == -1)
-	{
+	else
 		instr->writeback_start_cycle = numCycles;
-	}
 	switch(instr->op_code)
 	{
 		case nop:
@@ -1235,11 +1223,6 @@ bool WriteBack(Instruction* instr)
 			break;
 		case beq:
 		{
-			if (instr->writeback_begin)
-			{
-				instr->writeback_begin = false;
-				instr->writeback_start_cycle = numCycles;
-			}
 			if (!bus.occupied)
 			{
 				addRS.clear(instr);
@@ -1250,7 +1233,6 @@ bool WriteBack(Instruction* instr)
 				bus.occupied = true;
 				instr->writeback_end_cycle = numCycles;
 				instr->state = commit;
-				instr->commit_start_cycle = numCycles + 1;
 			}
 			else
 			{
@@ -1269,7 +1251,6 @@ bool WriteBack(Instruction* instr)
 			if (instr->writeback_begin)
 			{
 				instr->writeback_begin = false;
-				instr->writeback_start_cycle = numCycles;
 			}
 			if (!bus.occupied)
 			{
@@ -1281,7 +1262,6 @@ bool WriteBack(Instruction* instr)
 				bus.occupied = true;
 				instr->writeback_end_cycle = numCycles;
 				instr->state = commit;
-				instr->commit_start_cycle = numCycles + 1;
 			}
 			else
 			{
@@ -1358,7 +1338,6 @@ bool WriteBack(Instruction* instr)
 
 				instr->writeback_end_cycle = numCycles;
 				instr->state = commit;
-				instr->commit_start_cycle = numCycles + 1;
 			}
 			else
 			{
@@ -1372,14 +1351,12 @@ bool WriteBack(Instruction* instr)
 // this should be called once per cycle on the head of the ROB
 bool Commit(Instruction* instr)
 {
-	if (instr->writeback_end_cycle == numCycles)
+	if (instr->writeback_end_cycle == numCycles || instr->mem_end_cycle == numCycles)
 	{
-		return false;
+		instr->commit_start_cycle = numCycles + 1;
 	}
-	else if (instr->commit_start_cycle == -1)
-	{
+	else
 		instr->commit_start_cycle = numCycles;
-	}
 	switch (instr->op_code)
 	{
 	case nop:

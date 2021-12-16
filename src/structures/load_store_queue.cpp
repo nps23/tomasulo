@@ -42,7 +42,7 @@ LoadStoreQueueAdder::LoadStoreQueueAdder(int cycles_ex)
 
 int LoadStoreQueueAdder::Next()
 {
-	if (internalCycle == cycleInEx)
+	if (internalCycle == cycleInEx - 1 )
 	{
 		occupied = false;
 		instr = nullptr;

@@ -14,7 +14,7 @@ AddFunctinalUnit::AddFunctinalUnit(int cycles_ex)
 
 int AddFunctinalUnit::next()
 {
-	if (internalCycle == (cycleInEx-1))
+	if (internalCycle == (cycleInEx - 1))
 	{
 		occupied = false;
 		instr = nullptr;
@@ -69,7 +69,7 @@ void AddFunctinalUnit::dispatch(Instruction* instruction)
 
 FPAddFunctionalUnit::FPAddFunctionalUnit(int cycles_ex)
 {
-	cycleInEx = cycles_ex - 1; // starting from a zero index thing
+	cycleInEx = cycles_ex; // starting from a zero index thing
 	instruction_dispatched_on_current_cycle = false;
 	fp_instructions.resize(0);
 }
@@ -81,7 +81,7 @@ void FPAddFunctionalUnit::Clear(Instruction* instr)
 
 double FPAddFunctionalUnit::next(Instruction* input)
 {
-	if (input->internal_fp_cycle == cycleInEx)
+	if (input->internal_fp_cycle == (cycleInEx -1 ))
 	{
 		input->fp_unit_complete = true;
 		input->occupying_fp_unit = false;
@@ -109,7 +109,7 @@ void FPAddFunctionalUnit::dispatch(Instruction* instruction)
 
 FPMultFunctionalUnit::FPMultFunctionalUnit(int cycles_ex)
 {
-	cycleInEx = cycles_ex - 1;
+	cycleInEx = cycles_ex;
 	instruction_dispatched_on_current_cycle = false;
 	fp_instructions.resize(0);
 }
@@ -128,7 +128,7 @@ void FPMultFunctionalUnit::Clear(Instruction* instr)
 
 double FPMultFunctionalUnit::next(Instruction* input)
 {
-	if (input->internal_fp_cycle == cycleInEx)
+	if (input->internal_fp_cycle == cycleInEx - 1)
 	{
 		input->fp_unit_complete = true;
 		input->occupying_fp_unit = false;
