@@ -15,7 +15,7 @@ file (GLOB header_files
     "${source_dir}/structures/*.h")
 
 file (GLOB input_text_files
-    "${source_dir}/*.txt")
+    "${source_dir}/test*.txt")
 
 add_executable(Tomasulo ${sources} ${header_files})
 
